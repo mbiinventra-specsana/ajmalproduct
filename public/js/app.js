@@ -1,6 +1,7 @@
 // Shared frontend helpers — MbiInventra RCM Academy
 async function api(path, opts = {}) {
   const r = await fetch(path, {
+    credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' },
     ...opts,
     body: opts.body ? JSON.stringify(opts.body) : undefined,
