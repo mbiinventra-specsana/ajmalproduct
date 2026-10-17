@@ -948,7 +948,7 @@ app.get('/api/labs/quiz', requireAuth, ah(async (req, res) => {
       WHERE at.user_id = ? AND a.correct = 0`, [uid]);
     caseWrong.forEach(r => seen.add(r.id));
     const ids = [...seen].slice(0, n);
-    qs = ids.length ? await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, q.qtype, c.code AS caseCode
+    qs = ids.length ? await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, q.qtype, q.extra, c.code AS caseCode
       FROM questions q JOIN cases c ON c.id = q.case_id WHERE q.id IN (${ids.map(() => '?').join(',')})`, ids) : [];
   } else if (mode === 'weakest') {
     const prog = await db.all(`SELECT c.id, c.points,
@@ -957,17 +957,21 @@ app.get('/api/labs/quiz', requireAuth, ah(async (req, res) => {
       WHERE c.active = 1 GROUP BY c.id`, [uid]);
     prog.sort((a, b) => (a.best / a.points) - (b.best / b.points));
     const ids = prog.slice(0, 2).map(p => p.id);
-    qs = ids.length ? await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, q.qtype, c.code AS caseCode
+    qs = ids.length ? await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, q.qtype, q.extra, c.code AS caseCode
       FROM questions q JOIN cases c ON c.id = q.case_id WHERE q.case_id IN (${ids.map(() => '?').join(',')})
       ORDER BY ${RF} LIMIT ${n}`, ids) : [];
   } else {
-    qs = await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, q.qtype, c.code AS caseCode
+    qs = await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, q.qtype, q.extra, c.code AS caseCode
       FROM questions q JOIN cases c ON c.id = q.case_id WHERE c.active = 1
       ORDER BY ${RF} LIMIT ${n}`);
   }
   if (!qs.length) return res.json({ mode, questions: [], note: 'No questions available for this mode yet.' });
-  res.json({ mode, questions: qs.map(q => ({ id: q.id, caseCode: q.caseCode, qnum: q.qnum,
-    prompt: q.prompt, options: JSON.parse(q.options || '[]'), hint: q.hint, qtype: q.qtype || 'mcq' })) });
+  res.json({ mode, questions: qs.map(q => {
+    let extra = {};
+    try { extra = JSON.parse(q.extra || '{}'); } catch (e) {}
+    return { id: q.id, caseCode: q.caseCode, qnum: q.qnum, prompt: q.prompt,
+      options: JSON.parse(q.options || '[]'), hint: q.hint, qtype: q.qtype || 'mcq', extra };
+  }) });
 }));
 
 // normalize a typed code for grading: uppercase, trim, collapse spaces, strip trailing periods

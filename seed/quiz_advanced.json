@@ -108,7 +108,7 @@
      "$30"
     ],
     "points": 10,
-    "q": "EOB line: CPT 99213, Billed $150, Allowed $100, Paid $80, codes: PR-3, CO-45 \u2014 see EOB below. What is the contractual adjustment?",
+    "q": "Review the EOB line below. What is the contractual adjustment?",
     "qtype": "eob_math",
     "eob": {
      "cpt": "99213",
@@ -129,7 +129,7 @@
      "$0"
     ],
     "points": 10,
-    "q": "EOB line: CPT 99213, Billed $150, Allowed $100, Paid $80, codes: PR-3, CO-45. How much does the patient owe?",
+    "q": "Review the EOB line below. How much does the patient owe?",
     "qtype": "eob_math",
     "eob": {
      "cpt": "99213",
@@ -150,7 +150,7 @@
      "Resubmit the claim immediately"
     ],
     "points": 10,
-    "q": "ERA line: CPT 20610, Billed $200, Allowed $120, Paid $60, codes: CO-50 \u2014 see EOB below. What is the correct next step?",
+    "q": "Review the ERA line below. What is the correct next step?",
     "qtype": "eob_math",
     "eob": {
      "cpt": "20610",
@@ -171,7 +171,7 @@
      "The payer made an error \u2014 appeal immediately"
     ],
     "points": 10,
-    "q": "EOB line: CPT 36415, Billed $25, Allowed $25, Paid $0, codes: CO-97, M15 \u2014 see EOB below. What happened?",
+    "q": "Review the EOB line below. What happened here?",
     "qtype": "eob_math",
     "eob": {
      "cpt": "36415",
@@ -192,7 +192,7 @@
      "30%"
     ],
     "points": 10,
-    "q": "ERA line: CPT 11102, Billed $180, Allowed $140, Paid $112, codes: PR-2 ($28) \u2014 see EOB below. What is the coinsurance percentage?",
+    "q": "Review the ERA line below. What is the coinsurance percentage?",
     "qtype": "eob_math",
     "eob": {
      "cpt": "11102",
@@ -213,7 +213,7 @@
      "$70"
     ],
     "points": 10,
-    "q": "EOB: Two lines. Line 1: 99213, Billed $150, Allowed $100, Paid $80 (PR-3 $20). Line 2: 36415, Billed $25, Allowed $0, Paid $0 (CO-97) \u2014 see EOB below. What is the total patient responsibility?",
+    "q": "Review the two EOB lines below. What is the total patient responsibility?",
     "qtype": "eob_math",
     "eob": {
      "lines": [
@@ -245,7 +245,7 @@
      "The deductible was applied"
     ],
     "points": 10,
-    "q": "ERA line: CPT 99214, Billed $200, Allowed $160, Paid $160, no PR codes \u2014 see EOB below. What does this tell you?",
+    "q": "Review the ERA line below. What does this tell you?",
     "qtype": "eob_math",
     "eob": {
      "cpt": "99214",
@@ -266,7 +266,7 @@
      "Cannot tell from the EOB"
     ],
     "points": 10,
-    "q": "EOB line: CPT J1956 x2 units, Billed $120, Allowed $90, Paid $72, codes: PR-2 ($18). The physician actually gave 500 mg. Is the unit count correct?",
+    "q": "Review the EOB line below. Is the unit count correct?",
     "qtype": "eob_math",
     "eob": {
      "cpt": "J1956 x2",
@@ -300,7 +300,7 @@
      "Do Not Resubmit"
     ],
     "points": 10,
-    "q": "Denied line: CPT 99213, CO-29 \u2014 'Time limit for filing has expired.' DOS was 14 months ago, payer is Aetna commercial (120-day limit). No proof of timely filing exists. Next action?",
+    "q": "A denied line hits your queue (see panel). DOS was 14 months ago, payer is Aetna commercial (120-day limit). No proof of timely filing exists. What is the correct NEXT ACTION?",
     "qtype": "denial_triage",
     "denial": {
      "cpt": "99213",
@@ -321,7 +321,7 @@
      "Do Not Resubmit"
     ],
     "points": 10,
-    "q": "Denied line: CPT 20610, CO-16 + N286 \u2014 'Missing/invalid referring provider identifier.' The referral was on file but the NPI was left off the claim. Next action?",
+    "q": "A denied line hits your queue (see panel). The referral was on file but the NPI was left off the claim. What is the correct NEXT ACTION?",
     "qtype": "denial_triage",
     "denial": {
      "cpt": "20610",
@@ -342,7 +342,7 @@
      "Do Not Resubmit"
     ],
     "points": 10,
-    "q": "Denied line: CPT 36415, CO-97 \u2014 'Payment included in another service.' Billed with 99213 same DOS, no modifier. The blood draw was a routine part of the visit. Next action?",
+    "q": "A denied line hits your queue (see panel). The blood draw was a routine part of the visit. What is the correct NEXT ACTION?",
     "qtype": "denial_triage",
     "denial": {
      "cpt": "36415",
@@ -363,7 +363,7 @@
      "Do Not Resubmit"
     ],
     "points": 10,
-    "q": "Denied line: CPT 99213, CO-18 \u2014 'Duplicate claim.' You check and the original claim from last month is still in 'processing' status. Next action?",
+    "q": "A denied line hits your queue (see panel). You check and the original claim from last month is still in 'processing' status. What is the correct NEXT ACTION?",
     "qtype": "denial_triage",
     "denial": {
      "cpt": "99213",
@@ -384,7 +384,7 @@
      "Do Not Resubmit"
     ],
     "points": 10,
-    "q": "Denied line: CPT 47562, CO-197 \u2014 'Precertification/authorization absent.' The surgery was elective and no auth was obtained. The payer allows retro auth within 30 days; DOS was 10 days ago. Next action?",
+    "q": "A denied line hits your queue (see panel). The surgery was elective, no auth was obtained. The payer allows retro auth within 30 days; DOS was 10 days ago. What is the correct NEXT ACTION?",
     "qtype": "denial_triage",
     "denial": {
      "cpt": "47562",
@@ -405,7 +405,7 @@
      "Do Not Resubmit"
     ],
     "points": 10,
-    "q": "Rejected line: CPT 99213, MA130 \u2014 'Claim unprocessable.' The claim is missing the patient's date of birth entirely. Next action?",
+    "q": "A rejected line hits your queue (see panel). The claim is missing the patient's date of birth entirely. What is the correct NEXT ACTION?",
     "qtype": "denial_triage",
     "denial": {
      "cpt": "99213",
@@ -426,7 +426,7 @@
      "Do Not Resubmit"
     ],
     "points": 10,
-    "q": "Denied line: CPT 99213, CO-22 \u2014 'May be covered by another payer.' Patient has BCBS primary through employer and Medicare. You billed Medicare first. Next action?",
+    "q": "A denied line hits your queue (see panel). Patient has BCBS primary through employer and Medicare. You billed Medicare first. What is the correct NEXT ACTION?",
     "qtype": "denial_triage",
     "denial": {
      "cpt": "99213",
@@ -447,7 +447,7 @@
      "Do Not Resubmit"
     ],
     "points": 10,
-    "q": "Denied line: CPT 95811, CO-50 \u2014 'Not medically necessary.' The sleep study was ordered for simple snoring with no documented apnea symptoms or comorbidities. Next action?",
+    "q": "A denied line hits your queue (see panel). The sleep study was ordered for simple snoring with no documented apnea symptoms. What is the correct NEXT ACTION?",
     "qtype": "denial_triage",
     "denial": {
      "cpt": "95811",
@@ -468,7 +468,7 @@
      "Do Not Resubmit"
     ],
     "points": 10,
-    "q": "Denied line: CPT 11102, CO-11 \u2014 'Diagnosis inconsistent with procedure.' Claim billed with Z00.00 (routine exam) but the note documents a suspicious lesion that was biopsied. Next action?",
+    "q": "A denied line hits your queue (see panel). The claim billed Z00.00 but the note documents a suspicious lesion that was biopsied. What is the correct NEXT ACTION?",
     "qtype": "denial_triage",
     "denial": {
      "cpt": "11102",
@@ -489,7 +489,7 @@
      "Do Not Resubmit"
     ],
     "points": 10,
-    "q": "Denied line: CPT 99213-25 + 20610, CO-4 \u2014 'Procedure inconsistent with modifier.' The -25 was appended to 20610 (the injection) instead of 99213 (the E/M). The documentation supports both services. Next action?",
+    "q": "A denied line hits your queue (see panel). The documentation supports both the E/M and the injection. What is the correct NEXT ACTION?",
     "qtype": "denial_triage",
     "denial": {
      "cpt": "99213-25 + 20610",

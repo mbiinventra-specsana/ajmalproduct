@@ -140,6 +140,27 @@ function qtypeTag(q) {
   const [label, cls] = QTYPE_LABEL[q.qtype] || QTYPE_LABEL.mcq;
   return `<span class="qtype-tag ${cls}">${label}</span>`;
 }
+function renderEobPanel(eob) {
+  if (!eob) return '';
+  const lines = eob.lines || [eob];
+  return `<div class="eob-panel"><div style="color:#5eead4;font-weight:800;font-size:11px;letter-spacing:1.5px;margin-bottom:8px">📄 EXPLANATION OF BENEFITS</div>` +
+    lines.map(l => `
+      <div class="erow"><span class="ek">CPT</span><span class="ev hl">${esc(l.cpt || '')}</span></div>
+      <div class="erow"><span class="ek">Billed</span><span class="ev">${esc(l.billed || '')}</span></div>
+      <div class="erow"><span class="ek">Allowed</span><span class="ev">${esc(l.allowed || '')}</span></div>
+      <div class="erow"><span class="ek">Paid</span><span class="ev hl">${esc(l.paid || '')}</span></div>
+      <div class="erow"><span class="ek">Codes</span><span class="ev" style="color:#fbbf24">${esc(l.codes || '')}</span></div>
+      ${lines.length > 1 ? '<div style="height:10px"></div>' : ''}`).join('') + `</div>`;
+}
+function renderDenialPanel(den) {
+  if (!den) return '';
+  return `<div class="denial-panel">
+    <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#991b1b;margin-bottom:8px">🚨 DENIED CLAIM LINE</div>
+    <div style="margin-bottom:6px"><span style="color:#64748b">CPT:</span> <b style="font-family:ui-monospace,monospace">${esc(den.cpt || '')}</b></div>
+    <div style="margin-bottom:6px"><span class="dcode">${esc(den.code || '')}</span></div>
+    <div style="color:#7f1d1d;font-style:italic">"${esc(den.reason || '')}"</div>
+  </div>`;
+}
 function renderQ(q, qi) {
   const qt = q.qtype || 'mcq';
   let body = '';
@@ -150,6 +171,8 @@ function renderQ(q, qi) {
     body = (q.options || []).map((o, i) =>
       `<label><input type="radio" name="q${q.id}" value="${i}"> <b>${LET[i]}.</b> ${esc(o)}</label>`).join('');
   }
+  const panel = qt === 'eob_math' ? renderEobPanel(q.extra?.eob)
+    : qt === 'denial_triage' ? renderDenialPanel(q.extra?.denial) : '';
   return `
     <div class="qq lab-anim" data-q="${q.id}" id="qq${q.id}" style="animation-delay:${Math.min(qi * .04, .4)}s">
       <div class="qhead">
@@ -158,6 +181,7 @@ function renderQ(q, qi) {
       </div>
       ${qtypeTag(q)}
       <div class="stem">${esc(q.prompt)}</div>
+      ${panel}
       ${body}
       ${q.hint ? `<div style="font-size:12px;color:#64748b;margin-top:6px">💡 ${esc(q.hint)}</div>` : ''}
       <div class="fb" id="fb${q.id}"></div>
