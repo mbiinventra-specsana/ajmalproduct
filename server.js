@@ -729,6 +729,9 @@ app.use((err, req, res, next) => {
 
 async function main() {
   await db.initDb(); // auto-migration + seed
+  // one-time SQLite -> MySQL data migration (only when MySQL is fresh)
+  try { await require('./lib/migrate').maybeAutoMigrate(db); }
+  catch (e) { console.error('[migrate] skipped:', e.message); }
   app.listen(PORT, () => {
     console.log(`RCM Academy listening on :${PORT} (engine=${db.ENGINE})`);
     if (!process.env.SESSION_SECRET) console.log('[warn] SESSION_SECRET not set — using dev default');
