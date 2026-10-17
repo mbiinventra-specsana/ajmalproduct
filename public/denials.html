@@ -51,12 +51,14 @@ const DENIAL_HELP = {
   'CO-29': 'Timely filing expired — appeal only with proof of timely submission; otherwise write off.',
 };
 function workDenial(id, no, code) {
+  const off = new Set((window._fnUser && window._fnUser.disabledFeatures) || []);
+  const opt = (v, t, fn) => off.has('fn:' + fn) ? '' : `<option value="${v}">${t}</option>`;
   openModal('Work Denial — ' + no, `
     <div class="info-panel"><b>${esc(code)}</b> — ${esc(DENIAL_HELP[code] || 'Investigate the remittance advice and choose the corrective action.')}</div>
     <div class="fld"><label>Action</label><select id="f_act">
-      <option value="appeal">📨 Appeal — claim was correct, fight it</option>
-      <option value="correct">🔧 Correct &amp; rebill — fix the claim, resubmit</option>
-      <option value="writeoff">🗑 Write off — not recoverable</option></select></div>
+      ${opt('appeal', '📨 Appeal — claim was correct, fight it', 'claims-appeal')}
+      ${opt('correct', '🔧 Correct &amp; rebill — fix the claim, resubmit', 'claims-correct')}
+      ${opt('writeoff', '🗑 Write off — not recoverable', 'claims-writeoff')}</select></div>
     <div class="fld"><label>Work note</label><textarea id="f_note" rows="3" placeholder="Document what you did and why…"></textarea></div>
     <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
     <button class="btn btn-teal btn-sm" id="save">Apply</button></div>`, w => {

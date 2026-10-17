@@ -10,7 +10,8 @@ async function api(path, opts = {}) {
   return data;
 }
 async function currentUser() {
-  try { return (await api('/api/me')).user; } catch { return null; }
+  try { const u = (await api('/api/me')).user; window._fnUser = u; return u; }
+  catch { return null; }
 }
 async function requireLogin() {
   const u = await currentUser();
@@ -44,6 +45,7 @@ function openModal(title, bodyHTML, onMount) {
   w.className = 'mwrap'; w.id = 'mwrap';
   w.innerHTML = `<div class="mbox"><div class="mhead"><b>${esc(title)}</b><button class="mx" onclick="closeModal()">✕</button></div><div class="mbody"></div></div>`;
   w.querySelector('.mbody').innerHTML = bodyHTML;
+  if (window._fnUser) applyFnGates(window._fnUser); // hide disabled-function buttons in modals
   w.addEventListener('click', e => { if (e.target === w) closeModal(); });
   document.body.appendChild(w);
   if (onMount) onMount(w);
@@ -93,6 +95,39 @@ function itemOff(user, itemKey) {
   const off = new Set(user.disabledFeatures || []);
   return off.has('menu:' + itemKey) || off.has(ITEM_GROUP[itemKey]);
 }
+// hide buttons/elements by id when a per-student FUNCTION is disabled (fn:<key>)
+function hideFn(user, fnKey, ...ids) {
+  if ((user.disabledFeatures || []).includes('fn:' + fnKey)) {
+    ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  }
+}
+// declarative function gating: any element with data-fn="<key>" is hidden when that
+// function is disabled for the student. Runs on page load and after each modal opens.
+function applyFnGates(user) {
+  const off = new Set(user.disabledFeatures || []);
+  const scope = document;
+  scope.querySelectorAll('[data-fn]').forEach(el => {
+    if (off.has('fn:' + el.dataset.fn)) el.style.display = 'none';
+  });
+}
+// auto-gate dynamically rendered [data-fn] elements (tables, quiz stages, etc.)
+(function initFnObserver() {
+  const start = () => {
+    if (!window.MutationObserver || !document.body) return;
+    new MutationObserver(muts => {
+      const u = window._fnUser;
+      if (!u) return;
+      const off = new Set(u.disabledFeatures || []);
+      for (const m of muts) for (const n of m.addedNodes) {
+        if (!n || n.nodeType !== 1) continue;
+        const els = n.matches && n.matches('[data-fn]') ? [n] : (n.querySelectorAll ? [...n.querySelectorAll('[data-fn]')] : []);
+        els.forEach(el => { if (off.has('fn:' + el.dataset.fn)) el.style.display = 'none'; });
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
 function shell(active, user) {
   const off = new Set(user.disabledFeatures || []); // per-student feature gates
   const nav = [
@@ -147,6 +182,7 @@ function shell(active, user) {
       <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
       <div style="margin-top:10px"><span class="badge-fict">TRAINING MODE · fictional data</span></div>
     </div>`;
+  applyFnGates(user); // hide buttons for disabled per-student functions
 }
 // Admin-only sidebar for the Owner Panel — no student items.
 function adminShell(active, user) {

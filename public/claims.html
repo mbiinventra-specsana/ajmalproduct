@@ -5,7 +5,7 @@
   <div class="phead"><div>
     <div class="eyebrow2">Claims Management</div><h1>Claims</h1>
     <p class="psub">Create claims from charges, validate them with the scrubber, then submit — only clean claims go out.</p>
-  </div><button class="btn btn-teal btn-sm" id="addBtn">+ Create Claim</button></div>
+  </div><button class="btn btn-teal btn-sm" id="addBtn" data-fn="claims-create">+ Create Claim</button></div>
   <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
   <div class="info-panel">📄 <b>Claim creation training:</b> pick a READY charge — the patient, payer and charge auto-connect into a professional claim. <b>Validate</b> runs the 13-rule scrubber; only <b>PASSED</b> claims can be <b>submitted</b>.</div>
   <div class="panel"><div class="prow"><h3 style="margin:0">Claim History</h3>
@@ -44,8 +44,8 @@ function render() {
     <td><span class="bdg ${SCLS[r.status] || 'b-gray'}">${esc(r.status.replace('_', ' '))}</span></td>
     <td><span class="bdg ${VCLS[r.validation] || 'b-gray'}">${esc(r.validation.replace('_', ' '))}</span></td>
     <td><div class="act-row">
-      ${r.status === 'DRAFT' ? `<button class="btn btn-line btn-sm" onclick="validate(${r.id})">Validate</button>` : ''}
-      ${r.status === 'DRAFT' && r.validation === 'PASSED' ? `<button class="btn btn-teal btn-sm" onclick="submitCl(${r.id})">Submit →</button>` : ''}
+      ${r.status === 'DRAFT' ? `<button class="btn btn-line btn-sm" data-fn="claims-validate" onclick="validate(${r.id})">Validate</button>` : ''}
+      ${r.status === 'DRAFT' && r.validation === 'PASSED' ? `<button class="btn btn-teal btn-sm" data-fn="claims-submit" onclick="submitCl(${r.id})">Submit →</button>` : ''}
       ${r.status === 'DENIED' ? `<a class="btn btn-teal btn-sm" href="/denials">Work denial →</a>` : ''}
     </div></td></tr>`).join('');
   document.getElementById('empty').style.display = rs.length ? 'none' : 'block';

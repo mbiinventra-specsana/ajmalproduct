@@ -439,3 +439,21 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-w
 .chk input { width: 16px; height: 16px; accent-color: #0e9f8a; }
 #aStudents { min-height: 96px; }
 @media(max-width: 700px) { .frow2 { grid-template-columns: 1fr; } }
+
+/* ---- menu control page ---- */
+.menus-grid { display: grid; grid-template-columns: 300px 1fr; gap: 14px; align-items: start; }
+@media(max-width: 960px) { .menus-grid { grid-template-columns: 1fr; } }
+.mc-stu { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; margin-bottom: 4px; transition: background .15s; }
+.mc-stu:hover { background: rgba(14,159,138,.07); }
+.mc-stu.on { background: rgba(14,159,138,.14); box-shadow: inset 3px 0 0 #0e9f8a; }
+.uavatar.sm { width: 30px; height: 30px; font-size: 13px; }
+.mc-grp { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #5f7390; text-transform: uppercase; padding: 12px 4px 6px; }
+/* toggle switch (global) */
+.feat-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid rgba(148,163,184,.18); border-radius: 10px; margin-bottom: 8px; cursor: pointer; background: #fff; }
+.feat-row:hover { border-color: #0e9f8a; }
+.switch { position: relative; display: inline-block; width: 46px; height: 26px; flex: none; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .sl { position: absolute; inset: 0; background: #94a3b8; border-radius: 999px; transition: .2s; cursor: pointer; }
+.switch .sl:before { content: ""; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+.switch input:checked + .sl { background: #0e9f8a; }
+.switch input:checked + .sl:before { transform: translateX(20px); }

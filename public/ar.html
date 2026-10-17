@@ -56,7 +56,7 @@ function workAR(id, no) {
   openModal('Work A/R — ' + no, `
     <div class="fld"><label>Follow-up note</label><textarea id="f_note" rows="4" placeholder="e.g. Called payer — claim in processing, check back in 7 days."></textarea></div>
     <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-teal btn-sm" id="save">Save Note</button></div>`, w => {
+    <button class="btn btn-teal btn-sm" id="save" data-fn="ar-note">Save Note</button></div>`, w => {
     w.querySelector('#save').onclick = async () => {
       try { await api('/api/rcm/ar/note', { method: 'POST', body: { claim_id: id, note: w.querySelector('#f_note').value } }); closeModal(); load(); }
       catch (e) { alert(e.message); }

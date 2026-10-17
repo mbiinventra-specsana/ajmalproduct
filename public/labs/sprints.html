@@ -51,7 +51,7 @@ function setup() {
       <button class="durbtn on" data-s="180">3 min</button>
       <button class="durbtn" data-s="300">5 min</button>
     </div>
-    <button class="btn btn-teal" id="go" style="font-size:16px;padding:12px 34px">🏁 Start sprint</button>
+    <button class="btn btn-teal" id="go" data-fn="lab-run" style="font-size:16px;padding:12px 34px">🏁 Start sprint</button>
     <div style="margin-top:18px;font-size:13px;color:#64748b">Scored like production: <b>accuracy × speed</b>. Your best sprint lives on your record.</div>`;
   let secs = 180;
   document.querySelectorAll('#durs .durbtn').forEach(b => b.onclick = () => {

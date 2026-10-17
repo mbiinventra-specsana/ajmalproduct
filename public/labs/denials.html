@@ -82,7 +82,7 @@ function openCase(id) {
     ${step('di', '① Diagnose — what is the root cause?', s.diagnosisOptions)}
     ${step('fi', '② Fix — what corrects the claim?', s.fixOptions)}
     ${step('ci', '③ Decide — what is the next move?', s.decisionOptions)}
-    <button class="btn btn-teal" id="verdictBtn" onclick="submitVerdict()">⚖️ Submit verdict</button>
+    <button class="btn btn-teal" id="verdictBtn" data-fn="lab-run" onclick="submitVerdict()">⚖️ Submit verdict</button>
     <div id="result"></div>`;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }

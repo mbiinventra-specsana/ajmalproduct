@@ -61,7 +61,7 @@ function postPay(id) {
     <div class="frow"><div class="fld"><label>Patient responsibility ($)</label><input id="f_pr" type="number" min="0" step="0.01" value="${(allowed * 0.2).toFixed(2)}"></div>
     <div class="fld"><label>Method</label><select id="f_m"><option>ERA</option><option>EOB</option></select></div></div>
     <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-teal btn-sm" id="save">Post Payment</button></div>`, w => {
+    <button class="btn btn-teal btn-sm" id="save" data-fn="payments-post">Post Payment</button></div>`, w => {
     w.querySelector('#save').onclick = async () => {
       try {
         const r = await api('/api/rcm/payments', { method: 'POST', body: { claim_id: id,

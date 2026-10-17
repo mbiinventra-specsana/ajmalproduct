@@ -115,29 +115,74 @@ function featureForPath(p) {
   if (p.startsWith('/api/labs/')) return 'labs';
   return null;
 }
-// per-menu-item catalog: [itemKey, label, groupKey] — mirrors shell() nav in public/js/app.js
+// per-menu-item catalog: [itemKey, label, groupKey, iconKey] — mirrors shell() nav in public/js/app.js
 const MENU_ITEMS = [
-  ['dashboard', 'Command Center', 'workspace'],
-  ['workqueue', 'Work Queue', 'workspace'],
-  ['patients', 'Patients', 'patients'],
-  ['insurance', 'Insurance', 'patients'],
-  ['eligibility', 'Eligibility', 'patients'],
-  ['charges', 'Charge Entry', 'billing'],
-  ['claims', 'Claims', 'billing'],
-  ['payments', 'Payments', 'revenue'],
-  ['ar', 'A/R Follow-up', 'revenue'],
-  ['denialsq', 'Denials', 'revenue'],
-  ['reports', 'Reports', 'revenue'],
-  ['training', 'Case Center', 'training'],
-  ['assignments', 'Assignments', 'training'],
-  ['lab', 'Practice Lab', 'training'],
-  ['progress', 'My Progress', 'training'],
-  ['scrubber', 'Claim Scrubber', 'labs'],
-  ['denials', 'Denial Crime-Scene', 'labs'],
-  ['sprints', 'Coding Sprints', 'labs'],
-  ['quiz', 'Quiz Arena', 'labs'],
+  ['dashboard', 'Command Center', 'workspace', 'grid'],
+  ['workqueue', 'Work Queue', 'workspace', 'inbox'],
+  ['patients', 'Patients', 'patients', 'users'],
+  ['insurance', 'Insurance', 'patients', 'shield'],
+  ['eligibility', 'Eligibility', 'patients', 'check'],
+  ['charges', 'Charge Entry', 'billing', 'receipt'],
+  ['claims', 'Claims', 'billing', 'file'],
+  ['payments', 'Payments', 'revenue', 'card'],
+  ['ar', 'A/R Follow-up', 'revenue', 'trend'],
+  ['denialsq', 'Denials', 'revenue', 'ban'],
+  ['reports', 'Reports', 'revenue', 'chart'],
+  ['training', 'Case Center', 'training', 'target'],
+  ['assignments', 'Assignments', 'training', 'clip'],
+  ['lab', 'Practice Lab', 'training', 'flask'],
+  ['progress', 'My Progress', 'training', 'award'],
+  ['scrubber', 'Claim Scrubber', 'labs', 'spark'],
+  ['denials', 'Denial Crime-Scene', 'labs', 'search'],
+  ['sprints', 'Coding Sprints', 'labs', 'zap'],
+  ['quiz', 'Quiz Arena', 'labs', 'help'],
 ];
 const MENU_ITEM_KEYS = MENU_ITEMS.map(m => m[0]);
+// per-function catalog: [fnKey, label] — actions inside pages, toggleable per student
+// (DB key is 'fn:' + fnKey; missing row = enabled)
+const FN_ITEMS = [
+  ['claims-create', 'New Claim'],
+  ['claims-validate', 'Run Scrubber'],
+  ['claims-submit', 'Submit to Payer'],
+  ['claims-appeal', 'Appeal Denial'],
+  ['claims-correct', 'Correct & Rebill'],
+  ['claims-writeoff', 'Write-off'],
+  ['charges-add', 'Add Charge'],
+  ['charges-delete', 'Delete Charge'],
+  ['payments-post', 'Post Payment'],
+  ['ar-note', 'Add Follow-up Note'],
+  ['eligibility-verify', 'Run Verification'],
+  ['insurance-add', 'Add Policy'],
+  ['lab-run', 'Run Lab / Submit Quiz'],
+  ['demo', 'Load Demo Data'],
+];
+const FN_KEYS = FN_ITEMS.map(f => f[0]);
+// middleware: block students when fn:<key> is disabled (admin/instructor bypass)
+// must run AFTER requireAuth (uses req.user)
+function requireFn(key) {
+  return ah(async (req, res, next) => {
+    const u = req.user;
+    if (u && u.role === 'student') {
+      const row = await db.get('SELECT enabled FROM student_features WHERE user_id=? AND feature=?', [u.id, 'fn:' + key]);
+      if (row && !row.enabled)
+        return res.status(403).json({ error: 'This function is disabled for your account.', featureDisabled: 'fn:' + key });
+    }
+    next();
+  });
+}
+// same, but picks the fn key from req.body.action (for denials resolve)
+function requireFnAction(map) {
+  return ah(async (req, res, next) => {
+    const u = req.user;
+    const key = map[(req.body && req.body.action) || ''];
+    if (u && u.role === 'student' && key) {
+      const row = await db.get('SELECT enabled FROM student_features WHERE user_id=? AND feature=?', [u.id, 'fn:' + key]);
+      if (row && !row.enabled)
+        return res.status(403).json({ error: 'This function is disabled for your account.', featureDisabled: 'fn:' + key });
+    }
+    next();
+  });
+}
 // maps an API path to a single menu item key (null = ambiguous/shared → group fallback)
 function menuItemForPath(p) {
   if (p === '/api/dashboard') return 'dashboard';
@@ -388,7 +433,7 @@ app.get('/api/labs/scrub/meta', requireAuth, ah(async (req, res) => {
   res.json({ payers });
 }));
 
-app.post('/api/labs/scrub', requireAuth, ah(async (req, res) => {
+app.post('/api/labs/scrub', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
   const r = labData.scrubClaim(req.body || {});
   await logLab(req.session.userId, 'scrubber', r.score, 100,
     { errors: r.errors.length, warnings: r.warnings.length, payer: req.body.payer });
@@ -408,7 +453,7 @@ app.get('/api/labs/denials', requireAuth, ah(async (req, res) => {
   res.json({ fictional: true, scenarios: labData.DENIALS.map(stripDenial) });
 }));
 
-app.post('/api/labs/denials/grade', requireAuth, ah(async (req, res) => {
+app.post('/api/labs/denials/grade', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
   const d = labData.DENIALS.find(x => x.id === req.body.scenarioId);
   if (!d) return res.status(404).json({ error: 'Scenario not found.' });
   const ci = (arr) => arr.findIndex(o => o.correct);
@@ -465,7 +510,7 @@ app.get('/api/labs/quiz', requireAuth, ah(async (req, res) => {
     prompt: q.prompt, options: JSON.parse(q.options), hint: q.hint })) });
 }));
 
-app.post('/api/labs/quiz/submit', requireAuth, ah(async (req, res) => {
+app.post('/api/labs/quiz/submit', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
   const mode = QUIZ_MODES.includes(req.body.mode) ? req.body.mode : 'mix';
   const answers = Array.isArray(req.body.answers) ? req.body.answers.slice(0, 30) : [];
   if (!answers.length) return res.status(400).json({ error: 'No answers submitted.' });
@@ -524,7 +569,7 @@ app.get('/api/rcm/insurance', requireAuth, ah(async (req, res) => {
   const rows = await db.all(`SELECT * FROM insurance WHERE user_id IS NULL OR user_id = ? ORDER BY patient_code, id`, [req.session.userId]);
   res.json({ insurance: rows });
 }));
-app.post('/api/rcm/insurance', requireAuth, ah(async (req, res) => {
+app.post('/api/rcm/insurance', requireAuth, requireFn('insurance-add'), ah(async (req, res) => {
   const b = req.body || {};
   if (!b.patient_code || !b.payer || !b.member_id) throw Object.assign(new Error('Patient, payer and member ID are required.'), { status: 400 });
   const r = await db.run(`INSERT INTO insurance (user_id, patient_code, payer, member_id, plan, type, status, effective, copay, created_at)
@@ -536,7 +581,7 @@ app.post('/api/rcm/insurance', requireAuth, ah(async (req, res) => {
 app.get('/api/rcm/eligibility', requireAuth, ah(async (req, res) => {
   res.json({ checks: await db.all('SELECT * FROM eligibility_checks WHERE user_id = ? ORDER BY id DESC LIMIT 100', [req.session.userId]) });
 }));
-app.post('/api/rcm/eligibility/verify', requireAuth, ah(async (req, res) => {
+app.post('/api/rcm/eligibility/verify', requireAuth, requireFn('eligibility-verify'), ah(async (req, res) => {
   const b = req.body || {};
   if (!b.patient_code || !b.payer) throw Object.assign(new Error('Patient and payer are required.'), { status: 400 });
   const cov = await db.get('SELECT * FROM insurance WHERE (user_id IS NULL OR user_id = ?) AND patient_code = ? AND payer = ? ORDER BY user_id DESC LIMIT 1',
@@ -554,7 +599,7 @@ app.post('/api/rcm/eligibility/verify', requireAuth, ah(async (req, res) => {
 app.get('/api/rcm/charges', requireAuth, ah(async (req, res) => {
   res.json({ charges: await db.all('SELECT * FROM charges WHERE user_id = ? ORDER BY id DESC', [req.session.userId]) });
 }));
-app.post('/api/rcm/charges', requireAuth, ah(async (req, res) => {
+app.post('/api/rcm/charges', requireAuth, requireFn('charges-add'), ah(async (req, res) => {
   const b = req.body || {};
   for (const f of ['patient_code', 'dos', 'cpt', 'icd', 'amount'])
     if (!b[f]) throw Object.assign(new Error('Patient, date of service, CPT, ICD and amount are required.'), { status: 400 });
@@ -570,7 +615,7 @@ app.post('/api/rcm/charges', requireAuth, ah(async (req, res) => {
 app.get('/api/rcm/claims', requireAuth, ah(async (req, res) => {
   res.json({ claims: await db.all('SELECT * FROM claims WHERE user_id = ? ORDER BY id DESC', [req.session.userId]) });
 }));
-app.post('/api/rcm/claims', requireAuth, ah(async (req, res) => {
+app.post('/api/rcm/claims', requireAuth, requireFn('claims-create'), ah(async (req, res) => {
   const b = req.body || {};
   const ch = await db.get('SELECT * FROM charges WHERE id = ? AND user_id = ?', [b.charge_id, req.session.userId]);
   if (!ch) throw Object.assign(new Error('Charge not found.'), { status: 404 });
@@ -586,7 +631,7 @@ app.post('/api/rcm/claims', requireAuth, ah(async (req, res) => {
   await db.run('UPDATE charges SET claim_id = ?, status = ? WHERE id = ?', [r.id, 'LINKED', ch.id]);
   res.json({ id: r.id, claim_no: claimNo });
 }));
-app.post('/api/rcm/claims/:id/validate', requireAuth, ah(async (req, res) => {
+app.post('/api/rcm/claims/:id/validate', requireAuth, requireFn('claims-validate'), ah(async (req, res) => {
   const c = await db.get('SELECT * FROM claims WHERE id = ? AND user_id = ?', [req.params.id, req.session.userId]);
   if (!c) throw Object.assign(new Error('Claim not found.'), { status: 404 });
   const r = labData.scrubClaim({
@@ -599,7 +644,7 @@ app.post('/api/rcm/claims/:id/validate', requireAuth, ah(async (req, res) => {
   await db.run('UPDATE claims SET validation = ? WHERE id = ?', [validation, c.id]);
   res.json({ validation, errors: r.errors, warnings: r.warnings, score: r.score });
 }));
-app.post('/api/rcm/claims/:id/submit', requireAuth, ah(async (req, res) => {
+app.post('/api/rcm/claims/:id/submit', requireAuth, requireFn('claims-submit'), ah(async (req, res) => {
   const c = await db.get('SELECT * FROM claims WHERE id = ? AND user_id = ?', [req.params.id, req.session.userId]);
   if (!c) throw Object.assign(new Error('Claim not found.'), { status: 404 });
   if (c.status !== 'DRAFT') throw Object.assign(new Error('Only draft claims can be submitted.'), { status: 409 });
@@ -615,7 +660,7 @@ app.get('/api/rcm/payments', requireAuth, ah(async (req, res) => {
   res.json({ payments: await db.all(`SELECT p.*, c.claim_no FROM payments p JOIN claims c ON c.id = p.claim_id
     WHERE p.user_id = ? ORDER BY p.id DESC`, [req.session.userId]) });
 }));
-app.post('/api/rcm/payments', requireAuth, ah(async (req, res) => {
+app.post('/api/rcm/payments', requireAuth, requireFn('payments-post'), ah(async (req, res) => {
   const b = req.body || {};
   const c = await db.get('SELECT * FROM claims WHERE id = ? AND user_id = ?', [b.claim_id, req.session.userId]);
   if (!c) throw Object.assign(new Error('Claim not found.'), { status: 404 });
@@ -646,7 +691,7 @@ app.get('/api/rcm/ar', requireAuth, ah(async (req, res) => {
   res.json({ rows: withAge.map(c => ({ ...c, notes: noteMap[c.id] || 0 })), buckets,
     total: r2(total), insuranceAR: r2(total - patAR), patientAR: r2(patAR), open: withAge.length });
 }));
-app.post('/api/rcm/ar/note', requireAuth, ah(async (req, res) => {
+app.post('/api/rcm/ar/note', requireAuth, requireFn('ar-note'), ah(async (req, res) => {
   const b = req.body || {};
   const c = await db.get('SELECT id FROM claims WHERE id = ? AND user_id = ?', [b.claim_id, req.session.userId]);
   if (!c) throw Object.assign(new Error('Claim not found.'), { status: 404 });
@@ -660,7 +705,7 @@ app.post('/api/rcm/ar/note', requireAuth, ah(async (req, res) => {
 app.get('/api/rcm/denials', requireAuth, ah(async (req, res) => {
   res.json({ denials: await db.all(`SELECT * FROM claims WHERE user_id = ? AND status IN ('DENIED','APPEALED') ORDER BY id DESC`, [req.session.userId]) });
 }));
-app.post('/api/rcm/denials/:id/resolve', requireAuth, ah(async (req, res) => {
+app.post('/api/rcm/denials/:id/resolve', requireAuth, requireFnAction({appeal:'claims-appeal',correct:'claims-correct',writeoff:'claims-writeoff'}), ah(async (req, res) => {
   const b = req.body || {};
   const c = await db.get('SELECT * FROM claims WHERE id = ? AND user_id = ?', [req.params.id, req.session.userId]);
   if (!c || !['DENIED', 'APPEALED'].includes(c.status)) throw Object.assign(new Error('Denial not found.'), { status: 404 });
@@ -763,7 +808,7 @@ app.get('/api/rcm/reports', requireAuth, ah(async (req, res) => {
   });
 }));
 
-app.post('/api/rcm/demo', requireAuth, ah(async (req, res) => {
+app.post('/api/rcm/demo', requireAuth, requireFn('demo'), ah(async (req, res) => {
   const u = req.session.userId, now = snow();
   const n = (await db.get('SELECT COUNT(*) AS n FROM claims WHERE user_id = ?', [u])).n;
   if (n > 0) throw Object.assign(new Error('Demo data already exists — clear your workspace first.'), { status: 409 });
@@ -804,26 +849,40 @@ app.get('/api/admin/features', requireAdmin, ah(async (req, res) => {
 }));
 // per-menu-item catalog for the Menu Control page
 app.get('/api/admin/menu-items', requireAdmin, ah(async (req, res) => {
-  res.json({ items: MENU_ITEMS.map(([key, label, group]) => ({ key, label, group })) });
+  res.json({
+    items: MENU_ITEMS.map(([key, label, group, icon]) => ({ key, label, group, icon })),
+    functions: FN_ITEMS.map(([key, label]) => ({ key, label })),
+  });
 }));
-// per-student menu-item states (resolved: group OFF also disables its items)
+// per-student menu-item + function states (resolved: group OFF also disables its items)
 app.get('/api/admin/users/:id/menu-features', requireAdmin, ah(async (req, res) => {
   const u = await db.get('SELECT id FROM users WHERE id = ?', [req.params.id]);
   if (!u) return res.status(404).json({ error: 'Not found.' });
   const rows = await db.all('SELECT feature, enabled FROM student_features WHERE user_id = ?', [u.id]);
   const off = new Set(rows.filter(r => !r.enabled).map(r => r.feature));
-  res.json({ items: MENU_ITEMS.map(([key, label, group]) => ({
-    key, label, group, enabled: !(off.has('menu:' + key) || off.has(group)),
-  })) });
+  res.json({
+    items: MENU_ITEMS.map(([key, label, group, icon]) => ({
+      key, label, group, icon, enabled: !(off.has('menu:' + key) || off.has(group)),
+    })),
+    functions: FN_ITEMS.map(([key, label]) => ({
+      key, label, enabled: !off.has('fn:' + key),
+    })),
+  });
 }));
-// toggle one menu item for a student (upsert; plain INSERT/UPDATE — both engines)
+// toggle one menu item OR function for a student (upsert; plain INSERT/UPDATE — both engines)
 app.post('/api/admin/users/:id/menu-features', requireAdmin, ah(async (req, res) => {
   const u = await db.get('SELECT id FROM users WHERE id = ?', [req.params.id]);
   if (!u) return res.status(404).json({ error: 'Not found.' });
   const key = String((req.body && req.body.key) || '');
-  if (!MENU_ITEM_KEYS.includes(key)) return res.status(400).json({ error: 'Invalid menu item.' });
+  let dbKey;
+  if (key.startsWith('fn:')) {
+    if (!FN_KEYS.includes(key.slice(3))) return res.status(400).json({ error: 'Invalid function.' });
+    dbKey = key;
+  } else {
+    if (!MENU_ITEM_KEYS.includes(key)) return res.status(400).json({ error: 'Invalid menu item.' });
+    dbKey = 'menu:' + key;
+  }
   const en = (req.body && req.body.enabled) ? 1 : 0;
-  const dbKey = 'menu:' + key;
   const has = await db.get('SELECT 1 FROM student_features WHERE user_id=? AND feature=?', [u.id, dbKey]);
   if (has) await db.run('UPDATE student_features SET enabled=? WHERE user_id=? AND feature=?', [en, u.id, dbKey]);
   else await db.run('INSERT INTO student_features (user_id, feature, enabled) VALUES (?,?,?)', [u.id, dbKey, en]);

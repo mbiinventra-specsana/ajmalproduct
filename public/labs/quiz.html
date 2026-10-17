@@ -85,7 +85,7 @@ async function start(mode) {
       ${q.hint ? `<div style="font-size:12px;color:#64748b;margin-top:6px">💡 ${esc(q.hint)}</div>` : ''}
       <div class="fb" id="fb${q.id}"></div>
     </div>`).join('');
-  html += `<button class="btn btn-teal" id="subBtn" onclick="submit()" style="font-size:16px;padding:12px 34px">Submit answers</button>
+  html += `<button class="btn btn-teal" id="subBtn" data-fn="lab-run" onclick="submit()" style="font-size:16px;padding:12px 34px">Submit answers</button>
     <button class="btn btn-line" onclick="menu()" style="margin-left:10px">← Modes</button>`;
   document.getElementById('stage').innerHTML = html;
   window.scrollTo({ top: 0 });

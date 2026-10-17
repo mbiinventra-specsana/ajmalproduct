@@ -213,6 +213,36 @@
       <div id="sessList"><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div></div>
     </div>
     </section>
+    <!-- MENUS -->
+    <section data-sec="menus" style="display:none">
+    <div class="topbar"><div><h1>🎚️ Menu Control</h1><p>Per-student menu items & functions — changes save instantly.</p></div>
+      <div><span class="badge-fict" id="menuCount">select a student</span></div></div>
+    <div class="menus-grid">
+      <div class="panel"><h3>👥 Students</h3>
+        <input class="input" id="menuSearch" placeholder="🔍 Search name or email…" style="margin-bottom:10px">
+        <div id="menuStudents"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div>
+      </div>
+      <div>
+        <div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <h3 style="margin:0">📋 Menu Items</h3>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-line btn-sm" id="menuAllOn">✅ All ON</button>
+              <button class="btn btn-line btn-sm" id="menuAllOff">🚫 All OFF</button>
+            </div></div>
+          <div id="menuEmpty" class="empty">← Pick a student to control their 19 menu items.</div>
+          <div id="menuTree"></div>
+        </div>
+        <div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <h3 style="margin:0">⚙️ Functions <span style="font-weight:400;font-size:12px;color:#8a97ad">(buttons & actions inside pages)</span></h3>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-line btn-sm" id="fnAllOn">✅ All ON</button>
+              <button class="btn btn-line btn-sm" id="fnAllOff">🚫 All OFF</button>
+            </div></div>
+          <div id="fnTree"></div>
+        </div>
+      </div>
+    </div>
+    </section>
     <!-- SYSTEM -->
     <section data-sec="system" style="display:none">
     <div class="topbar"><div><h1>🖥️ System health</h1><p>Infrastructure and data status.</p></div></div>
@@ -797,6 +827,72 @@ async function loadSystem() {
 
   } catch (e) { document.querySelector('.main').innerHTML = `<div class="empty" style="margin-top:80px"><h2>Error</h2><p>${esc(e.message)}</p></div>`; }
 }
+// ---- Menu Control: per-student menu items + functions ----
+let _mcUserId = null, _mcItems = [], _mcFns = [], _mcStudents = [];
+const MC_GROUPS = [['workspace', 'Workspace'], ['patients', 'Patients'], ['billing', 'Billing'],
+  ['revenue', 'Revenue Cycle'], ['training', 'Training'], ['labs', 'Advanced Labs']];
+async function loadMenus() {
+  const [{ users }, catalog] = await Promise.all([api('/api/admin/users'), api('/api/admin/menu-items')]);
+  _mcStudents = users.filter(u => u.role === 'student');
+  _mcItems = catalog.items; _mcFns = catalog.functions;
+  renderMcStudents('');
+  document.getElementById('menuSearch').oninput = e => renderMcStudents(e.target.value.toLowerCase());
+  document.getElementById('menuAllOn').onclick = () => mcBulk(_mcItems.map(i => i.key), true);
+  document.getElementById('menuAllOff').onclick = () => mcBulk(_mcItems.map(i => i.key), false);
+  document.getElementById('fnAllOn').onclick = () => mcBulk(_mcFns.map(f => 'fn:' + f.key), true);
+  document.getElementById('fnAllOff').onclick = () => mcBulk(_mcFns.map(f => 'fn:' + f.key), false);
+  if (_mcStudents.length && !_mcUserId) pickMcStudent(_mcStudents[0].id);
+}
+function renderMcStudents(q) {
+  const list = _mcStudents.filter(u => (u.name + ' ' + u.email).toLowerCase().includes(q));
+  document.getElementById('menuStudents').innerHTML = list.length ? list.map(u => `
+    <div class="mc-stu${u.id === _mcUserId ? ' on' : ''}" onclick="pickMcStudent(${u.id})">
+      <span class="uavatar sm">${esc((u.name || 'U')[0].toUpperCase())}</span>
+      <div><b>${esc(u.name)}</b><br><span style="font-size:12px;color:#8a97ad">${esc(u.email)}</span></div>
+    </div>`).join('') : `<div class="empty">No students match.</div>`;
+}
+async function pickMcStudent(id) {
+  _mcUserId = id;
+  renderMcStudents(document.getElementById('menuSearch').value.toLowerCase());
+  document.getElementById('menuTree').innerHTML = `<div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div>`;
+  document.getElementById('fnTree').innerHTML = `<div class="skel skel-line"></div><div class="skel skel-line w80"></div>`;
+  document.getElementById('menuEmpty').style.display = 'none';
+  const d = await api('/api/admin/users/' + id + '/menu-features');
+  const items = d.items, fns = d.functions;
+  document.getElementById('menuTree').innerHTML = MC_GROUPS.map(([gk, gl]) => {
+    const gi = items.filter(i => i.group === gk);
+    if (!gi.length) return '';
+    return `<div class="mc-grp">${gl}</div>` + gi.map(i => `
+      <label class="feat-row"><span><b>${esc(i.label)}</b></span>
+      <span class="switch"><input type="checkbox" data-mkey="${i.key}" ${i.enabled ? 'checked' : ''}><span class="sl"></span></span></label>`).join('');
+  }).join('');
+  document.getElementById('fnTree').innerHTML = fns.map(f => `
+    <label class="feat-row"><span><b>${esc(f.label)}</b><br><span style="font-size:12px;color:#8a97ad">fn:${esc(f.key)}</span></span>
+    <span class="switch"><input type="checkbox" data-mkey="fn:${f.key}" ${f.enabled ? 'checked' : ''}><span class="sl"></span></span></label>`).join('');
+  document.querySelectorAll('#menuTree input[data-mkey], #fnTree input[data-mkey]').forEach(cb => {
+    cb.onchange = async () => {
+      try { await api('/api/admin/users/' + _mcUserId + '/menu-features', { method: 'POST', body: { key: cb.dataset.mkey, enabled: cb.checked } }); }
+      catch (e) { alert(e.message); cb.checked = !cb.checked; return; }
+      mcCount();
+    };
+  });
+  mcCount();
+}
+function mcCount() {
+  const on = document.querySelectorAll('#menuTree input[data-mkey]:checked').length;
+  const total = document.querySelectorAll('#menuTree input[data-mkey]').length;
+  const fon = document.querySelectorAll('#fnTree input[data-mkey]:checked').length;
+  const ftotal = document.querySelectorAll('#fnTree input[data-mkey]').length;
+  document.getElementById('menuCount').textContent = `${on}/${total} menus · ${fon}/${ftotal} functions`;
+}
+async function mcBulk(keys, enabled) {
+  if (!_mcUserId) return;
+  if (!enabled && !confirm(`Turn OFF ${keys.length} items for this student?`)) return;
+  for (const key of keys) {
+    try { await api('/api/admin/users/' + _mcUserId + '/menu-features', { method: 'POST', body: { key, enabled } }); } catch (e) {}
+  }
+  pickMcStudent(_mcUserId); // refresh
+}
 const _loadedSec = {};
 async function loadOwnerSection(sec) {
   if (_loadedSec[sec]) return; // instant on revisit — no refetch
@@ -805,6 +901,7 @@ async function loadOwnerSection(sec) {
   else if (sec === 'analytics') await loadAnalytics();
   else if (sec === 'accounts') await loadUsers();
   else if (sec === 'announce') await loadAnnouncements();
+  else if (sec === 'menus') await loadMenus();
   else if (sec === 'sessions') await loadSessions();
   else if (sec === 'system') await loadSystem();
 }
@@ -832,7 +929,7 @@ async function boot() {
   const u0 = await currentUser();
   if (!u0) return;
   window.ME_ID = u0.id;
-  const KEY = { dashboard: 'owner', analytics: 'analytics', accounts: 'accounts', announce: 'announce', sessions: 'sessions', system: 'syshealth' }[SEC] || 'owner';
+  const KEY = { dashboard: 'owner', analytics: 'analytics', accounts: 'accounts', announce: 'announce', menus: 'menus', sessions: 'sessions', system: 'syshealth' }[SEC] || 'owner';
   adminShell(KEY, u0);
   ownerShow(SEC);
   history.replaceState({ sec: SEC }, '', location.pathname);
