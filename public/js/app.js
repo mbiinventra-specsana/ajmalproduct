@@ -46,54 +46,81 @@ function openModal(title, bodyHTML, onMount) {
 function closeModal() { const w = document.getElementById('mwrap'); if (w) w.remove(); }
 const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+// ---- professional SVG icon set (stroke style, Midnight Teal theme) ----
+const _svg = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const I = {
+  grid: _svg('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'),
+  inbox: _svg('<path d="M22 12h-5l-2 3h-6l-2-3H2"/><path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.7 4H7.3a2 2 0 0 0-1.8 1.5z"/>'),
+  users: _svg('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>'),
+  shield: _svg('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>'),
+  check: _svg('<circle cx="12" cy="12" r="10"/><path d="m8.5 12.5 2.5 2.5 5-5.5"/>'),
+  receipt: _svg('<path d="M5 3h14v18l-2.3-1.5L14.4 21l-2.4-1.5L9.6 21l-2.3-1.5L5 21z"/><path d="M9 8h6M9 12h6"/>'),
+  file: _svg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/>'),
+  card: _svg('<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>'),
+  trend: _svg('<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>'),
+  ban: _svg('<circle cx="12" cy="12" r="10"/><path d="m5 5 14 14"/>'),
+  chart: _svg('<path d="M18 20V10M12 20V4M6 20v-6"/>'),
+  target: _svg('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>'),
+  clip: _svg('<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h4"/>'),
+  flask: _svg('<path d="M9 3h6M10 3v6L4.5 19a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L14 9V3"/><path d="M7 15h10"/>'),
+  award: _svg('<circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 7 5-3 5 3-1.5-7"/>'),
+  spark: _svg('<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3.5"/>'),
+  search: _svg('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'),
+  zap: _svg('<path d="M13 2 3 14h8l-1 8 10-12h-8z"/>'),
+  help: _svg('<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.6-3 4"/><circle cx="12" cy="17.5" r=".5" fill="currentColor"/>'),
+  crown: _svg('<path d="m3 8 4 4 5-6 5 6 4-4-1.5 10h-15z"/><path d="M5 21h14"/>'),
+  mega: _svg('<path d="m3 11 18-7-7 18-2.5-7.5z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'),
+  monitor: _svg('<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>'),
+  pulse: _svg('<path d="M22 12h-4l-3 8-6-16-3 8H2"/>'),
+};
 function shell(active, user) {
   const off = new Set(user.disabledFeatures || []); // per-student feature gates
   const nav = [
     ['workspace', 'Workspace', [
-      ['dashboard', 'Command Center', '/dashboard', '🏠'],
-      ['workqueue', 'Work Queue', '/work-queue', '📥'],
+      ['dashboard', 'Command Center', '/dashboard', 'grid'],
+      ['workqueue', 'Work Queue', '/work-queue', 'inbox'],
     ]],
     ['patients', 'Patients', [
-      ['patients', 'Patients', '/patients', '🧑‍⚕️'],
-      ['insurance', 'Insurance', '/insurance', '🛡️'],
-      ['eligibility', 'Eligibility', '/eligibility', '✅'],
+      ['patients', 'Patients', '/patients', 'users'],
+      ['insurance', 'Insurance', '/insurance', 'shield'],
+      ['eligibility', 'Eligibility', '/eligibility', 'check'],
     ]],
     ['billing', 'Billing', [
-      ['charges', 'Charge Entry', '/charges', '🧾'],
-      ['claims', 'Claims', '/claims', '📄'],
+      ['charges', 'Charge Entry', '/charges', 'receipt'],
+      ['claims', 'Claims', '/claims', 'file'],
     ]],
     ['revenue', 'Revenue Cycle', [
-      ['payments', 'Payments', '/payments', '💳'],
-      ['ar', 'A/R Follow-up', '/ar', '📊'],
-      ['denialsq', 'Denials', '/denials', '🚫'],
-      ['reports', 'Reports', '/reports', '📈'],
+      ['payments', 'Payments', '/payments', 'card'],
+      ['ar', 'A/R Follow-up', '/ar', 'trend'],
+      ['denialsq', 'Denials', '/denials', 'ban'],
+      ['reports', 'Reports', '/reports', 'chart'],
     ]],
     ['training', 'Training', [
-      ['training', 'Case Center', '/training', '🎯'],
-      ['assignments', 'Assignments', '/assignments', '📝'],
-      ['lab', 'Practice Lab', '/lab', '🧪'],
-      ['progress', 'My Progress', '/progress', '🏅'],
+      ['training', 'Case Center', '/training', 'target'],
+      ['assignments', 'Assignments', '/assignments', 'clip'],
+      ['lab', 'Practice Lab', '/lab', 'flask'],
+      ['progress', 'My Progress', '/progress', 'award'],
     ]],
     ['labs', 'Advanced Labs', [
-      ['scrubber', 'Claim Scrubber', '/labs/scrubber', '🧹'],
-      ['denials', 'Denial Crime-Scene', '/labs/denials', '🔍'],
-      ['sprints', 'Coding Sprints', '/labs/sprints', '⚡'],
-      ['quiz', 'Quiz Arena', '/labs/quiz', '🎲'],
+      ['scrubber', 'Claim Scrubber', '/labs/scrubber', 'spark'],
+      ['denials', 'Denial Crime-Scene', '/labs/denials', 'search'],
+      ['sprints', 'Coding Sprints', '/labs/sprints', 'zap'],
+      ['quiz', 'Quiz Arena', '/labs/quiz', 'help'],
     ]],
   ];
   if (user.role === 'admin' || user.role === 'instructor') {
-    nav.push(['', 'Manage', [['owner', '👑 Owner Panel', '/owner', '👑']]]);
+    nav.push(['', 'Manage', [['owner', 'Owner Panel', '/owner', 'crown']]]);
   }
   const shown = nav.filter(([f]) => !f || !off.has(f));
   document.getElementById('sidebar').innerHTML = `
-    <div class="brand"><div class="mark">⚕</div><div>MbiInventra<small>bill.mbiinventra.com</small></div></div>
+    <div class="brand"><div class="mark">${I.grid}</div><div>MbiInventra<small>bill.mbiinventra.com</small></div></div>
     <nav class="snav">${shown.map(([f, g, items]) => `
       <div class="grp">${g}</div>
-      ${items.map(([k, label, href, e]) =>
-        `<a href="${href}" class="${active === k ? 'on' : ''}"><span class="e">${e}</span>${label}</a>`).join('')}
+      ${items.map(([k, label, href, ic]) =>
+        `<a href="${href}" class="${active === k ? 'on' : ''}"><span class="ic">${I[ic] || ''}</span><span class="lbl">${label}</span></a>`).join('')}
     `).join('')}</nav>
     <div class="sfoot">
-      <div style="margin-bottom:8px">👤 ${esc(user.name)}<br><span style="color:#7c8ea8;font-size:12px">${esc(user.role)}</span></div>
+      <div class="uinfo"><span class="uavatar">${esc((user.name || 'U')[0].toUpperCase())}</span><div>👤 ${esc(user.name)}<br><span class="urole">${esc(user.role)}</span></div></div>
       <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
       <div style="margin-top:10px"><span class="badge-fict">TRAINING MODE · fictional data</span></div>
     </div>`;
@@ -102,23 +129,23 @@ function shell(active, user) {
 function adminShell(active, user) {
   const nav = [
     ['Admin', [
-      ['owner', 'Dashboard', '/owner', '👑'],
-      ['analytics', 'Analytics', '/owner#analytics', '📊'],
-      ['accounts', 'Accounts', '/owner#users', '👥'],
-      ['announce', 'Announcements', '/owner#announce', '📢'],
-      ['sessions', 'Sessions', '/owner#sessions', '💻'],
-      ['syshealth', 'System health', '/owner#syshealth', '🖥️'],
+      ['owner', 'Dashboard', '/owner', 'crown'],
+      ['analytics', 'Analytics', '/owner/analytics', 'chart'],
+      ['accounts', 'Accounts', '/owner/accounts', 'users'],
+      ['announce', 'Announcements', '/owner/announce', 'mega'],
+      ['sessions', 'Sessions', '/owner/sessions', 'monitor'],
+      ['syshealth', 'System health', '/owner/system', 'pulse'],
     ]],
   ]; // pure admin — no student items here
   document.getElementById('sidebar').innerHTML = `
-    <div class="brand"><div class="mark">👑</div><div>MbiInventra<small>owner console</small></div></div>
+    <div class="brand"><div class="mark">${I.crown}</div><div>MbiInventra<small>owner console</small></div></div>
     <nav class="snav">${nav.map(([g, items]) => `
       <div class="grp">${g}</div>
-      ${items.map(([k, label, href, e]) =>
-        `<a href="${href}" class="${active === k ? 'on' : ''}"><span class="e">${e}</span>${label}</a>`).join('')}
+      ${items.map(([k, label, href, ic]) =>
+        `<a href="${href}" class="${active === k ? 'on' : ''}"><span class="ic">${I[ic] || ''}</span><span class="lbl">${label}</span></a>`).join('')}
     `).join('')}</nav>
     <div class="sfoot">
-      <div style="margin-bottom:8px">👤 ${esc(user.name)}<br><span style="color:#7c8ea8;font-size:12px">${esc(user.role)}</span></div>
+      <div class="uinfo"><span class="uavatar">${esc((user.name || 'U')[0].toUpperCase())}</span><div>👤 ${esc(user.name)}<br><span class="urole">${esc(user.role)}</span></div></div>
       <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
       <div style="margin-top:10px"><span class="badge-fict">TRAINING MODE · fictional data</span></div>
     </div>`;

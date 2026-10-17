@@ -92,17 +92,32 @@ footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-
 
 /* ---------- app shell ---------- */
 .shell{display:flex;min-height:100vh}
-.side{width:248px;background:var(--navy);color:#c7d5e8;position:fixed;top:0;bottom:0;left:0;
-  display:flex;flex-direction:column;z-index:40}
-.side .brand{padding:22px 20px 16px}
-.snav{flex:1;overflow:auto;padding:6px 12px}
-.snav .grp{font-size:11px;letter-spacing:1.5px;color:#7c8ea8;padding:14px 10px 6px;text-transform:uppercase}
-.snav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:14.5px;color:#c7d5e8}
-.snav a:hover{background:rgba(255,255,255,.06);color:#fff}
-.snav a.on{background:rgba(20,184,166,.16);color:#fff}
-.snav a .e{width:22px;text-align:center}
+.side{width:256px;background:linear-gradient(180deg,#0d2138 0%,#0a1a2e 100%);color:#c7d5e8;position:fixed;top:0;bottom:0;left:0;
+  display:flex;flex-direction:column;z-index:40;border-right:1px solid rgba(255,255,255,.06)}
+.side .brand{padding:24px 20px 18px;display:flex;align-items:center;gap:12px}
+.side .brand .mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#0e9f8a,#34d3bd);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(14,159,138,.35);flex:none}
+.side .brand .mark svg{width:22px;height:22px;color:#fff}
+.side .brand>div:last-child{font-weight:800;font-size:17px;color:#fff;letter-spacing:.2px}
+.side .brand small{display:block;font-size:11px;font-weight:500;color:#7c8ea8;margin-top:2px}
+.snav{flex:1;overflow:auto;padding:4px 12px 12px}
+.snav .grp{font-size:10.5px;font-weight:700;letter-spacing:1.8px;color:#5f7390;padding:16px 12px 7px;text-transform:uppercase}
+.snav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:500;
+  color:#a9bdd6;text-decoration:none;transition:all .15s ease;position:relative;margin-bottom:2px}
+.snav a:hover{background:rgba(255,255,255,.05);color:#fff;transform:translateX(2px)}
+.snav a.on{background:linear-gradient(90deg,rgba(14,159,138,.22),rgba(14,159,138,.08));color:#fff;font-weight:600}
+.snav a.on::before{content:"";position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:3px;
+  background:linear-gradient(180deg,#0e9f8a,#34d3bd);box-shadow:0 0 8px rgba(14,159,138,.6)}
+.snav a .ic{width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center;opacity:.85}
+.snav a .ic svg{width:19px;height:19px}
+.snav a.on .ic{opacity:1;color:#34d3bd}
+.snav a .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sfoot{padding:16px;border-top:1px solid rgba(255,255,255,.08);font-size:13px}
-.main{flex:1;margin-left:248px;padding:30px;min-width:0}
+.sfoot .uinfo{display:flex;align-items:center;gap:10px;margin-bottom:10px;color:#dbe6f5}
+.sfoot .uavatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0e9f8a,#34d3bd);
+  display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:15px;flex:none}
+.sfoot .urole{color:#7c8ea8;font-size:12px;text-transform:capitalize}
+.main{flex:1;margin-left:256px;padding:30px;min-width:0}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
 .topbar h1{font-size:24px;font-weight:800}
 .topbar p{color:var(--mut);font-size:14px}

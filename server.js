@@ -172,6 +172,7 @@ async function ownerPage(req, res, next) {
 }
 app.get('/owner', ownerPage);
 app.get('/owner/', ownerPage);
+app.get('/owner/:section(analytics|accounts|announce|sessions|system)', ownerPage);
 app.get(ADMIN_PATH, send('admin.html'));
 app.get(ADMIN_PATH + '/', send('admin.html'));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
