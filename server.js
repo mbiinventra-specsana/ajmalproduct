@@ -1523,6 +1523,28 @@ app.get('/api/admin/overview', requireAdmin, ah(cached('overview', 30000, async 
   }))));
 // System health: which DB is active, where the data lives, is the config safe?
 // Returns presence flags only — never secret values.
+// DANGER ZONE: wipe all student practice data, keep courses + users
+app.post('/api/admin/reset-data', requireAdmin, ah(async (req, res) => {
+  const tables = ['answers', 'attempts', 'guided_runs', 'lab_runs', 'denial_work', 'denials',
+    'ar_notes', 'payments', 'claims', 'charges', 'eligibility_checks', 'insurance', 'payers', 'patients'];
+  const wiped = {};
+  for (const t of tables) {
+    try {
+      const exists = await db.get(
+        db.IS_MYSQL
+          ? 'SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?'
+          : "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", [t]);
+      if (exists) {
+        const r = await db.run(`DELETE FROM ${t}`);
+        wiped[t] = r.changes ?? 0;
+      }
+    } catch (e) { wiped[t] = 'error: ' + e.message; }
+  }
+  bustAdminCache();
+  await logActivity(req, 'admin_reset_data', JSON.stringify(wiped));
+  res.json({ ok: true, wiped });
+}));
+
 app.get('/api/admin/diagnostics', requireAdmin, ah(async (req, res) => {
   const fs = require('fs');
   const { sqliteCandidates, sqliteStudentCount } = require('./lib/migrate');

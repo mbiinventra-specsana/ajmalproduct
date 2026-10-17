@@ -277,6 +277,10 @@
     <div class="topbar"><div><h1>🖥️ System health</h1><p>Infrastructure and data status.</p></div></div>
     <div class="panel"><h3>🧬 Lab activity (all students)</h3><div id="labruns"><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div></div></div>
     <div class="panel"><h3>📚 Cases</h3><div id="cases"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div><div class="skel skel-line w80"></div></div></div>
+    <div class="panel" style="border:1.5px solid #fecaca;background:#fff7f7"><h3>🚨 Danger Zone</h3>
+      <p style="font-size:13.5px;color:#64748b;margin:0 0 14px">Delete <b>all student practice data</b> (patients, insurance, charges, claims, payments, denials, A/R notes, attempts, lab runs).<br><b>Kept:</b> user accounts, course content (Case Center + Quiz Arena), announcements, settings.</p>
+      <button class="btn" id="resetDataBtn" style="background:#dc2626;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer">🗑️ Delete All Practice Data</button>
+      <div id="resetMsg" style="margin-top:12px;font-size:13.5px"></div></div>
     <div class="panel" id="syshealth"><h3>🖥️ System health</h3><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div><div class="skel skel-line w80"></div></div>
     </section>
   </main>
@@ -879,6 +883,22 @@ async function loadSystem() {
       api('/api/admin/cases'),
       api('/api/admin/lab-runs'),
     ]);
+    // ---- danger zone: reset all practice data ----
+    const rdb = document.getElementById('resetDataBtn');
+    if (rdb) rdb.onclick = async () => {
+      const msg = document.getElementById('resetMsg');
+      const c1 = confirm('⚠️ Delete ALL student practice data?\n\nThis removes: patients, insurance, charges, claims, payments, denials, A/R notes, quiz attempts, lab runs.\n\nKept: accounts, courses, announcements.\n\nThis cannot be undone!');
+      if (!c1) return;
+      const c2 = prompt('Type DELETE to confirm:');
+      if (c2 !== 'DELETE') { msg.innerHTML = '<span style="color:#64748b">Cancelled.</span>'; return; }
+      rdb.disabled = true; rdb.textContent = 'Deleting…';
+      try {
+        const r = await api('/api/admin/reset-data', { method: 'POST' });
+        const total = Object.values(r.wiped).filter(v => typeof v === 'number').reduce((a, b) => a + b, 0);
+        msg.innerHTML = '<span style="color:#059669;font-weight:700">✅ Done! ' + total + ' records deleted. Courses and accounts are safe.</span>';
+      } catch (e) { msg.innerHTML = '<span style="color:#dc2626">❌ ' + esc(e.message) + '</span>'; }
+      rdb.disabled = false; rdb.textContent = '🗑️ Delete All Practice Data';
+    };
     // ---- system health: DB engine, data location, config safety ----
     try {
       const d = await api('/api/admin/diagnostics');
