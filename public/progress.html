@@ -16,6 +16,7 @@
       <div class="panel"><h3>Attempt history</h3><div id="hist"></div></div>
     </div>
     <div class="panel" style="margin-top:20px"><h3>🧬 Advanced lab bests</h3><div id="labBest"></div></div>
+    <div class="panel" style="margin-top:20px"><h3>🏆 Leaderboard — top students</h3><div id="lboard"></div></div>
   </main>
 </div>
 <script src="/js/app.js"></script>
@@ -34,6 +35,13 @@
       `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f7">
         <div>${LABN[k]}</div><b>${lb.bests[k] != null ? lb.bests[k] + '%' : '—'}</b></div>`).join('');
   } catch { document.getElementById('labBest').innerHTML = `<div class="empty">No lab runs yet.</div>`; }
+  try {
+    const { top } = await api('/api/leaderboard');
+    document.getElementById('lboard').innerHTML = top.length ? `<table><tr><th>#</th><th>Student</th><th>Points</th><th>Cases</th></tr>
+      ${top.map((t, i) => `<tr${t.id === u.id ? ' style="background:#eaf4ff"' : ''}><td>${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td>
+        <td><b>${esc(t.name)}</b>${t.id === u.id ? ' (you)' : ''}</td><td><b>${t.points}</b></td><td>${t.cases_done}</td></tr>`).join('')}</table>`
+      : '<div class="empty">No scores yet.</div>';
+  } catch { document.getElementById('lboard').innerHTML = `<div class="empty">Leaderboard unavailable.</div>`; }
   document.getElementById('stats').innerHTML = `
     <div class="card stat"><span>Level</span><b>${esc(s.level)}</b></div>
     <div class="card stat"><span>Points</span><b>${s.points}</b></div>

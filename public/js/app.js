@@ -103,7 +103,10 @@ function adminShell(active, user) {
   const nav = [
     ['Admin', [
       ['owner', 'Dashboard', '/owner', '👑'],
+      ['analytics', 'Analytics', '/owner#analytics', '📊'],
       ['accounts', 'Accounts', '/owner#users', '👥'],
+      ['announce', 'Announcements', '/owner#announce', '📢'],
+      ['sessions', 'Sessions', '/owner#sessions', '💻'],
       ['syshealth', 'System health', '/owner#syshealth', '🖥️'],
     ]],
   ]; // pure admin — no student items here

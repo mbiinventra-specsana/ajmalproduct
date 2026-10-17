@@ -165,6 +165,7 @@ tr:last-child td{border-bottom:0}
 .auth-form .sub{color:var(--mut);font-size:14px;margin-bottom:26px}
 .alert{display:none;border-radius:10px;padding:12px 14px;font-size:14px;margin-bottom:16px}
 .alert.err{display:block;background:#fef1f1;color:#b3261e;border:1px solid #f5c6c6}
+.alert.info{display:block;background:#eaf4ff;color:#175cd3;border:1px solid #b8d4f5}
 .fict{font-size:12px;color:#8a97ad;background:#f1f4f9;border-radius:8px;padding:8px 12px;margin-top:18px}
 
 /* ---------- misc ---------- */

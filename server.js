@@ -33,6 +33,24 @@ app.use(session({
             secure: 'auto' }, // Secure only when actually on HTTPS; works on both
 }));
 
+// ---- active session tracking (throttled last_seen; powers admin session control) ----
+app.use((req, res, next) => {
+  if (req.session && req.session.userId && req.sessionID) {
+    const now = Date.now();
+    if (!req.session._ls || now - req.session._ls > 5 * 60 * 1000) {
+      req.session._ls = now;
+      db.run('UPDATE login_sessions SET last_seen = ?, ip = ? WHERE session_id = ?',
+        [db.now(), req.ip || '', req.sessionID]).catch(() => {});
+    }
+  }
+  next();
+});
+// prune dead session rows every 30 min (older than 24h)
+setInterval(() => {
+  const cutoff = new Date(Date.now() - 24 * 3600 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+  db.run('DELETE FROM login_sessions WHERE last_seen < ?', [cutoff]).catch(() => {});
+}, 30 * 60 * 1000);
+
 // login rate limiter (in-memory)
 const fails = new Map();
 app.use('/api/login', (req, res, next) => {
@@ -178,12 +196,32 @@ app.post('/api/login', ah(async (req, res) => {
   req.session.regenerate((err) => {
     if (err) return res.status(500).json({ error: 'Session error.' });
     req.session.userId = u.id;
-    db.run('UPDATE users SET last_login = ? WHERE id = ?', [db.now(), u.id])
-      .then(() => res.json({ ok: true, user: pub(u) }))
-      .catch(() => res.json({ ok: true, user: pub(u) }));
+    const done = () => res.json({ ok: true, user: pub(u) });
+    (async () => {
+      try {
+        const sid = req.sessionID;
+        // single-device enforcement (per-student toggle)
+        const sd = await db.get("SELECT enabled FROM student_features WHERE user_id=? AND feature='single_device'", [u.id]);
+        if (sd && sd.enabled) {
+          const others = await db.all('SELECT session_id FROM login_sessions WHERE user_id=? AND session_id<>?', [u.id, sid]);
+          for (const o of others) await new Promise(r => req.sessionStore.destroy(o.session_id, r));
+          await db.run('DELETE FROM login_sessions WHERE user_id=? AND session_id<>?', [u.id, sid]);
+        }
+        await db.run('INSERT INTO login_sessions (session_id, user_id, ip, user_agent, created_at, last_seen) VALUES (?,?,?,?,?,?)',
+          [sid, u.id, req.ip || '', (req.get('User-Agent') || '').slice(0, 200), db.now(), db.now()]);
+      } catch {}
+      try { await db.run('UPDATE users SET last_login = ? WHERE id = ?', [db.now(), u.id]); } catch {}
+      done();
+    })();
   });
 }));
-app.post('/api/logout', (req, res) => req.session.destroy(() => res.json({ ok: true })));
+app.post('/api/logout', (req, res) => {
+  const sid = req.sessionID;
+  req.session.destroy(() => {
+    if (sid) db.run('DELETE FROM login_sessions WHERE session_id = ?', [sid]).catch(() => {});
+    res.json({ ok: true });
+  });
+});
 app.get('/api/me', ah(async (req, res) => {
   const u = req.session.userId && await db.get('SELECT * FROM users WHERE id = ?', [req.session.userId]);
   if (!u) return res.status(401).json({ error: 'Not logged in.' });
@@ -744,7 +782,17 @@ app.get('/api/admin/diagnostics', requireAdmin, ah(async (req, res) => {
     sqlite: { active: !db.IS_MYSQL, file: db.SQLITE_FILE, insideProject: false, exists: false, sizeKB: 0, students: 0 },
     migrationSources: [],
     warnings: [],
+    uptimeMin: Math.round(process.uptime() / 60),
+    dbSizeKB: 0,
   };
+  if (db.IS_MYSQL) {
+    try {
+      const r = await db.get(
+        `SELECT ROUND(SUM(data_length + index_length) / 1024) AS kb
+         FROM information_schema.tables WHERE table_schema = DATABASE()`);
+      out.dbSizeKB = Number(r.kb) || 0;
+    } catch {}
+  }
   if (!db.IS_MYSQL) {
     out.sqlite.exists = fs.existsSync(db.SQLITE_FILE);
     if (out.sqlite.exists) {
@@ -847,6 +895,110 @@ app.post('/api/admin/users/:id/password', requireAdmin, ah(async (req, res) => {
   if (pw.length < 6) return res.status(400).json({ error: 'Password must be 6+ characters.' });
   await db.run('UPDATE users SET pass_hash=? WHERE id=?', [db.hashPassword(pw), u.id]);
   res.json({ ok: true });
+}));
+// ---- session / device control ----
+app.get('/api/admin/sessions', requireAdmin, ah(async (req, res) => {
+  const rows = await db.all(
+    `SELECT s.id, s.session_id, s.ip, s.user_agent, s.created_at, s.last_seen,
+            u.id AS user_id, u.name, u.email, u.role
+     FROM login_sessions s JOIN users u ON u.id = s.user_id
+     ORDER BY s.last_seen DESC LIMIT 100`);
+  const cutoff = Date.now() - 15 * 60 * 1000;
+  res.json({ sessions: rows.map(r => ({ ...r, online: new Date(r.last_seen.replace(' ', 'T') + 'Z').getTime() > cutoff })) });
+}));
+app.post('/api/admin/sessions/:id/kill', requireAdmin, ah(async (req, res) => {
+  const s = await db.get('SELECT * FROM login_sessions WHERE id = ?', [req.params.id]);
+  if (!s) return res.status(404).json({ error: 'Not found.' });
+  await new Promise(r => req.sessionStore.destroy(s.session_id, r));
+  await db.run('DELETE FROM login_sessions WHERE id = ?', [s.id]);
+  res.json({ ok: true });
+}));
+// ---- announcements ----
+app.get('/api/admin/announcements', requireAdmin, ah(async (req, res) => {
+  res.json({ announcements: await db.all('SELECT * FROM announcements ORDER BY id DESC LIMIT 50') });
+}));
+app.post('/api/admin/announcements', requireAdmin, ah(async (req, res) => {
+  const { title, body } = req.body || {};
+  if (!title || !String(title).trim()) return res.status(400).json({ error: 'Title required.' });
+  const r = await db.run('INSERT INTO announcements (title, body, active, created_by, created_at) VALUES (?,?,?,?,?)',
+    [String(title).slice(0, 200), String(body || '').slice(0, 2000), 1, req.adminUser.id, db.now()]);
+  res.json({ ok: true, id: r.id });
+}));
+app.post('/api/admin/announcements/:id/toggle', requireAdmin, ah(async (req, res) => {
+  await db.run('UPDATE announcements SET active = 1 - active WHERE id = ?', [req.params.id]);
+  res.json({ ok: true });
+}));
+app.delete('/api/admin/announcements/:id', requireAdmin, ah(async (req, res) => {
+  await db.run('DELETE FROM announcements WHERE id = ?', [req.params.id]);
+  res.json({ ok: true });
+}));
+// student-facing: active announcements + leaderboard
+app.get('/api/announcements', requireAuth, ah(async (req, res) => {
+  res.json({ announcements: await db.all('SELECT id, title, body, created_at FROM announcements WHERE active = 1 ORDER BY id DESC LIMIT 10') });
+}));
+app.get('/api/leaderboard', requireAuth, ah(async (req, res) => {
+  const top = await db.all(
+    `SELECT u.id, u.name, COALESCE(SUM(a.score),0) AS points,
+            COUNT(DISTINCT CASE WHEN a.status='completed' THEN a.case_id END) AS cases_done
+     FROM users u LEFT JOIN attempts a ON a.user_id = u.id
+     WHERE u.role = 'student' GROUP BY u.id ORDER BY points DESC LIMIT 10`);
+  res.json({ top });
+}));
+// ---- analytics: skill-gap heatmap + exam readiness ----
+app.get('/api/admin/heatmap', requireAdmin, ah(async (req, res) => {
+  const students = await db.all("SELECT id, name FROM users WHERE role = 'student' ORDER BY name");
+  const cases = await db.all('SELECT id, code, title FROM cases WHERE active = 1 ORDER BY sort');
+  const best = await db.all(
+    `SELECT user_id, case_id, MAX(100.0 * score / NULLIF(max_score, 0)) AS pct, COUNT(*) AS tries
+     FROM attempts WHERE status = 'completed' GROUP BY user_id, case_id`);
+  const matrix = {};
+  for (const r of best) (matrix[r.user_id] ||= {})[r.case_id] = { pct: Math.round(r.pct), tries: r.tries };
+  const labCounts = await db.all('SELECT user_id, COUNT(*) AS n FROM lab_runs GROUP BY user_id');
+  const labMap = Object.fromEntries(labCounts.map(r => [r.user_id, r.n]));
+  const readiness = students.map(s => {
+    let done = 0, sum = 0;
+    for (const c of cases) { const m = (matrix[s.id] || {})[c.id]; if (m) { done++; sum += m.pct; } }
+    const avg = done ? sum / done : 0;
+    const labs = Math.min(labMap[s.id] || 0, 10) / 10;
+    const score = Math.round((cases.length ? (done / cases.length) * 50 : 0) + avg * 0.3 + labs * 20);
+    return { id: s.id, name: s.name, done, total: cases.length, avg: Math.round(avg), labs: labMap[s.id] || 0, readiness: Math.min(score, 100) };
+  });
+  res.json({ students, cases, matrix, readiness });
+}));
+// ---- CSV export ----
+function csvCell(v) { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+app.get('/api/admin/export/attempts', requireAdmin, ah(async (req, res) => {
+  const rows = await db.all(
+    `SELECT u.name AS student, u.email, c.code, c.title, a.score, a.max_score, a.status, a.started_at, a.completed_at
+     FROM attempts a JOIN users u ON u.id = a.user_id JOIN cases c ON c.id = a.case_id ORDER BY a.started_at DESC`);
+  const csv = 'Student,Email,Case,Title,Score,Max,Status,Started,Completed\n' +
+    rows.map(r => [r.student, r.email, r.code, r.title, r.score, r.max_score, r.status, r.started_at, r.completed_at].map(csvCell).join(',')).join('\n');
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="attempts.csv"');
+  res.send(csv);
+}));
+app.get('/api/admin/export/users', requireAdmin, ah(async (req, res) => {
+  const rows = await db.all('SELECT name, email, role, created_at, last_login FROM users ORDER BY id');
+  const csv = 'Name,Email,Role,Created,Last Login\n' +
+    rows.map(r => [r.name, r.email, r.role, r.created_at, r.last_login].map(csvCell).join(',')).join('\n');
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="users.csv"');
+  res.send(csv);
+}));
+// ---- answer-level review for an attempt ----
+app.get('/api/admin/attempts/:id/answers', requireAdmin, ah(async (req, res) => {
+  const a = await db.get(
+    `SELECT a.id, a.score, a.max_score, a.status, u.name AS student, c.code
+     FROM attempts a JOIN users u ON u.id = a.user_id JOIN cases c ON c.id = a.case_id WHERE a.id = ?`, [req.params.id]);
+  if (!a) return res.status(404).json({ error: 'Not found.' });
+  const rows = await db.all(
+    `SELECT q.qnum, q.question, q.options, q.correct_idx, an.chosen_idx, an.correct, an.points_earned
+     FROM answers an JOIN questions q ON q.id = an.question_id WHERE an.attempt_id = ? ORDER BY q.qnum`, [a.id]);
+  res.json({ attempt: a, answers: rows.map(r => {
+    let opts = []; try { opts = JSON.parse(r.options); } catch {}
+    return { qnum: r.qnum, question: r.question, options: opts, correct_idx: r.correct_idx,
+             chosen_idx: r.chosen_idx, correct: !!r.correct, points_earned: r.points_earned };
+  }) });
 }));
 
 // ---------- 404 + errors ----------
