@@ -5,69 +5,153 @@
   <div class="phead"><div>
     <div class="eyebrow2">Eligibility Verification</div><h1>Eligibility</h1>
     <p class="psub">Verify fictional insurance coverage before claim submission — the 270/271 workflow.</p>
-  </div><button class="btn btn-teal btn-sm" id="verifyBtn" data-fn="eligibility-verify">+ Verify Eligibility</button></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+  </div><div style="display:flex;gap:8px">
+    <button class="btn btn-line btn-sm" id="bulkBtn" data-fn="eligibility-verify">⚡ Bulk Verify All</button>
+    <button class="btn btn-teal btn-sm" id="verifyBtn" data-fn="eligibility-verify">+ Verify Eligibility</button>
+  </div></div>
+  <div id="kpiSk" class="skel-cards" style="margin-bottom:14px"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr);display:none"></div>
   <div class="info-panel">🏥 <b>RCM training workflow:</b> eligibility verification confirms the patient's coverage is active and reveals copay, deductible and plan details <i>before</i> a claim is submitted — preventing the #1 cause of denials.</div>
   <div class="panel"><div class="prow"><h3 style="margin:0">Verification History</h3>
-    <input class="search" id="q" placeholder="Search verifications…"></div>
-    <div class="twrap"><table><thead><tr>
-      <th>Date</th><th>Patient</th><th>Payer</th><th>Member ID</th><th>Service</th><th>Coverage</th><th>Copay</th><th>Deductible</th><th>Result</th>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="fRes" class="search" style="width:auto"><option value="">All results</option><option>VERIFIED</option><option>INACTIVE</option></select>
+      <select id="fCov" class="search" style="width:auto"><option value="">All coverage</option><option>ACTIVE</option><option>INACTIVE</option></select>
+      <input class="search" id="q" placeholder="Search verifications…">
+    </div></div>
+    <div id="tblSk"><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div></div>
+    <div class="twrap" id="twrap" style="display:none"><table><thead><tr>
+      <th>Date</th><th>Patient</th><th>Payer</th><th>Member ID</th><th>Service</th><th>271 Resp</th><th>Coverage</th><th>Copay</th><th>Deductible</th><th>Result</th><th></th>
     </tr></thead><tbody id="rows"></tbody></table></div>
-    <div class="empty" id="empty" style="display:none">No verifications yet — run your first eligibility check. 🔍</div>
+    <div class="empty" id="empty" style="display:none">No verifications match your filters. 🔍</div>
   </div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
-let rows = [], q = '', pts = [], ins = [];
+let rows = [], q = '', fRes = '', fCov = '', pts = [], ins = [];
+function covCard(r, cov) {
+  const ok = r.result === 'VERIFIED';
+  const col = ok ? '#15803d' : '#b91c1c', bg = ok ? '#f0fdf4' : '#fef2f2', bd = ok ? '#bbf7d0' : '#fecaca';
+  const icon = ok ? '✅' : '⛔';
+  return `<div style="background:${bg};border:1.5px solid ${bd};border-radius:14px;padding:16px;margin-top:14px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="font-size:28px">${icon}</span>
+    <div><div style="font-weight:800;font-size:17px;color:${col}">${r.result} — 271 response</div>
+    <div style="font-size:12px;color:#64748b">Response code ${esc(r.response_code || '271')} · Coverage ${esc(r.coverage)}</div></div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;font-size:13px">
+      <div><div style="color:#64748b;font-size:11px">PLAN TYPE</div><b>${esc(r.plan_type || cov?.plan || '—')}</b></div>
+      <div><div style="color:#64748b;font-size:11px">COPAY</div><b>${r.copay ? money(r.copay) : '—'}</b></div>
+      <div><div style="color:#64748b;font-size:11px">DEDUCTIBLE</div><b>${r.deductible ? money(r.deductible) : '—'}</b></div>
+      <div><div style="color:#64748b;font-size:11px">DEDUCTIBLE MET</div><b>${money(r.deductible_met || 0)}</b></div>
+      <div><div style="color:#64748b;font-size:11px">COINSURANCE</div><b>${r.coinsurance != null ? r.coinsurance + '%' : '—'}</b></div>
+    </div>
+    ${ok ? '<div style="margin-top:10px;font-size:13px;color:#15803d">✓ Safe to submit claim for this payer.</div>'
+         : '<div style="margin-top:10px;font-size:13px;color:#b91c1c">✕ Do NOT submit — claim will deny. Check coverage or select another payer.</div>'}
+  </div>`;
+}
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('eligibility', u);
   if (!guardFeature(u, 'eligibility', 'Eligibility')) return;
   const [d, p, i] = await Promise.all([api('/api/rcm/eligibility'), api('/api/rcm/patients'), api('/api/rcm/insurance')]);
   rows = d.checks; pts = p.patients; ins = i.insurance;
-  document.getElementById('kpis').innerHTML = [
+  document.getElementById('kpiSk').style.display = 'none';
+  const kp = document.getElementById('kpis'); kp.style.display = 'grid';
+  kp.innerHTML = [
     ['Insurance records', ins.length, 'On file'],
     ['Verified', rows.filter(r => r.result === 'VERIFIED').length, 'Checks passed'],
     ['Active coverage', ins.filter(r => r.status === 'ACTIVE').length, 'Active'],
     ['Inactive coverage', ins.filter(r => r.status !== 'ACTIVE').length, 'Inactive'],
   ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  document.getElementById('tblSk').style.display = 'none';
+  document.getElementById('twrap').style.display = 'block';
   render();
+  // prefill from ?patient=&payer= (insurance shortcut)
+  const sp = new URLSearchParams(location.search);
+  if (sp.get('patient')) { openVerify(sp.get('patient'), sp.get('payer') || ''); history.replaceState({}, '', '/eligibility'); }
 }
 function render() {
-  const rs = rows.filter(r => (r.patient_code + ' ' + r.payer).toLowerCase().includes(q));
-  document.getElementById('rows').innerHTML = rs.map(r => `<tr>
-    <td>${esc(r.created_at.slice(0, 10))}</td><td><b>${esc(r.patient_code)}</b></td><td>${esc(r.payer)}</td>
-    <td><code>${esc((ins.find(x => x.patient_code === r.patient_code && x.payer === r.payer) || {}).member_id || '—')}</code></td>
-    <td>${esc(r.service)}</td>
+  const rs = rows.filter(r =>
+    (!fRes || r.result === fRes) && (!fCov || r.coverage === fCov) &&
+    (r.patient_code + ' ' + r.payer + ' ' + (r.service || '')).toLowerCase().includes(q));
+  document.getElementById('empty').style.display = rs.length ? 'none' : 'block';
+  document.getElementById('rows').innerHTML = rs.map(r => {
+    const mid = (ins.find(x => x.patient_code === r.patient_code && x.payer === r.payer) || {}).member_id || '—';
+    return `<tr>
+    <td>${esc(String(r.created_at || '').slice(0, 10))}</td><td><b>${esc(r.patient_code)}</b></td><td>${esc(r.payer)}</td>
+    <td><code>${esc(mid)}</code></td><td>${esc(r.service)}</td>
+    <td><span class="bdg b-blue">${esc(r.response_code || '271')}</span></td>
     <td><span class="bdg ${r.coverage === 'ACTIVE' ? 'b-green' : 'b-red'}">${esc(r.coverage)}</span></td>
     <td>${r.copay ? money(r.copay) : '—'}</td><td>${r.deductible ? money(r.deductible) : '—'}</td>
-    <td><span class="bdg ${r.result === 'VERIFIED' ? 'b-green' : 'b-red'}">${esc(r.result)}</span></td></tr>`).join('');
-  document.getElementById('empty').style.display = rs.length ? 'none' : 'block';
+    <td><span class="bdg ${r.result === 'VERIFIED' ? 'b-green' : 'b-red'}">${esc(r.result)}</span></td>
+    <td><button class="btn btn-line btn-sm" onclick='showDetail(${JSON.stringify(r.id)})'>Details</button></td></tr>`;
+  }).join('');
 }
-document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
-document.getElementById('verifyBtn').onclick = () => {
+function showDetail(id) {
+  const r = rows.find(x => x.id === id);
+  const cov = ins.find(x => x.patient_code === r.patient_code && x.payer === r.payer) || {};
+  openModal('Eligibility Detail — 271', `
+    <div class="frow"><div class="fld"><label>Patient</label><div><b>${esc(r.patient_code)}</b></div></div>
+    <div class="fld"><label>Payer</label><div>${esc(r.payer)}</div></div></div>
+    <div class="frow"><div class="fld"><label>Service</label><div>${esc(r.service)}</div></div>
+    <div class="fld"><label>Date</label><div>${esc(String(r.created_at || '').slice(0, 16).replace('T', ' '))}</div></div></div>
+    ${r.notes ? `<div class="fld"><label>Notes</label><div>${esc(r.notes)}</div></div>` : ''}
+    ${covCard(r, cov)}
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button></div>`);
+}
+function openVerify(prePt, prePayer) {
   const payersFor = pc => ins.filter(x => x.patient_code === pc);
-  openModal('Verify Eligibility', `
-    <div class="fld"><label>Patient</label><select id="f_pt">${pts.map(p => `<option value="${p.code}">${p.code} — ${esc(p.name)}</option>`).join('')}</select></div>
-    <div class="fld"><label>Payer</label><select id="f_payer"></select></div>
-    <div class="fld"><label>Service</label><select id="f_svc"><option>Office Visit</option><option>Specialist Visit</option><option>Preventive Visit</option><option>Lab Work</option><option>Imaging</option></select></div>
+  openModal('Verify Eligibility — 270/271', `
+    <div class="fld"><label>Patient</label><select id="f_pt">${pts.map(p => `<option value="${p.code}"${p.code === prePt ? ' selected' : ''}>${p.code} — ${esc(p.name)}</option>`).join('')}</select></div>
+    <div class="frow"><div class="fld"><label>Payer</label><select id="f_payer"></select></div>
+    <div class="fld"><label>Service type</label><select id="f_svc"><option>Office Visit</option><option>Specialist Visit</option><option>Preventive Visit</option><option>Lab Work</option><option>Imaging</option><option>Emergency</option></select></div></div>
+    <div class="fld"><label style="color:#0e9f8a">Benefits capture (from 271 response)</label></div>
+    <div class="frow"><div class="fld"><label>270/271 response code</label><select id="f_rc"><option>271</option><option>270</option><option>AAA</option></select></div>
+    <div class="fld"><label>Plan type</label><input id="f_ptype" placeholder="e.g. Commercial PPO"></div></div>
+    <div class="frow"><div class="fld"><label>Copay ($)</label><input id="f_copay" type="number" min="0" step="1"></div>
+    <div class="fld"><label>Deductible ($)</label><input id="f_ded" type="number" min="0" step="1"></div></div>
+    <div class="frow"><div class="fld"><label>Deductible met ($)</label><input id="f_dedmet" type="number" min="0" step="1" value="0"></div>
+    <div class="fld"><label>Coinsurance (%)</label><input id="f_coins" type="number" min="0" max="100" step="1" value="20"></div></div>
+    <div class="fld"><label>Notes</label><input id="f_notes" placeholder="Optional note about this verification…"></div>
     <div id="vres"></div>
     <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button>
-    <button class="btn btn-teal btn-sm" id="run">Run Verification</button></div>`, w => {
+    <button class="btn btn-teal btn-sm" id="run">Run 270 → 271</button></div>`, w => {
     const pt = w.querySelector('#f_pt'), py = w.querySelector('#f_payer');
-    const fill = () => { py.innerHTML = payersFor(pt.value).map(x => `<option>${esc(x.payer)}</option>`).join('') || '<option value="">— no coverage on file —</option>'; };
-    pt.onchange = fill; fill();
+    const fill = pre => {
+      const list = payersFor(pt.value);
+      py.innerHTML = list.map(x => `<option${x.payer === pre ? ' selected' : ''}>${esc(x.payer)}</option>`).join('') || '<option value="">— no coverage on file —</option>';
+      const c = list.find(x => x.payer === py.value) || list[0];
+      if (c) { w.querySelector('#f_ptype').value = c.plan || ''; w.querySelector('#f_copay').value = c.copay || ''; }
+    };
+    pt.onchange = () => fill(''); fill(prePayer);
     w.querySelector('#run').onclick = async () => {
+      const btn = w.querySelector('#run'); btn.disabled = true; btn.textContent = 'Verifying…';
       try {
         const r = await api('/api/rcm/eligibility/verify', { method: 'POST', body: {
-          patient_code: pt.value, payer: py.value, service: w.querySelector('#f_svc').value } });
-        w.querySelector('#vres').innerHTML = `<div class="info-panel" style="margin:14px 0 0">
-          <b style="color:${r.result === 'VERIFIED' ? '#15803d' : '#b91c1c'}">${r.result}</b> — coverage ${r.coverage.toLowerCase()}.
-          ${r.result === 'VERIFIED' ? `Copay ${money(r.copay)} · Deductible ${money(r.deductible)}.` : 'Claim cannot be submitted for this payer.'}</div>`;
+          patient_code: pt.value, payer: py.value, service: w.querySelector('#f_svc').value,
+          response_code: w.querySelector('#f_rc').value, plan_type: w.querySelector('#f_ptype').value,
+          copay: w.querySelector('#f_copay').value || undefined, deductible: w.querySelector('#f_ded').value || undefined,
+          deductible_met: w.querySelector('#f_dedmet').value, coinsurance: w.querySelector('#f_coins').value,
+          notes: w.querySelector('#f_notes').value } });
+        const cov = ins.find(x => x.patient_code === pt.value && x.payer === py.value) || {};
+        w.querySelector('#vres').innerHTML = covCard(r, cov);
         load();
       } catch (e) { alert(e.message); }
+      btn.disabled = false; btn.textContent = 'Run 270 → 271';
     };
   });
+}
+document.getElementById('verifyBtn').onclick = () => openVerify('', '');
+document.getElementById('bulkBtn').onclick = async () => {
+  if (!confirm('Run eligibility verification for ALL active coverage records?')) return;
+  const btn = document.getElementById('bulkBtn'); btn.disabled = true; btn.textContent = 'Verifying…';
+  try {
+    const r = await api('/api/rcm/eligibility/bulk', { method: 'POST' });
+    alert(`✅ ${r.verified} verifications completed.`);
+    load();
+  } catch (e) { alert(e.message); }
+  btn.disabled = false; btn.textContent = '⚡ Bulk Verify All';
 };
+document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+document.getElementById('fRes').onchange = e => { fRes = e.target.value; render(); };
+document.getElementById('fCov').onchange = e => { fCov = e.target.value; render(); };
 load();
 </script></body></html>

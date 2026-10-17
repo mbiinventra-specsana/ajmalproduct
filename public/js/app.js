@@ -6,7 +6,7 @@ async function api(path, opts = {}) {
     body: opts.body ? JSON.stringify(opts.body) : undefined,
   });
   const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || 'Request failed');
+  if (!r.ok) { const e = new Error(data.error || 'Request failed'); e.status = r.status; Object.assign(e, data); throw e; }
   return data;
 }
 async function currentUser() {

@@ -4,21 +4,26 @@
 <body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
   <div class="phead"><div>
     <div class="eyebrow2">Revenue Cycle</div><h1>Denial Work Queue</h1>
-    <p class="psub">Investigate denied claims, document corrective actions and manage appeals.</p>
-  </div></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
-  <div class="info-panel">🚫 <b>Denial management training:</b> every denial has a root cause. Decide the right move — <b>appeal</b> when the claim was correct, <b>correct &amp; rebill</b> when it wasn't, <b>write off</b> only when recovery isn't possible.</div>
+    <p class="psub">Investigate denied claims, document root causes and corrective actions, manage appeals.</p>
+  </div><span class="bdg b-red" style="font-size:11px"><span class="pulse-dot"></span> DENIAL DESK</span></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
+  <div class="panel" style="margin-bottom:18px" id="winPanel" style="display:none"><div class="prow"><h3 style="margin:0">🏆 Appeal Win Rate by Denial Code</h3></div>
+    <div id="winrate" class="kpi-strip" style="grid-template-columns:repeat(4,1fr);margin:0"></div></div>
+  <div class="info-panel">🚫 <b>Denial management training:</b> every denial has a root cause. Document it, fix it, then decide — <b>appeal</b> when the claim was correct, <b>correct &amp; rebill</b> when it wasn't, <b>write off</b> only when recovery isn't possible.</div>
   <div class="panel"><div class="prow"><h3 style="margin:0">Open Denials</h3>
     <input class="search" id="q" placeholder="Search denials…"></div>
     <div class="twrap"><table><thead><tr>
       <th>Claim</th><th>Patient</th><th>Payer</th><th>Billed</th><th>Denial Code</th><th>Status</th><th></th>
-    </tr></thead><tbody id="rows"></tbody></table></div>
+    </tr></thead><tbody id="rows"><tr><td colspan="7"><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div></td></tr></tbody></table></div>
     <div class="empty" id="empty" style="display:none">No open denials — clean claiming! 🎉</div>
   </div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
 let rows = [], q = '';
+const ROOT_CAUSES = ['Coding error', 'Eligibility / benefits', 'Missing authorization', 'Duplicate claim', 'Timely filing', 'Missing information', 'Coordination of benefits', 'Medical necessity', 'Other'];
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('denialsq', u);
@@ -28,10 +33,16 @@ async function load() {
   const prog = rows.filter(r => r.status === 'APPEALED').length;
   document.getElementById('kpis').innerHTML = [
     ['Open', open, 'Denials requiring work'],
-    ['In progress', prog, 'Appeals in process'],
+    ['In progress', prog, 'Under investigation'],
     ['Appealed', prog, 'Awaiting payer'],
-    ['Resolved', 0, 'Completed denials'],
+    ['Resolved', d.resolved || 0, 'Won / corrected / written off'],
   ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  const wr = d.winRate || {}, codes = Object.keys(wr);
+  if (codes.length) {
+    document.getElementById('winPanel').style.display = 'block';
+    document.getElementById('winrate').innerHTML = codes.map(c =>
+      `<div class="kpi"><span>${esc(c)}</span><b>${wr[c].pct}%</b><div class="sub">${wr[c].won}/${wr[c].total} appeals won</div></div>`).join('');
+  }
   render();
 }
 function render() {
@@ -41,7 +52,7 @@ function render() {
     <td style="max-width:170px">${esc(r.payer)}</td><td>${money(r.billed)}</td>
     <td><span class="bdg b-red">${esc(r.denial_code)}</span></td>
     <td><span class="bdg ${r.status === 'DENIED' ? 'b-red' : 'b-blue'}">${esc(r.status)}</span></td>
-    <td><button class="btn btn-teal btn-sm" onclick="workDenial(${r.id}, '${esc(r.claim_no)}', '${esc(r.denial_code)}')">Work Denial</button></td></tr>`).join('');
+    <td><button class="btn btn-teal btn-sm" onclick="workDenial(${r.id})">Work Denial</button></td></tr>`).join('');
   document.getElementById('empty').style.display = rs.length ? 'none' : 'block';
 }
 const DENIAL_HELP = {
@@ -50,27 +61,97 @@ const DENIAL_HELP = {
   'CO-97': 'Bundling — the procedure is included in another; rebill with the correct X-modifier (XE/XS/XP/XU).',
   'CO-29': 'Timely filing expired — appeal only with proof of timely submission; otherwise write off.',
 };
-function workDenial(id, no, code) {
+async function workDenial(id) {
+  const t = await api('/api/rcm/denials/' + id + '/work').catch(e => { alert(e.message); return null; });
+  if (!t) return;
+  const c = t.claim, w = t.work || {};
   const off = new Set((window._fnUser && window._fnUser.disabledFeatures) || []);
-  const opt = (v, t, fn) => off.has('fn:' + fn) ? '' : `<option value="${v}">${t}</option>`;
-  openModal('Work Denial — ' + no, `
-    <div class="info-panel"><b>${esc(code)}</b> — ${esc(DENIAL_HELP[code] || 'Investigate the remittance advice and choose the corrective action.')}</div>
+  const opt = (v, t2, fn) => off.has('fn:' + fn) ? '' : `<option value="${v}">${t2}</option>`;
+  const tl = (t.notes || []).map(n => `<div class="tl-item"><div class="tl-dot">📝</div><div>
+    <div style="font-size:11px;color:#94a3b8">${esc((n.created_at || '').slice(0, 16).replace('T', ' '))}</div>
+    <div style="color:#475569">${esc(n.note)}</div></div></div>`).join('')
+    || '<div class="empty" style="padding:10px">No notes yet.</div>';
+  openModal('Work Denial — ' + c.claim_no, `
+    <div class="kpi-strip" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px">
+      <div class="kpi"><span>Patient</span><b style="font-size:15px">${esc(c.patient_code)}</b></div>
+      <div class="kpi"><span>Billed</span><b>${money(c.billed)}</b></div>
+      <div class="kpi"><span>Payer</span><b style="font-size:13px">${esc((c.payer || '').split('(')[0])}</b></div>
+      <div class="kpi"><span>Status</span><b style="font-size:14px">${esc(c.status)}</b></div>
+    </div>
+    <div class="info-panel" style="border-color:#fca5a5;background:#fef2f2"><b>🚨 ${esc(c.denial_code)}</b> — ${esc(DENIAL_HELP[c.denial_code] || 'Investigate the remittance advice and choose the corrective action.')}</div>
+    <h4 style="margin:12px 0 8px">🔍 Investigation</h4>
+    <div class="frow" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fld"><label>Root Cause</label><select id="w_root">
+        <option value="">— select —</option>${ROOT_CAUSES.map(r => `<option ${w.root_cause === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+      <div class="fld"><label>Appeal Status</label><select id="w_astat">
+        <option value="">—</option>${['Not started', 'In progress', 'Submitted', 'Awaiting payer', 'Won', 'Lost'].map(r => `<option ${w.appeal_status === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+    </div>
+    <div class="fld"><label>Corrective Action</label><textarea id="w_ca" rows="2" placeholder="What will prevent this denial next time?">${esc(w.corrective_action || '')}</textarea></div>
+    <div class="frow" style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
+      <div class="fld"><label>Appeal Date</label><input id="w_adate" type="date" value="${esc(w.appeal_date || '')}"></div>
+      <div class="fld"><label>Appeal Notes</label><input id="w_anotes" value="${esc(w.appeal_notes || '')}" placeholder="Tracking #, rep name…"></div>
+    </div>
+    <div class="fld"><label>Resolution Notes</label><textarea id="w_rnotes" rows="2" placeholder="Final outcome…">${esc(w.resolution_notes || '')}</textarea></div>
+    <div class="act-row" style="margin:6px 0 12px">
+      <button class="btn btn-line btn-sm" id="w_save">💾 Save Investigation</button>
+      <button class="btn btn-line btn-sm" id="w_letter">✉️ Appeal Letter Preview</button>
+    </div>
+    <h4 style="margin:0 0 8px">⚖️ Take Action</h4>
     <div class="fld"><label>Action</label><select id="f_act">
       ${opt('appeal', '📨 Appeal — claim was correct, fight it', 'claims-appeal')}
-      ${opt('correct', '🔧 Correct &amp; rebill — fix the claim, resubmit', 'claims-correct')}
+      ${opt('correct', '🔧 Correct & rebill — fix the claim, resubmit', 'claims-correct')}
       ${opt('writeoff', '🗑 Write off — not recoverable', 'claims-writeoff')}</select></div>
-    <div class="fld"><label>Work note</label><textarea id="f_note" rows="3" placeholder="Document what you did and why…"></textarea></div>
+    <div class="fld"><label>Work note</label><textarea id="f_note" rows="2" placeholder="Document what you did and why…"></textarea></div>
     <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-teal btn-sm" id="save">Apply</button></div>`, w => {
-    w.querySelector('#save').onclick = async () => {
+    <button class="btn btn-teal btn-sm" id="save">Apply Action</button></div>
+    <h4 style="margin:14px 0 8px">🕘 History</h4><div class="tl">${tl}</div>`, w2 => {
+    w2.querySelector('#w_save').onclick = async () => {
       try {
-        const r = await api(`/api/rcm/denials/${id}/resolve`, { method: 'POST', body: {
-          action: w.querySelector('#f_act').value, note: w.querySelector('#f_note').value } });
+        await api('/api/rcm/denials/' + id + '/work', { method: 'POST', body: {
+          root_cause: w2.querySelector('#w_root').value,
+          corrective_action: w2.querySelector('#w_ca').value,
+          appeal_status: w2.querySelector('#w_astat').value,
+          appeal_date: w2.querySelector('#w_adate').value,
+          appeal_notes: w2.querySelector('#w_anotes').value,
+          resolution_notes: w2.querySelector('#w_rnotes').value } });
+        alert('Investigation saved.');
+      } catch (e) { alert(e.message); }
+    };
+    w2.querySelector('#w_letter').onclick = () => appealLetter(c, w2);
+    w2.querySelector('#save').onclick = async () => {
+      try {
+        const r = await api('/api/rcm/denials/' + id + '/resolve', { method: 'POST', body: {
+          action: w2.querySelector('#f_act').value, note: w2.querySelector('#f_note').value } });
         closeModal();
         openModal('Denial Updated', `<div class="info-panel">${esc(r.message)}</div>
           <div class="mfoot"><button class="btn btn-teal btn-sm" onclick="closeModal()">OK</button></div>`);
         load();
       } catch (e) { alert(e.message); }
+    };
+  });
+}
+function appealLetter(c, w) {
+  const rc = w.querySelector('#w_root').value || '[root cause]';
+  const letter = `RE: Appeal of Denied Claim ${c.claim_no}\n` +
+    `Date: ${new Date().toISOString().slice(0, 10)}\n\n` +
+    `To: ${c.payer} — Claims Appeals Department\n` +
+    `Patient: ${c.patient_code}   DOS: ${c.dos || ''}   Billed: $${Number(c.billed || 0).toFixed(2)}\n` +
+    `Denial Code: ${c.denial_code}\n\n` +
+    `Dear Appeals Reviewer:\n\n` +
+    `I am writing to formally appeal the denial of the above-referenced claim. Our investigation ` +
+    `identified the root cause as: ${rc}.\n\n` +
+    `We believe this claim was processed in error. ${DENIAL_HELP[c.denial_code] || ''}\n\n` +
+    `Corrective action taken: ${(w.querySelector('#w_ca').value || '[see investigation]').slice(0, 200)}\n\n` +
+    `Please reconsider and release payment. Supporting documentation is attached.\n\n` +
+    `Sincerely,\nBilling Department — MbiInventra RCM Academy (training simulation)`;
+  openModal('✉️ Appeal Letter — ' + c.claim_no, `
+    <div class="fld"><textarea id="letter" rows="16" style="font-family:monospace;font-size:12px">${esc(letter)}</textarea></div>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button>
+    <button class="btn btn-teal btn-sm" id="copyL">📋 Copy Letter</button></div>`, w3 => {
+    w3.querySelector('#copyL').onclick = () => {
+      w3.querySelector('#letter').select();
+      document.execCommand('copy');
+      alert('Letter copied to clipboard.');
     };
   });
 }

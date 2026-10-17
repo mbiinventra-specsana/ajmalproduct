@@ -5,51 +5,150 @@
   <div class="phead"><div>
     <div class="eyebrow2">Patient Management</div><h1>Patients</h1>
     <p class="psub">Fictional patient records used across charge entry, claims and eligibility training.</p>
-  </div></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(3,1fr)"></div>
+  </div><button class="btn btn-teal btn-sm" id="addBtn">+ Add Patient</button></div>
+  <div id="kpiSk" class="skel-cards" style="margin-bottom:14px"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr);display:none"></div>
   <div class="panel"><div class="prow"><h3 style="margin:0">Patient Records</h3>
-    <input class="search" id="q" placeholder="Search patients…"></div>
-    <div class="twrap"><table><thead><tr>
-      <th>Patient ID</th><th>Name</th><th>DOB</th><th>Gender</th><th>Phone</th><th>Status</th><th></th>
+    <input class="search" id="q" placeholder="Search name, ID, phone, DOB…"></div>
+    <div id="tblSk"><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div></div>
+    <div class="twrap" id="twrap" style="display:none"><table><thead><tr>
+      <th>Patient</th><th>DOB · Age</th><th>Gender</th><th>Phone</th><th>Status</th><th>Coverage</th><th></th>
     </tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="empty" id="empty" style="display:none">No patients match your search. 🔍</div>
   </div>
   <div class="info-panel">🔒 <b>Training data only:</b> every patient here is fictional — names, dates of birth and phone numbers are generated for training. Never real patient information.</div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
-let pts = [], q = '';
+let pts = [], q = '', covBy = {}, covList = [];
+const age = dob => { const d = new Date(dob + 'T00:00:00'); if (isNaN(d)) return '—'; let a = new Date().getFullYear() - d.getFullYear(); const m = new Date().getMonth() - d.getMonth(); if (m < 0 || (m === 0 && new Date().getDate() < d.getDate())) a--; return a; };
+const initials = n => n.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+const avColor = code => ['#0e9f8a', '#6366f1', '#d946ef', '#f59e0b', '#0ea5e9'][String(code).charCodeAt(3) % 5];
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('patients', u);
   if (!guardFeature(u, 'patients', 'Patients')) return;
-  const d = await api('/api/rcm/patients'); pts = d.patients;
-  const ins = await api('/api/rcm/insurance');
-  const covBy = {}; ins.insurance.forEach(r => { if (!covBy[r.patient_code]) covBy[r.patient_code] = r; });
-  window._cov = covBy;
-  document.getElementById('kpis').innerHTML = [
+  const [d, ins] = await Promise.all([api('/api/rcm/patients'), api('/api/rcm/insurance')]);
+  pts = d.patients; covList = ins.insurance;
+  covBy = {};
+  covList.forEach(r => { (covBy[r.patient_code] = covBy[r.patient_code] || []).push(r); });
+  // duplicate detection: same phone or same name+dob
+  const seen = {}, dups = new Set();
+  pts.forEach(p => {
+    const k1 = p.phone.replace(/\D/g, ''), k2 = p.name.toLowerCase() + '|' + p.dob;
+    [k1, k2].forEach(k => { if (seen[k]) { dups.add(seen[k]); dups.add(p.code); } else seen[k] = p.code; });
+  });
+  window._dups = dups;
+  document.getElementById('kpiSk').style.display = 'none';
+  const kp = document.getElementById('kpis'); kp.style.display = 'grid';
+  kp.innerHTML = [
     ['Patients', pts.length, 'In database'],
     ['With coverage', Object.keys(covBy).length, 'Insurance on file'],
-    ['Active', pts.length, 'Status active'],
+    ['Active', pts.filter(p => p.status === 'Active').length, 'Status active'],
+    ['Possible duplicates', dups.size, dups.size ? 'Review needed' : 'All clean'],
   ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  document.getElementById('tblSk').style.display = 'none';
+  document.getElementById('twrap').style.display = 'block';
   render();
 }
 function render() {
-  const rows = pts.filter(p => (p.code + ' ' + p.name).toLowerCase().includes(q));
-  document.getElementById('rows').innerHTML = rows.map(p => `<tr>
-    <td><b>${esc(p.code)}</b></td><td>${esc(p.name)}</td><td>${esc(p.dob)}</td><td>${esc(p.gender)}</td>
-    <td>${esc(p.phone)}</td><td><span class="bdg b-green">Active</span></td>
-    <td><button class="btn btn-line btn-sm" onclick="viewPt('${p.code}')">View</button></td></tr>`).join('');
+  const rows = pts.filter(p => (p.code + ' ' + p.name + ' ' + p.phone + ' ' + p.dob).toLowerCase().includes(q));
+  document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
+  document.getElementById('rows').innerHTML = rows.map(p => {
+    const cov = covBy[p.code] || [];
+    const dup = (window._dups || new Set()).has(p.code);
+    return `<tr>
+    <td><div style="display:flex;align-items:center;gap:10px"><span style="width:36px;height:36px;border-radius:50%;background:${avColor(p.code)};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none">${esc(initials(p.name))}</span>
+    <div><b>${esc(p.code)}</b>${dup ? ' <span class="bdg b-amber" title="Possible duplicate">⚠ dup</span>' : ''}<br><span style="font-size:13px">${esc(p.name)}</span></div></div></td>
+    <td>${esc(p.dob)}<br><span style="color:#64748b;font-size:12px">Age ${age(p.dob)}</span></td>
+    <td>${esc(p.gender)}</td><td>${esc(p.phone)}</td>
+    <td><span class="bdg ${p.status === 'Active' ? 'b-green' : 'b-red'}">${esc(p.status || 'Active')}</span></td>
+    <td>${cov.length ? `<span class="bdg b-green">${cov.length} plan${cov.length > 1 ? 's' : ''}</span><br><span style="font-size:12px;color:#64748b">${esc(cov[0].payer)}</span>` : '<span class="bdg b-red">No coverage</span>'}</td>
+    <td style="white-space:nowrap"><button class="btn btn-line btn-sm" onclick="viewPt('${p.code}')">Profile</button>
+    <button class="btn btn-ghost btn-sm" onclick="editPt('${p.code}')">Edit</button></td></tr>`;
+  }).join('');
 }
-function viewPt(code) {
-  const p = pts.find(x => x.code === code), c = (window._cov || {})[code];
-  openModal('Patient ' + code, `
-    <div class="frow"><div class="fld"><label>Name</label><div><b>${esc(p.name)}</b></div></div>
-    <div class="fld"><label>DOB</label><div>${esc(p.dob)}</div></div></div>
-    <div class="frow"><div class="fld"><label>Gender</label><div>${esc(p.gender)}</div></div>
-    <div class="fld"><label>Phone</label><div>${esc(p.phone)}</div></div></div>
-    <div class="fld"><label>Insurance</label><div>${c ? `${esc(c.payer)} · ${esc(c.member_id)} · copay ${money(c.copay)}` : '— none on file —'}</div></div>
-    <div class="mfoot" style="padding:16px 0 0;border:0"><a class="btn btn-teal btn-sm" href="/eligibility">Verify eligibility →</a></div>`);
+async function viewPt(code) {
+  const p = pts.find(x => x.code === code), cov = covBy[code] || [];
+  openModal('Patient Profile — ' + code, `<div class="skel skel-line w80"></div><div class="skel skel-line"></div>`);
+  let hist = [];
+  try { hist = (await api('/api/rcm/patients/' + code + '/history')).events; } catch {}
+  const prioBadge = pr => `<span class="bdg ${pr === 'primary' ? 'b-green' : pr === 'secondary' ? 'b-amber' : 'b-blue'}">${esc(pr)}</span>`;
+  const evIcon = t => t === 'charge' ? '🧾' : t === 'claim' ? '📄' : '🏥';
+  openModal('Patient Profile — ' + code, `
+    <div class="frow">
+      <div class="fld"><label>Demographics</label><div style="background:#f8fafc;border-radius:10px;padding:12px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="width:44px;height:44px;border-radius:50%;background:${avColor(p.code)};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700">${esc(initials(p.name))}</span>
+        <div><b style="font-size:16px">${esc(p.name)}</b><br><span style="color:#64748b;font-size:12px">${esc(p.code)}</span></div></div>
+        <div style="font-size:13px;line-height:1.9">🎂 ${esc(p.dob)} (Age ${age(p.dob)})<br>⚧ ${esc(p.gender)}<br><span class="bdg ${p.status === 'Active' ? 'b-green' : 'b-red'}">${esc(p.status || 'Active')}</span></div></div></div>
+      <div class="fld"><label>Contact</label><div style="background:#f8fafc;border-radius:10px;padding:12px;font-size:13px;line-height:2">
+        📞 ${esc(p.phone)}<br>✉️ ${esc(p.email || '—')}<br>📍 ${esc(p.address || '—')}</div></div>
+    </div>
+    <div class="fld"><label>Coverage (${cov.length})</label>
+      ${cov.length ? cov.map(c => `<div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:6px">
+        <div><b>${esc(c.payer)}</b> <span style="color:#64748b;font-size:12px">${esc(c.plan)} · ${esc(c.type)}</span><br><code style="font-size:12px">${esc(c.member_id)}</code></div>
+        <div style="text-align:right">${prioBadge(c.priority || 'primary')}<br><span class="bdg ${c.status === 'ACTIVE' ? 'b-green' : 'b-red'}" style="margin-top:4px;display:inline-block">${esc(c.status)}</span></div></div>`).join('')
+      : '<div class="empty">No insurance on file.</div>'}</div>
+    <div class="fld"><label>Visit &amp; Claim Timeline</label>
+      ${hist.length ? `<div style="max-height:260px;overflow:auto">${hist.map(e => `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #eef2f7;font-size:13px">
+        <span style="font-size:16px">${evIcon(e.t)}</span>
+        <div><b>${e.t === 'charge' ? 'Charge ' + esc(e.cpt) + ' · ' + money(e.amount) : e.t === 'claim' ? 'Claim ' + esc(e.claim_no) + ' · ' + esc(e.status) : 'Eligibility · ' + esc(e.result)}</b><br>
+        <span style="color:#64748b">${esc(e.d || '')}${e.payer ? ' · ' + esc(e.payer) : ''}</span></div></div>`).join('')}</div>`
+      : '<div class="empty">No activity yet — charges, claims and eligibility checks will appear here.</div>'}</div>
+    <div class="mfoot" style="padding:14px 0 0;border:0;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" onclick="editPt('${p.code}')">Edit</button>
+      <a class="btn btn-teal btn-sm" href="/eligibility?patient=${p.code}">Verify eligibility →</a></div>`);
 }
+function editPt(code) {
+  const p = pts.find(x => x.code === code);
+  openModal('Edit Patient — ' + code, `
+    <div class="fld"><label>Full name</label><div><b>${esc(p.name)}</b> <span style="color:#64748b;font-size:12px">(name &amp; DOB are locked for training integrity)</span></div></div>
+    <div class="frow"><div class="fld"><label>Phone</label><input id="e_phone" value="${esc(p.phone)}"></div>
+    <div class="fld"><label>Email</label><input id="e_email" value="${esc(p.email || '')}" placeholder="patient@example.com"></div></div>
+    <div class="fld"><label>Address</label><input id="e_addr" value="${esc(p.address || '')}" placeholder="Street, City, ST ZIP"></div>
+    <div class="fld"><label>Status</label><select id="e_status"><option${p.status === 'Active' ? ' selected' : ''}>Active</option><option${p.status === 'Inactive' ? ' selected' : ''}>Inactive</option></select></div>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="viewPt('${p.code}')">Back</button>
+    <button class="btn btn-teal btn-sm" id="esave">Save Changes</button></div>`, w => {
+    w.querySelector('#esave').onclick = async () => {
+      try {
+        await api('/api/rcm/patients/' + code, { method: 'PUT', body: {
+          phone: w.querySelector('#e_phone').value, email: w.querySelector('#e_email').value,
+          address: w.querySelector('#e_addr').value, status: w.querySelector('#e_status').value } });
+        closeModal(); load();
+      } catch (e) { alert(e.message); }
+    };
+  });
+}
+document.getElementById('addBtn').onclick = () => {
+  openModal('Add Patient', `
+    <div class="frow"><div class="fld"><label>First name *</label><input id="a_fn" placeholder="Jane"></div>
+    <div class="fld"><label>Last name *</label><input id="a_ln" placeholder="Doe"></div></div>
+    <div class="frow"><div class="fld"><label>Date of birth *</label><input id="a_dob" type="date" max="${new Date().toISOString().slice(0, 10)}"></div>
+    <div class="fld"><label>Gender *</label><select id="a_g"><option>Female</option><option>Male</option><option>Other</option></select></div></div>
+    <div class="frow"><div class="fld"><label>Phone *</label><input id="a_ph" placeholder="(555) 123-4567"></div>
+    <div class="fld"><label>Email</label><input id="a_em" placeholder="patient@example.com"></div></div>
+    <div class="fld"><label>Address</label><input id="a_ad" placeholder="Street, City, ST ZIP"></div>
+    <div id="dupWarn"></div>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-teal btn-sm" id="asave">Add Patient</button></div>`, w => {
+    const g = id => w.querySelector(id).value.trim();
+    w.querySelector('#asave').onclick = async (ev, force) => {
+      const body = { name: g('#a_fn') + ' ' + g('#a_ln'), dob: g('#a_dob'), gender: g('#a_g'), phone: g('#a_ph'), email: g('#a_em'), address: g('#a_ad'), force: !!force };
+      if (!g('#a_fn') || !g('#a_ln') || !g('#a_dob') || !g('#a_ph')) { alert('First name, last name, DOB and phone are required.'); return; }
+      try {
+        const r = await api('/api/rcm/patients', { method: 'POST', body });
+        closeModal(); load();
+      } catch (e) {
+        if (e.status === 409 && e.duplicates) {
+          w.querySelector('#dupWarn').innerHTML = `<div class="info-panel" style="border-color:#f59e0b;background:#fffbeb;margin:12px 0">
+            ⚠️ <b>Possible duplicate:</b> ${e.duplicates.map(d => `${esc(d.code)} — ${esc(d.name)} (${esc(d.dob)})`).join('; ')}<br>
+            <button class="btn btn-line btn-sm" id="forceAdd" style="margin-top:8px">Save anyway</button></div>`;
+          w.querySelector('#forceAdd').onclick = ev2 => w.querySelector('#asave').onclick(ev2, true);
+        } else alert(e.message);
+      }
+    };
+  });
+};
 document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
 load();
 </script></body></html>

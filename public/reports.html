@@ -5,18 +5,38 @@
   <div class="phead"><div>
     <div class="eyebrow2">MbiInventra RCM Academy</div><h1>Reports &amp; Analytics</h1>
     <p class="psub">Revenue cycle performance and training progress — one view.</p>
-  </div><span class="bdg b-teal" style="font-size:12px">Student Report</span></div>
+  </div><div class="act-row">
+    <span class="bdg b-teal" style="font-size:12px">Student Report</span>
+    <div class="tabs" id="datepills" style="margin:0">
+      <button class="tab on" data-d="0">All time</button>
+      <button class="tab" data-d="7">7d</button>
+      <button class="tab" data-d="30">30d</button>
+      <button class="tab" data-d="90">90d</button>
+    </div>
+    <button class="btn btn-line btn-sm" id="csvBtn">⬇ Export CSV</button>
+  </div></div>
 
   <h3 style="margin:4px 0 14px">💼 RCM Performance</h3>
-  <div class="kpi-strip" id="kpisRcm" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="kpi-strip" id="kpisRcm" style="grid-template-columns:repeat(4,1fr)">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
 
   <h3 style="margin:22px 0 14px">🎓 Training Performance</h3>
-  <div class="kpi-strip" id="kpisTr" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="kpi-strip" id="kpisTr" style="grid-template-columns:repeat(4,1fr)">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
+
+  <div class="panel"><div class="prow"><h3 style="margin:0">🏥 Per-Payer Performance</h3>
+    <span style="color:#64748b;font-size:12px">which payers pay — and which deny</span></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Payer</th><th>Claims</th><th>Billed</th><th>Collected</th><th>Denials</th><th>Denial Rate</th>
+    </tr></thead><tbody id="payerrows"><tr><td colspan="6"><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div></td></tr></tbody></table></div>
+  </div>
 
   <div class="panel"><div class="prow"><h3 style="margin:0">Recent Training Attempts</h3></div>
     <div class="twrap"><table><thead><tr>
       <th>Case</th><th>Title</th><th>Score</th><th>Date</th>
-    </tr></thead><tbody id="rows"></tbody></table></div>
+    </tr></thead><tbody id="rows"><tr><td colspan="4"><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div></td></tr></tbody></table></div>
     <div class="empty" id="empty" style="display:none">No attempts yet — start training. 🎯</div>
   </div>
 
@@ -28,11 +48,13 @@
 <script src="/js/app.js"></script>
 <script>
 const LABN = { scrubber: 'Claim Scrubber', denials: 'Denial Crime-Scene', sprints: 'Coding Sprints', quiz: 'Quiz Arena' };
+let D = null, DAYS = 0;
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('reports', u);
   if (!guardFeature(u, 'reports', 'Reports')) return;
-  const d = await api('/api/rcm/reports');
+  const d = await api('/api/rcm/reports?days=' + DAYS);
+  D = d;
   const r = d.rcm, t = d.training;
   document.getElementById('kpisRcm').innerHTML = [
     ['Total billed', money(r.totalBilled), `${r.totalClaims} claims`],
@@ -46,6 +68,11 @@ async function load() {
     ['Best score', t.bestScore + '%', 'Highest recorded'],
     ['Open A/R', r.openAR, `${r.avgDaysAR} avg days`],
   ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  document.getElementById('payerrows').innerHTML = (d.payers || []).map(p => `<tr>
+    <td style="max-width:220px">${esc(p.payer)}</td><td>${p.claims}</td>
+    <td>${money(p.billed)}</td><td><b>${money(p.collected)}</b></td><td>${p.denied}</td>
+    <td><span class="bdg ${p.denialRate >= 30 ? 'b-red' : p.denialRate > 0 ? 'b-amber' : 'b-green'}">${p.denialRate}%</span></td></tr>`).join('')
+    || `<tr><td colspan="6" class="empty">No claims yet.</td></tr>`;
   document.getElementById('rows').innerHTML = d.recent.map(a => `<tr>
     <td><b>${esc(a.code)}</b></td><td>${esc(a.title)}</td>
     <td><b>${Math.round(100 * a.score / Math.max(1, a.max))}%</b> <span style="color:#64748b">(${a.score}/${a.max})</span></td>
@@ -55,5 +82,26 @@ async function load() {
     <td>${esc(LABN[l.lab] || l.lab)}</td><td><b>${l.best}</b></td><td>${l.runs}</td></tr>`).join('')
     || `<tr><td colspan="3" class="empty">No lab runs yet.</td></tr>`;
 }
+document.querySelectorAll('#datepills .tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('#datepills .tab').forEach(x => x.classList.remove('on'));
+  t.classList.add('on'); DAYS = Number(t.dataset.d); load();
+});
+document.getElementById('csvBtn').onclick = () => {
+  if (!D) return;
+  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  let csv = 'Section,Metric,Value,Detail\n';
+  const r = D.rcm, t = D.training;
+  csv += `RCM,Total billed,${r.totalBilled},${r.totalClaims} claims\n`;
+  csv += `RCM,Collected,${r.collected},\nRCM,Adjustments,${r.adjustments},\n`;
+  csv += `RCM,Denial rate,${r.denialRate}%,\nRCM,Clean claim rate,${r.cleanClaimRate}%,\n`;
+  csv += `Training,Attempts,${t.attempts},\nTraining,Average score,${t.avgScore}%,\nTraining,Best score,${t.bestScore}%,\n`;
+  csv += '\nPayer,Claims,Billed,Collected,Denied,Denial rate\n';
+  for (const p of D.payers || []) csv += [q(p.payer), p.claims, p.billed, p.collected, p.denied, p.denialRate + '%'].join(',') + '\n';
+  csv += '\nCase,Title,Score,Max,Date\n';
+  for (const a of D.recent || []) csv += [q(a.code), q(a.title), a.score, a.max, q((a.when || '').slice(0, 10))].join(',') + '\n';
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'rcm-report.csv'; a.click();
+};
 load();
 </script></body></html>

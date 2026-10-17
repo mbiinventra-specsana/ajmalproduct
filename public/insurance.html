@@ -6,17 +6,25 @@
     <div class="eyebrow2">Insurance Management</div><h1>Insurance</h1>
     <p class="psub">Fictional patient coverage and payer information for RCM training.</p>
   </div><button class="btn btn-teal btn-sm" id="addBtn" data-fn="insurance-add">+ Add Insurance</button></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div id="kpiSk" class="skel-cards" style="margin-bottom:14px"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr);display:none"></div>
+  <div class="panel" id="payerPanel" style="display:none"><div class="prow"><h3 style="margin:0">Payer Directory</h3></div>
+    <div id="payers" style="display:flex;flex-wrap:wrap;gap:10px"></div></div>
   <div class="panel"><div class="prow"><h3 style="margin:0">Insurance Records</h3>
-    <input class="search" id="q" placeholder="Search insurance…"></div>
-    <div class="twrap"><table><thead><tr>
-      <th>Patient</th><th>Payer</th><th>Member ID</th><th>Plan</th><th>Type</th><th>Status</th><th>Copay</th>
+    <input class="search" id="q" placeholder="Search patient, payer, member ID…"></div>
+    <div id="tblSk"><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div></div>
+    <div class="twrap" id="twrap" style="display:none"><table><thead><tr>
+      <th>Patient</th><th>Payer</th><th>Member ID</th><th>Plan · Type</th><th>Priority</th><th>Status</th><th>Copay</th><th></th>
     </tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="empty" id="empty" style="display:none">No insurance records match your search. 🔍</div>
   </div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
 let rows = [], q = '', pts = [];
+const initials = n => n.split(/[\s()]+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+const avColor = n => ['#0e9f8a', '#6366f1', '#d946ef', '#f59e0b', '#0ea5e9', '#ef4444'][n.length % 6];
+const prioBadge = pr => `<span class="bdg ${pr === 'primary' ? 'b-green' : pr === 'secondary' ? 'b-amber' : 'b-blue'}">${esc(pr || 'primary')}</span>`;
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('insurance', u);
@@ -24,22 +32,80 @@ async function load() {
   const [d, p] = await Promise.all([api('/api/rcm/insurance'), api('/api/rcm/patients')]);
   rows = d.insurance; pts = p.patients;
   const payers = [...new Set(rows.map(r => r.payer))];
-  document.getElementById('kpis').innerHTML = [
+  document.getElementById('kpiSk').style.display = 'none';
+  const kp = document.getElementById('kpis'); kp.style.display = 'grid';
+  kp.innerHTML = [
     ['Patients', pts.length, 'In database'],
     ['Payers', payers.length, 'On file'],
     ['Insurance records', rows.length, 'Total'],
     ['Active coverage', rows.filter(r => r.status === 'ACTIVE').length, 'Active'],
   ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  const pp = document.getElementById('payerPanel'); pp.style.display = 'block';
+  document.getElementById('payers').innerHTML = payers.map(py => {
+    const n = rows.filter(r => r.payer === py).length;
+    return `<button class="btn btn-line btn-sm" style="display:flex;align-items:center;gap:8px" onclick="filterPayer('${esc(py).replace(/'/g, "\\'")}')">
+      <span style="width:28px;height:28px;border-radius:8px;background:${avColor(py)};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px">${esc(initials(py))}</span>
+      ${esc(py)} <span class="bdg b-blue">${n}</span></button>`;
+  }).join('');
+  document.getElementById('tblSk').style.display = 'none';
+  document.getElementById('twrap').style.display = 'block';
   render();
 }
+function filterPayer(py) { q = py.toLowerCase(); document.getElementById('q').value = py; render(); }
 function render() {
-  const rs = rows.filter(r => (r.patient_code + ' ' + r.payer + ' ' + r.member_id).toLowerCase().includes(q));
   const pname = c => (pts.find(p => p.code === c) || {}).name || c;
+  const rs = rows.filter(r => (r.patient_code + ' ' + pname(r.patient_code) + ' ' + r.payer + ' ' + r.member_id).toLowerCase().includes(q));
+  document.getElementById('empty').style.display = rs.length ? 'none' : 'block';
   document.getElementById('rows').innerHTML = rs.map(r => `<tr>
-    <td><b>${esc(r.patient_code)}</b><br><span style="color:#64748b;font-size:12px">${esc(pname(r.patient_code))}</span></td>
-    <td>${esc(r.payer)}</td><td><code>${esc(r.member_id)}</code></td><td>${esc(r.plan)}</td><td>${esc(r.type)}</td>
-    <td><span class="bdg ${r.status === 'ACTIVE' ? 'b-green' : 'b-red'}">${esc(r.status)}</span></td>
-    <td>${money(r.copay)}</td></tr>`).join('');
+    <td><a href="#" onclick="covTimeline('${r.patient_code}');return false" style="color:#0e9f8a;font-weight:700">${esc(r.patient_code)}</a><br><span style="color:#64748b;font-size:12px">${esc(pname(r.patient_code))}</span></td>
+    <td><div style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:28px;border-radius:8px;background:${avColor(r.payer)};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex:none">${esc(initials(r.payer))}</span>${esc(r.payer)}</div></td>
+    <td><code>${esc(r.member_id)}</code></td><td>${esc(r.plan)}<br><span style="color:#64748b;font-size:12px">${esc(r.type)}</span></td>
+    <td>${prioBadge(r.priority)}</td>
+    <td><span class="bdg ${r.status === 'ACTIVE' ? 'b-green' : 'b-red'}">${esc(r.status)}</span><br><span style="color:#64748b;font-size:11px">eff. ${esc(r.effective || '—')}</span></td>
+    <td>${money(r.copay)}</td>
+    <td style="white-space:nowrap"><a class="btn btn-teal btn-sm" href="/eligibility?patient=${r.patient_code}&payer=${encodeURIComponent(r.payer)}">Verify →</a>
+    <button class="btn btn-ghost btn-sm" onclick="editIns(${r.id})">Edit</button></td></tr>`).join('');
+}
+function covTimeline(code) {
+  const p = pts.find(x => x.code === code) || { name: code };
+  const list = rows.filter(r => r.patient_code === code)
+    .sort((a, b) => ({ primary: 0, secondary: 1, tertiary: 2 }[a.priority || 'primary'] - { primary: 0, secondary: 1, tertiary: 2 }[b.priority || 'primary']));
+  openModal('Coverage Timeline — ' + code, `
+    <p style="color:#64748b;font-size:13px;margin:0 0 12px"><b>${esc(p.name)}</b> · coordination of benefits order</p>
+    ${list.length ? list.map((c, i) => `<div style="display:flex;gap:12px;margin-bottom:4px">
+      <div style="display:flex;flex-direction:column;align-items:center"><span style="width:28px;height:28px;border-radius:50%;background:${i === 0 ? '#0e9f8a' : '#cbd5e1'};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">${i + 1}</span>
+      ${i < list.length - 1 ? '<div style="width:2px;flex:1;background:#e2e8f0;min-height:20px"></div>' : ''}</div>
+      <div style="background:#f8fafc;border-radius:10px;padding:10px 14px;flex:1;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><b>${esc(c.payer)}</b>${prioBadge(c.priority)}</div>
+        <div style="font-size:13px;color:#475569;margin-top:4px">${esc(c.plan)} · ${esc(c.type)} · <code>${esc(c.member_id)}</code></div>
+        <div style="font-size:12px;color:#64748b;margin-top:4px">Effective ${esc(c.effective || '—')} · Copay ${money(c.copay)} · <span class="bdg ${c.status === 'ACTIVE' ? 'b-green' : 'b-red'}">${esc(c.status)}</span></div>
+      </div></div>`).join('') : '<div class="empty">No coverage on file.</div>'}
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button></div>`);
+}
+function editIns(id) {
+  const r = rows.find(x => x.id === id);
+  openModal('Edit Insurance', `
+    <div class="fld"><label>Payer</label><input id="e_payer" value="${esc(r.payer)}"></div>
+    <div class="frow"><div class="fld"><label>Member ID</label><input id="e_mid" value="${esc(r.member_id)}"></div>
+    <div class="fld"><label>Plan</label><input id="e_plan" value="${esc(r.plan)}"></div></div>
+    <div class="frow"><div class="fld"><label>Type</label><select id="e_type">${['PPO', 'HMO', 'EPO', 'POS'].map(t => `<option${r.type === t ? ' selected' : ''}>${t}</option>`).join('')}</select></div>
+    <div class="fld"><label>Copay ($)</label><input id="e_copay" type="number" min="0" step="1" value="${r.copay}"></div></div>
+    <div class="frow"><div class="fld"><label>Priority</label><select id="e_pri">${['primary', 'secondary', 'tertiary'].map(t => `<option value="${t}"${(r.priority || 'primary') === t ? ' selected' : ''}>${t[0].toUpperCase() + t.slice(1)}</option>`).join('')}</select></div>
+    <div class="fld"><label>Status</label><select id="e_st"><option${r.status === 'ACTIVE' ? ' selected' : ''}>ACTIVE</option><option${r.status === 'INACTIVE' ? ' selected' : ''}>INACTIVE</option></select></div></div>
+    <div class="fld"><label>Effective date</label><input id="e_eff" type="date" value="${esc(r.effective || '')}"></div>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-teal btn-sm" id="esave">Save</button></div>`, w => {
+    w.querySelector('#esave').onclick = async () => {
+      try {
+        await api('/api/rcm/insurance/' + id, { method: 'PUT', body: {
+          payer: w.querySelector('#e_payer').value, member_id: w.querySelector('#e_mid').value,
+          plan: w.querySelector('#e_plan').value, type: w.querySelector('#e_type').value,
+          copay: w.querySelector('#e_copay').value, priority: w.querySelector('#e_pri').value,
+          status: w.querySelector('#e_st').value, effective: w.querySelector('#e_eff').value } });
+        closeModal(); load();
+      } catch (e) { alert(e.message); }
+    };
+  });
 }
 document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
 document.getElementById('addBtn').onclick = () => {
@@ -50,6 +116,8 @@ document.getElementById('addBtn').onclick = () => {
     <div class="fld"><label>Plan</label><input id="f_plan" placeholder="Commercial PPO"></div></div>
     <div class="frow"><div class="fld"><label>Type</label><select id="f_type"><option>PPO</option><option>HMO</option><option>EPO</option><option>POS</option></select></div>
     <div class="fld"><label>Copay ($)</label><input id="f_copay" type="number" min="0" step="1" value="30"></div></div>
+    <div class="frow"><div class="fld"><label>Priority</label><select id="f_pri"><option value="primary">Primary</option><option value="secondary">Secondary</option><option value="tertiary">Tertiary</option></select></div>
+    <div class="fld"><label>Effective date</label><input id="f_eff" type="date" value="${new Date().toISOString().slice(0, 10)}"></div></div>
     <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
     <button class="btn btn-teal btn-sm" id="save">Save Insurance</button></div>`, w => {
     w.querySelector('#save').onclick = async () => {
@@ -57,7 +125,8 @@ document.getElementById('addBtn').onclick = () => {
         await api('/api/rcm/insurance', { method: 'POST', body: {
           patient_code: w.querySelector('#f_pt').value, payer: w.querySelector('#f_payer').value,
           member_id: w.querySelector('#f_mid').value, plan: w.querySelector('#f_plan').value,
-          type: w.querySelector('#f_type').value, copay: w.querySelector('#f_copay').value } });
+          type: w.querySelector('#f_type').value, copay: w.querySelector('#f_copay').value,
+          priority: w.querySelector('#f_pri').value, effective: w.querySelector('#f_eff').value } });
         closeModal(); load();
       } catch (e) { alert(e.message); }
     };

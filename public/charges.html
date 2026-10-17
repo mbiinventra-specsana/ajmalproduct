@@ -1,26 +1,57 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Charge Entry — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<title>Charge Entry — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css">
+<style>
+.ta-wrap{position:relative}
+.ta-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:10px;max-height:220px;overflow:auto;z-index:50;box-shadow:0 12px 32px rgba(15,39,67,.14);display:none}
+.ta-list.open{display:block}
+.ta-it{padding:9px 12px;cursor:pointer;font-size:13.5px;display:flex;gap:10px;align-items:center}
+.ta-it:hover,.ta-it.hot{background:#f0fdfa}
+.ta-it code{font-weight:700;color:#0f766e;min-width:52px}
+.ta-it span{color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cprev{background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:12px 14px;font-size:13.5px;color:#134e4a}
+.cprev b{color:#0f766e}
+.dupwarn{background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px;display:none}
+.dupwarn.show{display:block}
+</style></head>
 <body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
   <div class="phead"><div>
     <div class="eyebrow2">Charge Entry</div><h1>Charges</h1>
     <p class="psub">Enter billable services — date of service, CPT, diagnosis, units and amount. Saved charges become claims.</p>
   </div><button class="btn btn-teal btn-sm" id="addBtn" data-fn="charges-add">+ Enter Charge</button></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)">
+    <div class="skel" style="height:86px;border-radius:14px"></div><div class="skel" style="height:86px;border-radius:14px"></div>
+    <div class="skel" style="height:86px;border-radius:14px"></div><div class="skel" style="height:86px;border-radius:14px"></div>
+  </div>
   <div class="info-panel">🧾 <b>Charge entry training:</b> a charge represents one billable service. Enter the DOS, CPT code, ICD-10 diagnosis, modifier, units and fee — accuracy here decides whether the claim pays or denies.</div>
   <div class="panel"><div class="prow"><h3 style="margin:0">Charge History</h3>
     <input class="search" id="q" placeholder="Search charges…"></div>
     <div class="twrap"><table><thead><tr>
       <th>Date</th><th>Patient</th><th>Provider</th><th>CPT</th><th>Diagnosis</th><th>Mod</th><th>Units</th><th>Amount</th><th>Status</th><th>Claim</th><th></th>
-    </tr></thead><tbody id="rows"></tbody></table></div>
+    </tr></thead><tbody id="rows"><tr><td colspan="11"><div class="skel" style="height:38px"></div><div class="skel" style="height:38px;margin-top:8px"></div><div class="skel" style="height:38px;margin-top:8px"></div></td></tr></tbody></table></div>
     <div class="empty" id="empty" style="display:none">No charges yet — enter your first charge. 🧾</div>
   </div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
 let rows = [], q = '', pts = [];
-const CPTS = [['99213', 'Office visit, est. low'], ['99214', 'Office visit, est. mod'], ['99204', 'Office visit, new mod'], ['87880', 'Strep test'], ['72100', 'X-ray spine'], ['99312', 'Subseq. nursing care']];
-const ICDS = [['J06.9', 'Acute URI'], ['I10', 'Hypertension'], ['E11.9', 'Type 2 diabetes'], ['M54.50', 'Low back pain'], ['R05.1', 'Acute cough'], ['J02.9', 'Acute pharyngitis'], ['R07.9', 'Chest pain']];
+const CPTS = [
+  ['99202','Office visit, new pt, low'],['99203','Office visit, new pt, mod'],['99204','Office visit, new pt, high'],
+  ['99211','Office visit, est, minimal'],['99212','Office visit, est, low'],['99213','Office visit, est, low-mid'],
+  ['99214','Office visit, est, moderate'],['99215','Office visit, est, high'],
+  ['99312','Subseq. nursing care'],['99308','Subseq. nursing care, low'],
+  ['87880','Strep test, rapid'],['87426','COVID/flu/RSV combo test'],['80053','Comprehensive metabolic panel'],
+  ['80061','Lipid panel'],['85025','CBC with auto diff'],['81001','Urinalysis, auto'],
+  ['72100','X-ray spine, lumbosacral'],['71046','Chest X-ray, 2 views'],['76856','US pelvis, complete'],
+  ['93000','ECG, routine'],['97110','Therapeutic exercises'],['97140','Manual therapy'],
+  ['90834','Psychotherapy, 45 min'],['90837','Psychotherapy, 60 min'],
+  ['90471','Immunization admin, 1st'],['90658','Flu vaccine'],
+  ['12001','Simple wound repair'],['20610','Joint injection, major'],
+  ['G0438','Annual wellness, subseq.'],['G0439','Annual wellness, initial']
+];
+const ICDS = [['J06.9','Acute URI'],['I10','Hypertension'],['E11.9','Type 2 diabetes'],['M54.50','Low back pain'],['R05.1','Acute cough'],['J02.9','Acute pharyngitis'],['R07.9','Chest pain'],['Z00.00','General exam, adult'],['F41.1','Generalized anxiety'],['M25.561','Knee pain, right']];
+const cptDesc = c => (CPTS.find(x => x[0] === c) || [c, ''])[1];
+const icdDesc = c => (ICDS.find(x => x[0] === c) || [c, ''])[1];
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('charges', u);
@@ -39,33 +70,75 @@ function render() {
   const rs = rows.filter(r => (r.patient_code + ' ' + r.cpt + ' ' + r.icd).toLowerCase().includes(q));
   document.getElementById('rows').innerHTML = rs.map(r => `<tr>
     <td>${esc(r.dos)}</td><td><b>${esc(r.patient_code)}</b></td><td>${esc(r.provider)}</td>
-    <td><code>${esc(r.cpt)}</code></td><td><code>${esc(r.icd)}</code></td><td>${esc(r.modifier) || '—'}</td>
+    <td><code>${esc(r.cpt)}</code><br><small style="color:#94a3b8">${esc(cptDesc(r.cpt))}</small></td>
+    <td><code>${esc(r.icd)}</code></td><td>${esc(r.modifier) || '—'}</td>
     <td>${r.units}</td><td><b>${money(r.amount)}</b></td>
     <td><span class="bdg ${r.status === 'READY' ? 'b-green' : 'b-blue'}">${esc(r.status)}</span></td>
     <td>${r.claim_id ? '<span class="bdg b-teal">Created</span>' : '<span style="color:#94a3b8">Not created</span>'}</td>
-    <td>${!r.claim_id ? `<a class="btn btn-teal btn-sm" href="/claims">Claim →</a>` : ''}</td></tr>`).join('');
-  document.getElementById('empty').style.display = rs.length ? 'none' : 'block';
+    <td>${!r.claim_id ? `<button class="btn btn-teal btn-sm" data-fn="claims-create" onclick="toClaim(${r.id})">Claim →</button>` : ''}</td></tr>`).join('')
+    || `<tr><td colspan="11" class="empty">No charges match.</td></tr>`;
+  document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
+}
+async function toClaim(id) {
+  if (!confirm('Create a claim from this charge now?')) return;
+  try {
+    const r = await api('/api/rcm/claims', { method: 'POST', body: { charge_id: id } });
+    location.href = '/claims';
+  } catch (e) { alert(e.message); }
 }
 document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+function taWire(input, list, onPick) {
+  const draw = v => {
+    v = v.trim().toLowerCase();
+    const hits = CPTS.filter(([c, d]) => !v || c.includes(v) || d.toLowerCase().includes(v)).slice(0, 8);
+    list.innerHTML = hits.map(([c, d]) => `<div class="ta-it" data-c="${c}"><code>${c}</code><span>${esc(d)}</span></div>`).join('')
+      || `<div class="ta-it" style="color:#94a3b8">No match — type a CPT code</div>`;
+    list.classList.add('open');
+    list.querySelectorAll('.ta-it[data-c]').forEach(el => el.onclick = () => { onPick(el.dataset.c); list.classList.remove('open'); });
+  };
+  input.addEventListener('focus', () => draw(input.value));
+  input.addEventListener('input', () => draw(input.value));
+  input.addEventListener('blur', () => setTimeout(() => list.classList.remove('open'), 150));
+}
 document.getElementById('addBtn').onclick = () => {
   const today = new Date().toISOString().slice(0, 10);
   openModal('Enter Charge', `
     <div class="frow"><div class="fld"><label>Patient</label><select id="f_pt">${pts.map(p => `<option value="${p.code}">${p.code} — ${esc(p.name)}</option>`).join('')}</select></div>
     <div class="fld"><label>Date of service</label><input id="f_dos" type="date" value="${today}" max="${today}"></div></div>
-    <div class="frow"><div class="fld"><label>CPT</label><select id="f_cpt">${CPTS.map(([c, d]) => `<option value="${c}">${c} — ${d}</option>`).join('')}</select></div>
+    <div class="frow"><div class="fld"><label>CPT — type to search</label><div class="ta-wrap">
+      <input id="f_cpt" placeholder="99213 or 'office visit…'" autocomplete="off" maxlength="5"><div class="ta-list" id="f_cptl"></div></div></div>
     <div class="fld"><label>ICD-10</label><select id="f_icd">${ICDS.map(([c, d]) => `<option value="${c}">${c} — ${d}</option>`).join('')}</select></div></div>
     <div class="frow"><div class="fld"><label>Modifier (optional)</label><input id="f_mod" placeholder="25, 59, XE…" maxlength="4"></div>
     <div class="fld"><label>Units</label><input id="f_units" type="number" min="1" max="99" value="1"></div></div>
     <div class="fld"><label>Amount ($)</label><input id="f_amt" type="number" min="1" step="0.01" placeholder="120.00"></div>
+    <div class="cprev" id="cprev" style="margin-top:10px"></div>
+    <div class="dupwarn" id="dupw">⚠️ <b>Possible duplicate:</b> this patient already has this CPT on this date of service. Saving again risks a CO-97 bundling denial.</div>
     <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
     <button class="btn btn-teal btn-sm" id="save">Save Charge</button></div>`, w => {
+    let cpt = '99213';
+    const prev = () => {
+      const pt = w.querySelector('#f_pt'), dos = w.querySelector('#f_dos').value,
+        icd = w.querySelector('#f_icd').value, units = w.querySelector('#f_units').value || 1,
+        amt = w.querySelector('#f_amt').value || 0;
+      w.querySelector('#cprev').innerHTML =
+        `🧾 <b>Charge preview:</b> ${esc(pt.value)} · DOS ${esc(dos)} · <b>${esc(cpt)}</b> ${esc(cptDesc(cpt))} · ICD ${esc(icd)} · ${units} unit(s) × <b>${money(amt)}</b>`;
+      const dup = rows.some(r => r.patient_code === pt.value && r.cpt === cpt && r.dos === dos);
+      w.querySelector('#dupw').classList.toggle('show', dup);
+    };
+    taWire(w.querySelector('#f_cpt'), w.querySelector('#f_cptl'), c => { cpt = c; w.querySelector('#f_cpt').value = c; prev(); });
+    w.querySelector('#f_cpt').value = cpt;
+    ['#f_pt', '#f_dos', '#f_icd', '#f_units', '#f_amt'].forEach(s => w.querySelector(s).addEventListener('input', prev));
+    prev();
     w.querySelector('#save').onclick = async () => {
+      const amt = w.querySelector('#f_amt').value;
+      if (!amt || Number(amt) <= 0) { alert('Enter a valid amount.'); return; }
+      if (!/^\d{5}$/.test(cpt)) { alert('Pick a valid 5-digit CPT code.'); return; }
       try {
         await api('/api/rcm/charges', { method: 'POST', body: {
           patient_code: w.querySelector('#f_pt').value, dos: w.querySelector('#f_dos').value,
-          cpt: w.querySelector('#f_cpt').value, icd: w.querySelector('#f_icd').value,
+          cpt, icd: w.querySelector('#f_icd').value,
           modifier: w.querySelector('#f_mod').value, units: w.querySelector('#f_units').value,
-          amount: w.querySelector('#f_amt').value } });
+          amount: amt } });
         closeModal(); load();
       } catch (e) { alert(e.message); }
     };

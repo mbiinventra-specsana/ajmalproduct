@@ -4,15 +4,22 @@
 <body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
   <div class="phead"><div>
     <div class="eyebrow2">Revenue Cycle</div><h1>A/R Work Queue</h1>
-    <p class="psub">Review outstanding balances, perform follow-up and document account activity.</p>
-  </div></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+    <p class="psub">Review outstanding balances, perform structured follow-ups and document account activity.</p>
+  </div><span class="bdg b-teal" style="font-size:11px"><span class="pulse-dot"></span> LIVE A/R</span></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
+  <div class="panel" style="margin-bottom:18px"><div class="prow"><h3 style="margin:0">📊 Collector Stats</h3>
+    <span style="color:#64748b;font-size:12px">your follow-up performance</span></div>
+    <div class="kpi-strip" id="collector" style="grid-template-columns:repeat(4,1fr);margin:0">
+      <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+    </div></div>
   <div class="tabs" id="tabs"></div>
   <div class="panel"><div class="prow"><h3 style="margin:0">Aging Accounts</h3>
     <input class="search" id="q" placeholder="Search A/R…"></div>
     <div class="twrap"><table><thead><tr>
-      <th>Claim</th><th>Patient</th><th>Payer</th><th>Billed</th><th>Balance</th><th>Age</th><th>Follow-Up</th><th>Notes</th><th></th>
-    </tr></thead><tbody id="rows"></tbody></table></div>
+      <th>Claim</th><th>Patient</th><th>Payer</th><th>Billed</th><th>Balance</th><th>Age</th><th>Follow-Up</th><th>Activity</th><th></th>
+    </tr></thead><tbody id="rows"><tr><td colspan="9"><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div></td></tr></tbody></table></div>
     <div class="empty" id="empty" style="display:none">No open A/R — everything is collected. 🎉</div>
   </div>
 </div></main></div>
@@ -20,11 +27,12 @@
 <script>
 let rows = [], bucket = 'all', q = '', meta = {};
 const FCLS = { NOT_STARTED: 'b-amber', IN_PROGRESS: 'b-blue', DONE: 'b-green' };
+const KICON = { note: '📝', followup: '📞', promise: '🤝' };
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('ar', u);
   if (!guardFeature(u, 'ar', 'A/R Follow-up')) return;
-  const d = await api('/api/rcm/ar');
+  const [d, col] = await Promise.all([api('/api/rcm/ar'), api('/api/rcm/ar/collector').catch(() => null)]);
   rows = d.rows; meta = d;
   document.getElementById('kpis').innerHTML = [
     ['Total A/R', money(d.total), `${d.open} open account(s)`],
@@ -32,6 +40,13 @@ async function load() {
     ['Patient A/R', money(d.patientAR), 'Patient responsibility'],
     ['91+ days', d.buckets['91+'], 'High-aging accounts'],
   ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  if (col) document.getElementById('collector').innerHTML = [
+    ['Follow-ups (7d)', col.followups7d, 'Outreach attempts'],
+    ['Promises secured', col.promises, money(col.promisedAmt) + ' promised'],
+    ['Accounts worked', col.accountsWorked, 'With documented activity'],
+    ['Promise rate', col.followups7d ? Math.round(100 * col.promises / col.followups7d) + '%' : '—', 'Promises / follow-ups'],
+  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  else document.getElementById('collector').innerHTML = '';
   const tabs = [['all', 'All'], ['0-30', '0-30'], ['31-60', '31-60'], ['61-90', '61-90'], ['91+', '91+']];
   document.getElementById('tabs').innerHTML = tabs.map(([k, l]) =>
     `<button class="tab ${bucket === k ? 'on' : ''}" data-k="${k}">${l}<span class="cnt">${k === 'all' ? rows.length : (d.buckets[k] || 0)}</span></button>`).join('');
@@ -48,18 +63,57 @@ function render() {
     <td><b>${money(r.balance)}</b></td>
     <td><span class="bdg ${r.bucket === '91+' ? 'b-red' : r.bucket === '0-30' ? 'b-green' : 'b-amber'}">${r.bucket}</span> <span style="color:#64748b;font-size:12px">${r.age}d</span></td>
     <td><span class="bdg ${FCLS[r.follow_up] || 'b-gray'}">${esc(r.follow_up.replace('_', ' '))}</span></td>
-    <td>${r.notes || '—'}</td>
+    <td>${r.notes ? `<span class="bdg b-blue">${r.notes} entr${r.notes > 1 ? 'ies' : 'y'}</span>` : '<span style="color:#94a3b8">—</span>'}</td>
     <td><button class="btn btn-teal btn-sm" onclick="workAR(${r.id}, '${esc(r.claim_no)}')">Work A/R</button></td></tr>`).join('');
   document.getElementById('empty').style.display = rs.length ? 'none' : 'block';
 }
-function workAR(id, no) {
+async function workAR(id, no) {
+  const t = await api('/api/rcm/ar/timeline?claim_id=' + id).catch(() => null);
+  const c = t ? t.claim : {};
+  const timeline = t && t.notes.length ? t.notes.map(n => `
+    <div class="tl-item"><div class="tl-dot">${KICON[n.kind] || '📝'}</div><div>
+      <div><b>${esc(n.kind === 'promise' ? 'Promise to pay' : n.kind === 'followup' ? 'Follow-up' : 'Note')}</b>
+      ${n.status ? `<span class="bdg b-blue" style="font-size:10px">${esc(n.status)}</span>` : ''}
+      ${n.promise_amt > 0 ? `<span class="bdg b-teal" style="font-size:10px">${money(n.promise_amt)}</span>` : ''}
+      <span style="color:#94a3b8;font-size:11px">${esc((n.created_at || '').slice(0, 16).replace('T', ' '))}</span></div>
+      <div style="color:#475569">${esc(n.note)}</div>
+      ${n.assigned_to || n.next_date ? `<div style="font-size:11px;color:#64748b">👤 ${esc(n.assigned_to || '—')} • 📅 next: ${esc(n.next_date || '—')}</div>` : ''}
+    </div></div>`).join('') : '<div class="empty" style="padding:12px">No activity yet — be the first to work this account.</div>';
   openModal('Work A/R — ' + no, `
-    <div class="fld"><label>Follow-up note</label><textarea id="f_note" rows="4" placeholder="e.g. Called payer — claim in processing, check back in 7 days."></textarea></div>
+    <div class="kpi-strip" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+      <div class="kpi"><span>Balance</span><b>${money(c.balance)}</b></div>
+      <div class="kpi"><span>Age</span><b>${c.age}d</b><div class="sub">${esc(c.bucket || '')}</div></div>
+      <div class="kpi"><span>Status</span><b style="font-size:14px">${esc((c.status || '').replace('_', ' '))}</b></div>
+      <div class="kpi"><span>Follow-up</span><b style="font-size:14px">${esc((c.follow_up || '').replace('_', ' '))}</b></div>
+    </div>
+    <h4 style="margin:0 0 8px">📞 Follow-Up Activity</h4>
+    <div class="frow" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fld"><label>Status</label><select id="f_status">
+        <option value="">— select —</option><option>Called payer</option><option>Left voicemail</option>
+        <option>Spoke with rep</option><option>Claim in processing</option><option>Requested callback</option>
+        <option>No answer</option><option>Disputed</option></select></div>
+      <div class="fld"><label>Assigned To</label><input id="f_assigned" placeholder="e.g. Maria (collector)"></div>
+      <div class="fld"><label>Next Follow-Up Date</label><input id="f_next" type="date"></div>
+      <div class="fld"><label>💰 Promise to Pay ($)</label><input id="f_promise" type="number" min="0" step="0.01" placeholder="0.00"></div>
+    </div>
+    <div class="fld"><label>Notes</label><textarea id="f_note" rows="3" placeholder="e.g. Called payer — claim in processing, check back in 7 days."></textarea></div>
     <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-teal btn-sm" id="save" data-fn="ar-note">Save Note</button></div>`, w => {
+    <button class="btn btn-teal btn-sm" id="save" data-fn="ar-note">Save Follow-Up</button></div>
+    <h4 style="margin:14px 0 8px">🕘 Account Timeline</h4>
+    <div class="tl">${timeline}</div>`, w => {
     w.querySelector('#save').onclick = async () => {
-      try { await api('/api/rcm/ar/note', { method: 'POST', body: { claim_id: id, note: w.querySelector('#f_note').value } }); closeModal(); load(); }
-      catch (e) { alert(e.message); }
+      const note = w.querySelector('#f_note').value.trim();
+      if (!note) { alert('Notes are required.'); return; }
+      const promiseAmt = parseFloat(w.querySelector('#f_promise').value) || 0;
+      try {
+        await api('/api/rcm/ar/note', { method: 'POST', body: {
+          claim_id: id, note, kind: promiseAmt > 0 ? 'promise' : 'followup',
+          status: w.querySelector('#f_status').value,
+          assigned_to: w.querySelector('#f_assigned').value.trim(),
+          next_date: w.querySelector('#f_next').value,
+          promise_amt: promiseAmt } });
+        closeModal(); load();
+      } catch (e) { alert(e.message); }
     };
   });
 }

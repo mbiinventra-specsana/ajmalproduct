@@ -6,19 +6,23 @@
     <div class="eyebrow2">Revenue Cycle Management</div><h1>RCM Work Queue</h1>
     <p class="psub">Centralized operational queue — validate claims, work denials, follow up A/R and keep training on track.</p>
   </div><div class="act-row">
+    <span class="bdg b-teal" style="font-size:11px"><span class="pulse-dot"></span> LIVE QUEUE</span>
+    <button class="btn btn-teal btn-sm" id="workNext">⚡ Work next</button>
     <button class="btn btn-line btn-sm" id="demoBtn" data-fn="demo">✨ Load demo data</button>
   </div></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
   <div class="tabs" id="tabs"></div>
-  <div class="panel"><div class="prow"><h3 style="margin:0">Work Items</h3>
+  <div class="panel"><div class="prow"><h3 style="margin:0">Work Items <span style="color:#64748b;font-weight:400;font-size:12px">— ranked by priority score</span></h3>
     <input class="search" id="q" placeholder="Search queue…"></div>
     <div class="twrap"><table><thead><tr>
-      <th>Priority</th><th>Type</th><th>Task</th><th>Detail</th><th>Amount</th><th></th>
-    </tr></thead><tbody id="rows"></tbody></table></div>
+      <th>Score</th><th>Priority</th><th>Type</th><th>Task</th><th>Detail</th><th>Amount</th><th></th>
+    </tr></thead><tbody id="rows"><tr><td colspan="7"><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div></td></tr></tbody></table></div>
     <div class="empty" id="empty" style="display:none">Queue is clear — nice work. 🎉<br>
       <button class="btn btn-line btn-sm empty-cta" onclick="document.getElementById('demoBtn').click()">Load demo data to practice</button></div>
   </div>
-  <div class="info-panel">💡 <b>How the queue works:</b> every training action creates queue items — unvalidated claims, denials to work, A/R follow-ups and cases to improve. Clear high-priority items first, like a real billing team.</div>
+  <div class="info-panel">💡 <b>Priority score</b> = urgency × amount × aging × denial risk. <b>⚡ Work next</b> jumps straight to your highest-impact item — work the queue like a real billing team lead.</div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
@@ -39,6 +43,9 @@ async function load() {
     ['Denials', ov.denials, 'Open denial tasks'],
   ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
   renderTabs(); render();
+  const wn = document.getElementById('workNext');
+  wn.disabled = !items.length;
+  wn.onclick = () => { const next = items.filter(i => tab === 'all' || i.kind === tab)[0]; if (next) location.href = next.href; };
 }
 function renderTabs() {
   const counts = { all: items.length };
@@ -51,10 +58,12 @@ function renderTabs() {
 function render() {
   const rows = items.filter(i => (tab === 'all' || i.kind === tab) &&
     (i.title + ' ' + i.sub).toLowerCase().includes(q));
-  document.getElementById('rows').innerHTML = rows.map(i => `<tr>
+  document.getElementById('rows').innerHTML = rows.map((i, ix) => `<tr${ix === 0 ? ' style="background:rgba(14,159,138,.05)"' : ''}>
+    <td><b style="color:#0e9f8a">${i.score ?? '—'}</b></td>
     <td><span class="bdg ${PCLS[i.priority]}">${i.priority}</span></td>
     <td><span class="bdg ${KCLS[i.kind] || 'b-gray'}">${KIND[i.kind] || i.kind}</span></td>
-    <td><b>${esc(i.title)}</b></td><td style="color:#64748b">${esc(i.sub)}</td>
+    <td><b>${esc(i.title)}</b>${ix === 0 ? ' <span class="bdg b-teal" style="font-size:10px">NEXT</span>' : ''}</td>
+    <td style="color:#64748b">${esc(i.sub)}</td>
     <td>${i.amount ? money(i.amount) : '—'}</td>
     <td><a class="btn btn-teal btn-sm" href="${i.href}">${esc(i.action)}</a></td></tr>`).join('');
   document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
