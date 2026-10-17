@@ -266,7 +266,8 @@ const parseDbTs = (v) => {
 // Tiny in-memory cache for heavy admin read APIs (per-key TTL). Cleared on relevant writes.
 const _apiCache = new Map();
 const cached = (key, ttlMs, fn) => async (req, res) => {
-  const ck = key + ':' + (req.query.days || '') + ':' + (req.admin ? req.admin.id : '');
+  const uid = req.session ? (req.session.userId || '') : '';
+  const ck = key + ':' + (req.query.days || '') + ':' + uid;
   const hit = _apiCache.get(ck);
   if (hit && Date.now() - hit.t < ttlMs) return res.json(hit.d);
   const data = await fn(req);
@@ -387,17 +388,17 @@ app.get('/api/me', ah(async (req, res) => {
 }));
 
 // ---------- student API ----------
-app.get('/api/dashboard', requireAuth, ah(async (req, res) => {
+app.get('/api/dashboard', requireAuth, ah(cached('stu-dash', 30000, async (req) => {
   const u = await db.get('SELECT * FROM users WHERE id = ?', [req.session.userId]);
   const recent = await db.all(
     `SELECT a.id, a.score, a.max_score, a.completed_at, c.code, c.title
      FROM attempts a JOIN cases c ON c.id = a.case_id
      WHERE a.user_id = ? AND a.status = 'completed'
      ORDER BY a.completed_at DESC LIMIT 5`, [u.id]);
-  res.json({ user: pub(u), stats: await userStats(u.id), recent });
-}));
+  return { user: pub(u), stats: await userStats(u.id), recent };
+})));
 
-app.get('/api/cases', requireAuth, ah(async (req, res) => {
+app.get('/api/cases', requireAuth, ah(cached('stu-cases', 300000, async (req) => {
   const cases = await db.all(
     `SELECT c.*, (SELECT COUNT(*) FROM questions q WHERE q.case_id = c.id) AS qcount
      FROM cases c WHERE c.active = 1 ORDER BY c.sort`);
@@ -405,13 +406,13 @@ app.get('/api/cases', requireAuth, ah(async (req, res) => {
     `SELECT case_id, COUNT(*) AS attempts, MAX(score) AS best, SUM(status='completed') AS done
      FROM attempts WHERE user_id = ? GROUP BY case_id`, [req.session.userId]);
   const pm = Object.fromEntries(prog.map(p => [p.case_id, p]));
-  res.json({ cases: cases.map(c => ({
+  return { cases: cases.map(c => ({
     id: c.id, code: c.code, title: c.title, description: c.description,
     difficulty: c.difficulty, category: c.category, points: c.points,
     questions: c.qcount, attempts: pm[c.id]?.attempts || 0,
     best: pm[c.id]?.best ?? null, completed: (pm[c.id]?.done || 0) > 0,
-  })) });
-}));
+  })) };
+})));
 
 app.get('/api/cases/:id', requireAuth, ah(async (req, res) => {
   const c = await db.get('SELECT * FROM cases WHERE id = ? AND active = 1', [req.params.id]);
@@ -455,6 +456,7 @@ app.post('/api/attempts/:id/finish', requireAuth, ah(async (req, res) => {
   const a = await db.get('SELECT * FROM attempts WHERE id = ? AND user_id = ?', [req.params.id, req.session.userId]);
   if (!a || a.status !== 'started') return res.status(404).json({ error: 'Attempt not found or finished.' });
   await db.run(`UPDATE attempts SET status='completed', completed_at=? WHERE id = ?`, [db.now(), a.id]);
+  bustAdminCache(); // clear cached dashboard/cases so progress updates instantly
   const fin = await db.get('SELECT * FROM attempts WHERE id = ?', [a.id]);
   const stats = await userStats(req.session.userId);
   res.json({ score: fin.score, maxScore: fin.max_score,
