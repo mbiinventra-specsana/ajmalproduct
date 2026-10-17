@@ -199,6 +199,7 @@ function adminShell(active, user) {
       ['syshealth', 'system', 'System health', '/owner/system', 'pulse'],
     ]],
   ]; // pure admin — no student items here
+  console.log('[adminShell] nav items:', nav[0][1].length, '| active:', active);
   document.getElementById('sidebar').innerHTML = `
     <div class="brand"><div class="mark">${I.crown}</div><div>MbiInventra<small>owner console</small></div></div>
     <nav class="snav">${nav.map(([g, items]) => `
