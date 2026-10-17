@@ -79,6 +79,7 @@ const I = {
   mega: _svg('<path d="m3 11 18-7-7 18-2.5-7.5z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'),
   monitor: _svg('<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>'),
   pulse: _svg('<path d="M22 12h-4l-3 8-6-16-3 8H2"/>'),
+  list: _svg('<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/>'),
   sliders: _svg('<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/>'),
 };
 // menu item → group mapping (mirrors MENU_ITEMS in server.js)
@@ -194,6 +195,7 @@ function adminShell(active, user) {
       ['announce', 'announce', 'Announcements', '/owner/announce', 'mega'],
       ['menus', 'menus', 'Menu Control', '/owner/menus', 'sliders'],
       ['sessions', 'sessions', 'Sessions', '/owner/sessions', 'monitor'],
+      ['activity', 'activity', 'Activity', '/owner/activity', 'list'],
       ['syshealth', 'system', 'System health', '/owner/system', 'pulse'],
     ]],
   ]; // pure admin — no student items here

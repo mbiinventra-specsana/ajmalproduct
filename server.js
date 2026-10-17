@@ -47,6 +47,24 @@ app.use((req, res, next) => {
   }
   next();
 });
+// ---- IP block enforcement (early; blocks everything except the notice itself) ----
+const _ipBlockCache = new Map(); // ip -> {blocked, until}
+app.use((req, res, next) => {
+  const ip = req.ip || '';
+  if (!ip) return next();
+  const c = _ipBlockCache.get(ip), now = Date.now();
+  const check = (blocked) => {
+    if (!blocked) return next();
+    if (req.path.startsWith('/api/')) return res.status(403).json({ error: 'Access denied from this IP.', ipBlocked: true });
+    return res.status(403).send('<!DOCTYPE html><html><head><title>403</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#0f2743;color:#fff"><div style="text-align:center"><h1>403 — Access denied</h1><p>Your IP address has been blocked by the administrator.</p></div></body></html>');
+  };
+  if (c && c.until > now) return check(c.blocked);
+  db.get('SELECT id FROM ip_blocks WHERE ip = ?', [ip]).then(row => {
+    _ipBlockCache.set(ip, { blocked: !!row, until: now + 60 * 1000 });
+    check(!!row);
+  }).catch(() => next());
+});
+function clearIpBlockCache(ip) { if (ip) _ipBlockCache.delete(ip); }
 // prune dead session rows every 30 min (older than 24h)
 setInterval(() => {
   const cutoff = new Date(Date.now() - 24 * 3600 * 1000).toISOString().slice(0, 19).replace('T', ' ');
@@ -225,6 +243,15 @@ async function userStats(userId) {
 }
 const ah = (fn) => (req, res, next) => fn(req, res, next).catch(next); // async handler
 
+// ---- activity logging (fire-and-forget; never blocks the request) ----
+function logActivity(userId, action, detail, req) {
+  db.run(
+    'INSERT INTO activity_logs (user_id, action, detail, ip, user_agent, created_at) VALUES (?,?,?,?,?,?)',
+    [userId || null, String(action).slice(0, 64), String(detail || '').slice(0, 500),
+     (req && req.ip || '').slice(0, 64), (req && req.get && req.get('User-Agent') || '').slice(0, 500), db.now()]
+  ).catch(() => {});
+}
+
 // ---------- pages ----------
 const send = (f) => (req, res) => res.sendFile(path.join(__dirname, 'public', f));
 app.get('/', send('index.html'));
@@ -270,7 +297,7 @@ async function ownerPage(req, res, next) {
 }
 app.get('/owner', ownerPage);
 app.get('/owner/', ownerPage);
-app.get('/owner/:section(analytics|accounts|announce|sessions|system|menus)', ownerPage);
+app.get('/owner/:section(analytics|accounts|announce|sessions|system|menus|activity)', ownerPage);
 app.get(ADMIN_PATH, send('admin.html'));
 app.get(ADMIN_PATH + '/', send('admin.html'));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
@@ -291,7 +318,7 @@ app.post('/api/login', ah(async (req, res) => {
     if (u) break;
   }
   const ok = u && db.verifyPassword(password || '', u.pass_hash);
-  if (!ok) { noteFail(req); return res.status(401).json({ error: 'Invalid email or password.' }); }
+  if (!ok) { noteFail(req); logActivity(u ? u.id : null, 'login_failed', 'email=' + emailInput, req); return res.status(401).json({ error: 'Invalid email or password.' }); }
   req.session.regenerate((err) => {
     if (err) return res.status(500).json({ error: 'Session error.' });
     req.session.userId = u.id;
@@ -310,12 +337,14 @@ app.post('/api/login', ah(async (req, res) => {
           [sid, u.id, req.ip || '', (req.get('User-Agent') || '').slice(0, 200), db.now(), db.now()]);
       } catch {}
       try { await db.run('UPDATE users SET last_login = ? WHERE id = ?', [db.now(), u.id]); } catch {}
+      logActivity(u.id, 'login', 'role=' + u.role, req);
       done();
     })();
   });
 }));
 app.post('/api/logout', (req, res) => {
-  const sid = req.sessionID;
+  const sid = req.sessionID, uid = req.session.userId;
+  logActivity(uid, 'logout', '', req);
   req.session.destroy(() => {
     if (sid) db.run('DELETE FROM login_sessions WHERE session_id = ?', [sid]).catch(() => {});
     res.json({ ok: true });
@@ -975,6 +1004,7 @@ app.post('/api/admin/users/bulk-features', requireAdmin, ah(async (req, res) => 
     else await db.run('INSERT INTO student_features (user_id, feature, enabled) VALUES (?,?,?)', [id, feature, enabled]);
     n++;
   }
+  logActivity(req.adminUser.id, 'feature_toggled', `bulk n=${n} key=${String((req.body||{}).feature||'').slice(0,40)}`, req);
   res.json({ ok: true, updated: n });
 }));
 app.post('/api/admin/users/bulk-preset', requireAdmin, ah(async (req, res) => {
@@ -996,6 +1026,7 @@ app.post('/api/admin/users/bulk-preset', requireAdmin, ah(async (req, res) => {
     }
     n++;
   }
+  logActivity(req.adminUser.id, 'feature_toggled', `bulk-preset n=${n} preset=${String((req.body||{}).preset||'').slice(0,20)}`, req);
   res.json({ ok: true, updated: n });
 }));
 app.post('/api/admin/users/bulk-delete', requireAdmin, ah(async (req, res) => {
@@ -1003,6 +1034,7 @@ app.post('/api/admin/users/bulk-delete', requireAdmin, ah(async (req, res) => {
   if (!ids.length) return res.status(400).json({ error: 'No users selected (you cannot delete yourself).' });
   let n = 0;
   for (const id of ids) { await db.run('DELETE FROM users WHERE id = ?', [id]); n++; }
+  logActivity(req.adminUser.id, 'user_deleted', 'bulk n=' + n, req);
   res.json({ ok: true, deleted: n });
 }));
 function _parseCSV(text) {
@@ -1074,6 +1106,7 @@ app.post('/api/admin/users', requireAdmin, ah(async (req, res) => {
     const r = await db.run('INSERT INTO users (name,email,pass_hash,role,created_at) VALUES (?,?,?,?,?)',
       [String(name).slice(0, 80), String(email).toLowerCase().trim().slice(0, 120),
        db.hashPassword(password), role, db.now()]);
+    logActivity(req.adminUser.id, 'user_created', `id=${r.id} email=${String(email).toLowerCase().trim().slice(0, 120)} role=${role}`, req);
     res.json({ ok: true, id: r.id });
   } catch (e) { res.status(409).json({ error: 'Email already exists.' }); }
 }));
@@ -1081,6 +1114,7 @@ app.delete('/api/admin/users/:id', requireAdmin, ah(async (req, res) => {
   if (Number(req.params.id) === req.adminUser.id)
     return res.status(400).json({ error: 'Cannot delete yourself.' });
   await db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
+  logActivity(req.adminUser.id, 'user_deleted', 'id=' + req.params.id, req);
   res.json({ ok: true });
 }));
 // ---- per-student control panel ----
@@ -1143,6 +1177,71 @@ app.post('/api/admin/sessions/:id/kill', requireAdmin, ah(async (req, res) => {
   if (!s) return res.status(404).json({ error: 'Not found.' });
   await new Promise(r => req.sessionStore.destroy(s.session_id, r));
   await db.run('DELETE FROM login_sessions WHERE id = ?', [s.id]);
+  res.json({ ok: true });
+}));
+
+// ---- activity logs + IP blocking ----
+app.get('/api/admin/activity/stats', requireAdmin, ah(async (req, res) => {
+  const day = db.IS_MYSQL ? 'DATE(created_at) = CURDATE()' : "date(created_at) = date('now')";
+  const d7 = db.IS_MYSQL ? 'created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)' : "created_at >= datetime('now', '-7 days')";
+  const [loginsToday, failed7, ips7, blocked] = await Promise.all([
+    db.get(`SELECT COUNT(*) AS n FROM activity_logs WHERE action='login' AND ${day}`),
+    db.get(`SELECT COUNT(*) AS n FROM activity_logs WHERE action='login_failed' AND ${d7}`),
+    db.get(`SELECT COUNT(DISTINCT ip) AS n FROM activity_logs WHERE ${d7} AND ip <> ''`),
+    db.get('SELECT COUNT(*) AS n FROM ip_blocks'),
+  ]);
+  res.json({ loginsToday: loginsToday.n, failed7: failed7.n, ips7: ips7.n, blocked: blocked.n });
+}));
+app.get('/api/admin/activity', requireAdmin, ah(async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(100, Math.max(10, parseInt(req.query.limit, 10) || 25));
+  const offset = (page - 1) * limit;
+  const where = [], params = [];
+  const action = String(req.query.action || '').slice(0, 64);
+  if (action) { where.push('l.action = ?'); params.push(action); }
+  const q = String(req.query.q || '').trim().slice(0, 80);
+  if (q) { where.push('(u.name LIKE ? OR u.email LIKE ? OR l.ip LIKE ? OR l.detail LIKE ?)'); params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`); }
+  const from = String(req.query.from || '').slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(from)) { where.push('l.created_at >= ?'); params.push(from + ' 00:00:00'); }
+  const to = String(req.query.to || '').slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(to)) { where.push('l.created_at <= ?'); params.push(to + ' 23:59:59'); }
+  const w = where.length ? 'WHERE ' + where.join(' AND ') : '';
+  const total = (await db.get(`SELECT COUNT(*) AS n FROM activity_logs l LEFT JOIN users u ON u.id = l.user_id ${w}`, params)).n;
+  const rows = await db.all(
+    `SELECT l.id, l.action, l.detail, l.ip, l.created_at, u.id AS user_id, u.name, u.email, u.role
+     FROM activity_logs l LEFT JOIN users u ON u.id = l.user_id ${w}
+     ORDER BY l.id DESC LIMIT ? OFFSET ?`, [...params, limit, offset]);
+  res.json({ rows, total, pages: Math.ceil(total / limit), page, limit });
+}));
+app.get('/api/admin/activity/actions', requireAdmin, ah(async (req, res) => {
+  const rows = await db.all('SELECT DISTINCT action FROM activity_logs ORDER BY action');
+  res.json({ actions: rows.map(r => r.action) });
+}));
+app.get('/api/admin/ip-blocks', requireAdmin, ah(async (req, res) => {
+  const rows = await db.all(
+    `SELECT b.id, b.ip, b.reason, b.created_at, u.name AS blocked_by_name
+     FROM ip_blocks b LEFT JOIN users u ON u.id = b.blocked_by ORDER BY b.id DESC`);
+  res.json({ blocks: rows });
+}));
+app.post('/api/admin/ip-blocks', requireAdmin, ah(async (req, res) => {
+  const ip = String((req.body && req.body.ip) || '').trim().slice(0, 64);
+  const reason = String((req.body && req.body.reason) || '').slice(0, 300);
+  if (!ip) return res.status(400).json({ error: 'IP required.' });
+  if (ip === req.ip) return res.status(400).json({ error: 'You cannot block your own IP.' });
+  try {
+    const r = await db.run('INSERT INTO ip_blocks (ip, reason, blocked_by, created_at) VALUES (?,?,?,?)',
+      [ip, reason, req.adminUser.id, db.now()]);
+    clearIpBlockCache(ip);
+    logActivity(req.adminUser.id, 'ip_blocked', `ip=${ip} reason=${reason.slice(0, 60)}`, req);
+    res.json({ ok: true, id: r.id });
+  } catch (e) { res.status(409).json({ error: 'IP already blocked.' }); }
+}));
+app.delete('/api/admin/ip-blocks/:id', requireAdmin, ah(async (req, res) => {
+  const b = await db.get('SELECT * FROM ip_blocks WHERE id = ?', [req.params.id]);
+  if (!b) return res.status(404).json({ error: 'Not found.' });
+  await db.run('DELETE FROM ip_blocks WHERE id = ?', [b.id]);
+  clearIpBlockCache(b.ip);
+  logActivity(req.adminUser.id, 'ip_unblocked', `ip=${b.ip}`, req);
   res.json({ ok: true });
 }));
 // ---- announcements (ultra: schedule, targeting, pin/expire, placement, read receipts) ----

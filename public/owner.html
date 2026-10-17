@@ -213,6 +213,35 @@
       <div id="sessList"><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div></div>
     </div>
     </section>
+    <!-- ACTIVITY -->
+    <section data-sec="activity" style="display:none">
+    <div class="topbar"><div><h1>📜 Activity Logs</h1><p>Every login, action and admin change — with IP control.</p></div>
+      <div><label style="display:flex;gap:8px;align-items:center;font-size:13px;color:#c7d5e8"><input type="checkbox" id="autoRef"> Auto-refresh (30s)</label></div></div>
+    <div class="cards" id="actStats"><div class="skel-cards"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div></div></div>
+    <div class="grid2">
+      <div class="panel"><h3>🚫 Blocked IPs <span class="pill" id="blockCount" style="margin-left:6px">0</span></h3>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <input class="input" id="bIp" placeholder="IP address" style="flex:1;min-width:140px">
+          <input class="input" id="bReason" placeholder="Reason (optional)" style="flex:2;min-width:140px">
+          <button class="btn btn-teal btn-sm" id="bBlock">Block IP</button>
+        </div>
+        <div id="blockList"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div>
+      </div>
+      <div class="panel"><h3>🔍 Filters</h3>
+        <div class="act-filters">
+          <select class="input" id="fAction"><option value="">All actions</option></select>
+          <input class="input" id="fQ" placeholder="Search user, email, IP…">
+          <input class="input" id="fFrom" type="date"><input class="input" id="fTo" type="date">
+          <button class="btn btn-teal btn-sm" id="fGo">Apply</button>
+        </div>
+        <p style="font-size:12.5px;color:#8a97ad;margin:10px 0 0">Tip: block an IP straight from a log row via the 🚫 button.</p>
+      </div>
+    </div>
+    <div class="panel"><h3>📜 Logs</h3>
+      <div id="actLogs"><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div></div>
+      <div class="pager" id="actPager"></div>
+    </div>
+    </section>
     <!-- MENUS -->
     <section data-sec="menus" style="display:none">
     <div class="topbar"><div><h1>🎚️ Menu Control</h1><p>Per-student menu items & functions — changes save instantly.</p></div>
@@ -689,6 +718,71 @@ function annPreviewHTML(title, body) {
     <p style="font-size:12px;color:#8a97ad;margin:10px 0 0">This is exactly how it appears on the student dashboard.</p>`;
 }
 // ---- sessions / device control ----
+// ---- activity logs + IP blocking ----
+let actPage = 1, actTimer = null;
+const ACT_ICONS = { login: '🟢', login_failed: '🔴', logout: '⚪', user_created: '➕', user_deleted: '🗑️', password_reset: '🔑', feature_toggled: '🎚️', announcement_posted: '📢', ip_blocked: '🚫', ip_unblocked: '✅' };
+async function loadActivity() {
+  try {
+    const [st, acts] = await Promise.all([api('/api/admin/activity/stats'), api('/api/admin/activity/actions')]);
+    document.getElementById('actStats').innerHTML = `
+      <div class="card stat"><span>Logins today</span><b>${st.loginsToday}</b></div>
+      <div class="card stat"><span>Failed logins (7d)</span><b style="${st.failed7 ? 'color:#dc2626' : ''}">${st.failed7}</b></div>
+      <div class="card stat"><span>Unique IPs (7d)</span><b>${st.ips7}</b></div>
+      <div class="card stat"><span>Blocked IPs</span><b style="${st.blocked ? 'color:#dc2626' : ''}">${st.blocked}</b></div>`;
+    document.getElementById('fAction').innerHTML = '<option value="">All actions</option>' +
+      acts.actions.map(a => `<option value="${esc(a)}">${ACT_ICONS[a] || '•'} ${esc(a)}</option>`).join('');
+    await loadActLogs();
+    await loadBlocks();
+  } catch (e) { document.getElementById('actLogs').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+async function loadActLogs() {
+  const p = new URLSearchParams({ page: actPage, limit: 25,
+    action: document.getElementById('fAction').value,
+    q: document.getElementById('fQ').value.trim(),
+    from: document.getElementById('fFrom').value, to: document.getElementById('fTo').value });
+  const d = await api('/api/admin/activity?' + p.toString());
+  document.getElementById('actLogs').innerHTML = d.rows.length ? `<table>
+    <tr><th>Time</th><th>Action</th><th>User</th><th>Detail</th><th>IP</th><th></th></tr>
+    ${d.rows.map(r => `<tr>
+      <td style="white-space:nowrap;font-size:12.5px">${esc((r.created_at || '').slice(0, 16).replace('T', ' '))}</td>
+      <td><span class="pill">${ACT_ICONS[r.action] || '•'} ${esc(r.action)}</span></td>
+      <td>${r.name ? `<b>${esc(r.name)}</b><br><span style="font-size:12px;color:#8a97ad">${esc(r.email)}</span>` : '<span style="color:#8a97ad">—</span>'}</td>
+      <td style="font-size:12.5px;max-width:280px;overflow:hidden;text-overflow:ellipsis">${esc(r.detail)}</td>
+      <td style="font-family:monospace;font-size:12.5px">${esc(r.ip)}</td>
+      <td>${r.ip ? `<button class="btn btn-line btn-sm" title="Block this IP" onclick="quickBlock('${esc(r.ip)}')">🚫</button>` : ''}</td>
+    </tr>`).join('')}</table>` : `<div class="empty">No logs match.</div>`;
+  // pager
+  const pg = [];
+  for (let i = 1; i <= d.pages; i++) {
+    if (i === 1 || i === d.pages || Math.abs(i - d.page) <= 2)
+      pg.push(`<button class="pgbtn${i === d.page ? ' on' : ''}" onclick="actGoto(${i})">${i}</button>`);
+    else if (pg[pg.length - 1] !== '…') pg.push('…');
+  }
+  document.getElementById('actPager').innerHTML =
+    `<span style="font-size:12.5px;color:#8a97ad">${d.total} entries</span>` + pg.join('');
+}
+function actGoto(p) { actPage = p; loadActLogs(); window.scrollTo(0, 0); }
+async function loadBlocks() {
+  const d = await api('/api/admin/ip-blocks');
+  document.getElementById('blockCount').textContent = d.blocks.length;
+  document.getElementById('blockList').innerHTML = d.blocks.length ? d.blocks.map(b => `
+    <div class="block-row"><div><b style="font-family:monospace">${esc(b.ip)}</b>
+      ${b.reason ? `<br><span style="font-size:12.5px;color:#8a97ad">${esc(b.reason)}</span>` : ''}
+      <br><span style="font-size:12px;color:#8a97ad">by ${esc(b.blocked_by_name || '?')} · ${esc((b.created_at || '').slice(0, 16).replace('T', ' '))}</span></div>
+      <button class="btn btn-line btn-sm" onclick="unblockIp(${b.id})">Unblock</button></div>`).join('')
+    : `<div class="empty">No blocked IPs.</div>`;
+}
+async function quickBlock(ip) {
+  const reason = prompt(`Block IP ${ip}? Reason (optional):`) || '';
+  if (reason === null) return;
+  try { await api('/api/admin/ip-blocks', { method: 'POST', body: { ip, reason } }); loadBlocks(); loadActLogs(); }
+  catch (e) { alert(e.message); }
+}
+async function unblockIp(id) {
+  if (!confirm('Unblock this IP?')) return;
+  await api('/api/admin/ip-blocks/' + id, { method: 'DELETE' });
+  loadBlocks();
+}
 async function loadSessions() {
   try {
     const { sessions } = await api('/api/admin/sessions');
@@ -903,6 +997,7 @@ async function loadOwnerSection(sec) {
   else if (sec === 'announce') await loadAnnouncements();
   else if (sec === 'menus') await loadMenus();
   else if (sec === 'sessions') await loadSessions();
+  else if (sec === 'activity') await loadActivity();
   else if (sec === 'system') await loadSystem();
 }
 function ownerShow(sec) {
@@ -929,7 +1024,7 @@ async function boot() {
   const u0 = await currentUser();
   if (!u0) return;
   window.ME_ID = u0.id;
-  const KEY = { dashboard: 'owner', analytics: 'analytics', accounts: 'accounts', announce: 'announce', menus: 'menus', sessions: 'sessions', system: 'syshealth' }[SEC] || 'owner';
+  const KEY = { dashboard: 'owner', analytics: 'analytics', accounts: 'accounts', announce: 'announce', menus: 'menus', sessions: 'sessions', activity: 'activity', system: 'syshealth' }[SEC] || 'owner';
   adminShell(KEY, u0);
   ownerShow(SEC);
   history.replaceState({ sec: SEC }, '', location.pathname);
@@ -943,6 +1038,22 @@ async function boot() {
     b.classList.add('on');
     INSIGHT_DAYS = parseInt(b.dataset.days, 10);
     await loadInsights();
+  });
+  // activity: filters + block form + auto-refresh
+  document.getElementById('fGo').onclick = () => { actPage = 1; loadActLogs(); };
+  document.getElementById('fQ').addEventListener('keydown', e => { if (e.key === 'Enter') { actPage = 1; loadActLogs(); } });
+  document.getElementById('bBlock').onclick = async () => {
+    const ip = document.getElementById('bIp').value.trim();
+    if (!ip) return alert('Enter an IP address.');
+    try {
+      await api('/api/admin/ip-blocks', { method: 'POST', body: { ip, reason: document.getElementById('bReason').value.trim() } });
+      document.getElementById('bIp').value = ''; document.getElementById('bReason').value = '';
+      loadBlocks();
+    } catch (e) { alert(e.message); }
+  };
+  document.getElementById('autoRef').addEventListener('change', e => {
+    if (actTimer) { clearInterval(actTimer); actTimer = null; }
+    if (e.target.checked) actTimer = setInterval(() => { if (document.querySelector('[data-sec="activity"]').style.display !== 'none') loadActLogs(); }, 30000);
   });
   // boot() handles auth, sidebar, section routing and data loading
   document.getElementById('create').onclick = async () => {
