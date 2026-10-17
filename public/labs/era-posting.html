@@ -195,7 +195,12 @@ async function init() {
       break;
     } catch (e) {
       if (retries === 0) {
-        $('scen-list').innerHTML = '<div class="post-card" style="color:#dc2626">Failed to load scenarios: ' + esc(e.message) + '<br><button onclick="location.reload()" style="margin-top:10px;padding:8px 16px;background:#0e9f8a;color:#fff;border:none;border-radius:8px;cursor:pointer">Retry</button></div>';
+        $('scen-list').innerHTML = '<div class="post-card" style="color:#dc2626;padding:20px">'
+          + '<b>Debug:</b> API failed after 3 tries<br>'
+          + 'Error: ' + esc(e.message) + '<br>'
+          + 'Status: ' + (e.status || 'unknown') + '<br>'
+          + '<button onclick="location.reload()" style="margin-top:10px;padding:8px 16px;background:#0e9f8a;color:#fff;border:none;border-radius:8px;cursor:pointer">Retry</button></div>';
+        $('st-total').textContent = 'ERR';
         return;
       }
       await new Promise(r => setTimeout(r, 500));
