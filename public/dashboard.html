@@ -2,47 +2,108 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — MbiInventra RCM Academy</title>
+<title>Command Center — MbiInventra RCM Academy</title>
 <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
 <div class="shell">
   <aside class="side" id="sidebar"></aside>
-  <main class="main">
-    <div class="topbar">
-      <div><h1 id="hello">Dashboard</h1><p>Your training at a glance.</p></div>
-      <a class="btn btn-teal" href="/training">Continue training →</a>
+  <main class="main cc">
+    <div class="cc-head">
+      <div><h1>Command Center</h1><p id="welcome">Loading your training floor…</p></div>
+      <span class="badge-fict">TRAINING MODE · fictional data</span>
     </div>
-    <div class="cards" id="stats"></div>
-    <div class="grid2">
-      <div class="panel"><h3>📈 Training journey</h3><div class="jmap" id="jmap"></div>
-        <p style="font-size:13px;color:#5b6b85;margin-top:8px">Stages unlock in your mind as you complete cases across categories.</p></div>
-      <div class="panel"><h3>🕘 Recent attempts</h3><div id="recent"></div></div>
+
+    <div class="kpi-strip" id="kpis"></div>
+
+    <div class="cc-grid">
+      <div class="panel-light">
+        <div class="pl-head"><h3>🧾 Work Queue — training cases</h3><a href="/training">Case Center →</a></div>
+        <div style="overflow-x:auto"><table class="dtable"><thead><tr>
+          <th>Case</th><th>Category</th><th>Level</th><th>Status</th><th>Best</th><th>Att.</th><th></th>
+        </tr></thead><tbody id="queue"></tbody></table></div>
+      </div>
+      <div>
+        <div class="panel-light"><h3>🔔 Alerts</h3><div id="alerts"></div></div>
+        <div class="panel-light" style="margin-top:16px"><h3>🎯 Level progress</h3><div id="lvlprog"></div></div>
+      </div>
+    </div>
+
+    <div class="cc-grid" style="margin-top:16px">
+      <div class="panel-light"><h3>📊 Best score by case</h3><div id="chart"></div></div>
+      <div class="panel-light"><h3>🕘 Recent activity</h3><div id="recent"></div></div>
     </div>
   </main>
 </div>
 <script src="/js/app.js"></script>
 <script>
+const LEVELS = [['Beginner',0],['Junior Biller',100],['Billing Specialist',250],['Senior Biller',400],['Billing Executive',500]];
+function nextLevel(pts) {
+  for (let i = LEVELS.length - 1; i >= 0; i--) if (pts >= LEVELS[i][1]) return { cur: LEVELS[i], nxt: LEVELS[i+1] || null };
+  return { cur: LEVELS[0], nxt: LEVELS[1] };
+}
+function statusPill(c) {
+  if (c.completed) return '<span class="st st-done">Completed</span>';
+  if (c.attempts > 0) return '<span class="st st-prog">In progress</span>';
+  return '<span class="st st-todo">Not started</span>';
+}
 (async () => {
-  const u = await requireLogin(); if (!u) return;
+  const u = await currentUser();
+  if (!u) { location.href = '/login'; return; }
+  if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
   shell('dashboard', u);
-  const d = await api('/api/dashboard');
-  document.getElementById('hello').textContent = `Good day, ${d.user.name.split(' ')[0]} 👋`;
-  const s = d.stats;
-  document.getElementById('stats').innerHTML = `
-    <div class="card stat"><span>Current level</span><b>${esc(s.level)}</b><div class="sub">Keep earning points</div></div>
-    <div class="card stat"><span>Overall accuracy</span><b>${s.accuracy}%</b><div class="sub">${s.attempts} attempts</div></div>
-    <div class="card stat"><span>Cases completed</span><b>${s.casesCompleted} / ${s.totalCases}</b><div class="sub">${s.totalCases ? Math.round(100*s.casesCompleted/s.totalCases) : 0}% of curriculum</div></div>
-    <div class="card stat"><span>Training points</span><b>${s.points}</b><div class="sub">Across all cases</div></div>`;
-  const stages = ['Patient & Insurance','Charge & Claims','Claim Processing','Payments & A/R','Denial Management'];
-  const hit = Math.min(stages.length, Math.ceil(s.casesCompleted / 2));
-  document.getElementById('jmap').innerHTML = stages.map((t, i) =>
-    `<div class="jstage ${i < hit ? 'hit' : ''}">${t}</div>`).join('');
-  document.getElementById('recent').innerHTML = d.recent.length ? `
-    <table><tr><th>Case</th><th>Score</th><th>Date</th></tr>
-    ${d.recent.map(r => `<tr><td>${esc(r.code)} · ${esc(r.title)}</td>
-      <td><b>${r.score}/${r.max_score}</b></td><td>${esc((r.completed_at||'').slice(0,10))}</td></tr>`).join('')}
-    </table>` : `<div class="empty">No attempts yet — <a href="/training" style="color:#0e9f8a;font-weight:600">start your first case →</a></div>`;
+  document.getElementById('welcome').textContent =
+    `Welcome back, ${u.name.split(' ')[0]} — here's your training floor for today.`;
+  const [dash, cases] = await Promise.all([api('/api/dashboard'), api('/api/cases')]);
+  const s = dash.stats, cs = cases.cases;
+
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi hot"><span>Accuracy</span><b>${s.accuracy}%</b><div class="sub">clean-claim equivalent</div></div>
+    <div class="kpi"><span>Cases done</span><b>${s.casesCompleted}/${s.totalCases}</b><div class="sub">training cases</div></div>
+    <div class="kpi"><span>Points</span><b>${s.points}</b><div class="sub">${s.level}</div></div>
+    <div class="kpi"><span>Attempts</span><b>${s.attempts}</b><div class="sub">total runs</div></div>
+    <div class="kpi"><span>Mastered</span><b>${cs.filter(c=>c.completed).length}/${cs.length}</b><div class="sub">cases completed</div></div>
+    <div class="kpi"><span>Level</span><b style="font-size:16px;line-height:1.6">${s.level}</b><div class="sub">keep climbing</div></div>`;
+
+  document.getElementById('queue').innerHTML = cs.map(c => {
+    const pct = c.best != null ? Math.round(100 * c.best / c.points) : null;
+    return `
+    <tr><td><b>${esc(c.code)}</b><br><span style="font-size:12px;color:#64748b">${esc(c.title)}</span></td>
+      <td style="font-size:12.5px;color:#64748b">${esc(c.category)}</td>
+      <td><span class="pill p-${c.difficulty.toLowerCase()}">${esc(c.difficulty)}</span></td>
+      <td>${statusPill(c)}</td>
+      <td><b>${pct != null ? pct + '%' : '—'}</b></td>
+      <td>${c.attempts}</td>
+      <td><a class="btn ${c.completed ? 'btn-line' : 'btn-teal'} btn-sm" href="/play?caseId=${c.id}">${c.completed ? 'Retry' : c.attempts ? 'Continue' : 'Start'}</a></td>
+    </tr>`; }).join('');
+
+  const alerts = [];
+  cs.filter(c => c.attempts === 0).slice(0, 3).forEach(c =>
+    alerts.push(`<div class="alert-item"><span class="ai">⚪</span><div><b>${esc(c.code)}</b> not started yet — begin with the fundamentals.</div></div>`));
+  cs.filter(c => c.best != null && Math.round(100 * c.best / c.points) < 70).slice(0, 3).forEach(c =>
+    alerts.push(`<div class="alert-item"><span class="ai">🟡</span><div><b>${esc(c.code)}</b> best ${Math.round(100 * c.best / c.points)}% — review recommended before moving on.</div></div>`));
+  if (!alerts.length) alerts.push(`<div class="alert-item"><span class="ai">✅</span><div>All clear — every case attempted. Push your best scores higher.</div></div>`);
+  document.getElementById('alerts').innerHTML = alerts.join('');
+
+  const { cur, nxt } = nextLevel(s.points);
+  const pct = nxt ? Math.min(100, Math.round(100 * (s.points - cur[1]) / (nxt[1] - cur[1]))) : 100;
+  document.getElementById('lvlprog').innerHTML = `
+    <div style="font-size:13.5px"><b>${esc(cur[0])}</b>${nxt ? ` <span style="color:#64748b">→ ${esc(nxt[0])} at ${nxt[1]} pts</span>` : ' <span style="color:#64748b">— max level reached</span>'}</div>
+    <div class="lvlbar"><i style="width:${pct}%"></i></div>
+    <div style="font-size:12.5px;color:#64748b">${s.points} pts · ${nxt ? (nxt[1] - s.points) + ' to go' : 'top of the ladder'}</div>`;
+
+  document.getElementById('chart').innerHTML = cs.map(c => {
+    const pct = c.best != null ? Math.round(100 * c.best / c.points) : null;
+    return `
+    <div class="bar-row"><div class="bl">${esc(c.code)}</div>
+      <div class="bt"><i style="width:${pct || 0}%"></i></div>
+      <div class="bv">${pct != null ? pct + '%' : '—'}</div></div>`; }).join('');
+
+  document.getElementById('recent').innerHTML = dash.recent.length ? `
+    <table class="dtable"><tr><th>Case</th><th>Score</th><th>Date</th></tr>
+    ${dash.recent.map(r => `<tr><td><b>${esc(r.code)}</b></td><td><b>${r.score}/${r.max_score}</b></td>
+      <td style="color:#64748b">${esc((r.completed_at || '').slice(0, 10))}</td></tr>`).join('')}</table>`
+    : `<div class="empty">No attempts yet — your activity will appear here.</div>`;
 })();
 </script>
 </body>
