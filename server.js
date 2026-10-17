@@ -100,6 +100,17 @@ app.get('/labs/scrubber', send('labs/scrubber.html'));
 app.get('/labs/denials', send('labs/denials.html'));
 app.get('/labs/sprints', send('labs/sprints.html'));
 app.get('/labs/quiz', send('labs/quiz.html'));
+app.get('/work-queue', send('work-queue.html'));
+app.get('/patients', send('patients.html'));
+app.get('/insurance', send('insurance.html'));
+app.get('/eligibility', send('eligibility.html'));
+app.get('/charges', send('charges.html'));
+app.get('/claims', send('claims.html'));
+app.get('/payments', send('payments.html'));
+app.get('/ar', send('ar.html'));
+app.get('/denials', send('denials.html'));
+app.get('/reports', send('reports.html'));
+app.get('/assignments', send('assignments.html'));
 // owner entry: fully separate path — serves the owner login when logged out,
 // the panel when logged in as admin. Never linked from the user side.
 async function ownerPage(req, res, next) {
@@ -348,6 +359,310 @@ app.get('/api/labs/bests', requireAuth, ah(async (req, res) => {
   res.json({ bests: Object.fromEntries(rows.map(r => [r.lab_key, Math.round(100 * (r.best || 0))])) });
 }));
 
+// ---------- RCM workspace API (student: full claim lifecycle) ----------
+const r2 = n => Math.round(Number(n || 0) * 100) / 100;
+const snow = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
+function payerKey(name) {
+  const n = String(name || '').toLowerCase();
+  if (n.includes('medicare')) return 'medicare';
+  if (n.includes('aetna')) return 'aetna';
+  if (n.includes('united')) return 'uhc';
+  return 'bcbs';
+}
+function adjudicate(claim) {
+  // deterministic per claim id: ~28% deny, else pay at 70% allowed / 20% patient share
+  const h = ((claim.id * 2654435761) >>> 0) % 100;
+  if (h < 28) return { status: 'DENIED', denial_code: ['CO-16', 'CO-96', 'CO-97', 'CO-29'][h % 4] };
+  const allowed = r2(claim.billed * 0.7), patient_resp = r2(allowed * 0.2), paid = r2(allowed - patient_resp);
+  return { status: 'PAID', allowed, paid, adjustment: r2(claim.billed - allowed), patient_resp };
+}
+function ageDays(row) {
+  const d = new Date(row.submitted_at || row.created_at);
+  return Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
+}
+function ageBucket(days) { return days <= 30 ? '0-30' : days <= 60 ? '31-60' : days <= 90 ? '61-90' : '91+'; }
+
+app.get('/api/rcm/patients', requireAuth, ah(async (req, res) => {
+  res.json({ patients: await db.all('SELECT code, name, dob, gender, phone FROM patients ORDER BY code') });
+}));
+
+app.get('/api/rcm/insurance', requireAuth, ah(async (req, res) => {
+  const rows = await db.all(`SELECT * FROM insurance WHERE user_id IS NULL OR user_id = ? ORDER BY patient_code, id`, [req.session.userId]);
+  res.json({ insurance: rows });
+}));
+app.post('/api/rcm/insurance', requireAuth, ah(async (req, res) => {
+  const b = req.body || {};
+  if (!b.patient_code || !b.payer || !b.member_id) throw Object.assign(new Error('Patient, payer and member ID are required.'), { status: 400 });
+  const r = await db.run(`INSERT INTO insurance (user_id, patient_code, payer, member_id, plan, type, status, effective, copay, created_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?)`, [req.session.userId, b.patient_code, b.payer, b.member_id,
+    b.plan || '', b.type || 'PPO', 'ACTIVE', b.effective || snow().slice(0, 10), r2(b.copay), snow()]);
+  res.json({ id: r.id });
+}));
+
+app.get('/api/rcm/eligibility', requireAuth, ah(async (req, res) => {
+  res.json({ checks: await db.all('SELECT * FROM eligibility_checks WHERE user_id = ? ORDER BY id DESC LIMIT 100', [req.session.userId]) });
+}));
+app.post('/api/rcm/eligibility/verify', requireAuth, ah(async (req, res) => {
+  const b = req.body || {};
+  if (!b.patient_code || !b.payer) throw Object.assign(new Error('Patient and payer are required.'), { status: 400 });
+  const cov = await db.get('SELECT * FROM insurance WHERE (user_id IS NULL OR user_id = ?) AND patient_code = ? AND payer = ? ORDER BY user_id DESC LIMIT 1',
+    [req.session.userId, b.patient_code, b.payer]);
+  const active = !!(cov && cov.status === 'ACTIVE');
+  const copay = active ? r2(cov.copay) : 0;
+  const deductible = active ? [500, 1000, 1500, 2000][String(cov.member_id).length % 4] : 0;
+  const result = active ? 'VERIFIED' : 'INACTIVE';
+  const r = await db.run(`INSERT INTO eligibility_checks (user_id, patient_code, payer, service, coverage, copay, deductible, result, created_at)
+    VALUES (?,?,?,?,?,?,?,?,?)`, [req.session.userId, b.patient_code, b.payer, b.service || 'Office Visit',
+    active ? 'ACTIVE' : 'INACTIVE', copay, deductible, result, snow()]);
+  res.json({ id: r.id, coverage: active ? 'ACTIVE' : 'INACTIVE', copay, deductible, result });
+}));
+
+app.get('/api/rcm/charges', requireAuth, ah(async (req, res) => {
+  res.json({ charges: await db.all('SELECT * FROM charges WHERE user_id = ? ORDER BY id DESC', [req.session.userId]) });
+}));
+app.post('/api/rcm/charges', requireAuth, ah(async (req, res) => {
+  const b = req.body || {};
+  for (const f of ['patient_code', 'dos', 'cpt', 'icd', 'amount'])
+    if (!b[f]) throw Object.assign(new Error('Patient, date of service, CPT, ICD and amount are required.'), { status: 400 });
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(b.dos)) throw Object.assign(new Error('Date of service must be YYYY-MM-DD.'), { status: 400 });
+  if (!(Number(b.amount) > 0)) throw Object.assign(new Error('Amount must be positive.'), { status: 400 });
+  const r = await db.run(`INSERT INTO charges (user_id, patient_code, provider, dos, cpt, icd, modifier, units, amount, status, created_at)
+    VALUES (?,?,?,?,?,?,?,?,?,'READY',?)`, [req.session.userId, b.patient_code, b.provider || 'Dr. James Anderson',
+    b.dos, b.cpt.trim(), b.icd.trim().toUpperCase(), (b.modifier || '').trim().toUpperCase(),
+    Math.max(1, parseInt(b.units, 10) || 1), r2(b.amount), snow()]);
+  res.json({ id: r.id });
+}));
+
+app.get('/api/rcm/claims', requireAuth, ah(async (req, res) => {
+  res.json({ claims: await db.all('SELECT * FROM claims WHERE user_id = ? ORDER BY id DESC', [req.session.userId]) });
+}));
+app.post('/api/rcm/claims', requireAuth, ah(async (req, res) => {
+  const b = req.body || {};
+  const ch = await db.get('SELECT * FROM charges WHERE id = ? AND user_id = ?', [b.charge_id, req.session.userId]);
+  if (!ch) throw Object.assign(new Error('Charge not found.'), { status: 404 });
+  if (ch.claim_id) throw Object.assign(new Error('This charge is already linked to a claim.'), { status: 409 });
+  const ins = await db.get('SELECT * FROM insurance WHERE (user_id IS NULL OR user_id = ?) AND patient_code = ? ORDER BY user_id DESC LIMIT 1',
+    [req.session.userId, ch.patient_code]);
+  const payer = b.payer || (ins ? ins.payer : 'BlueCross BlueShield (Simulated)');
+  const r = await db.run(`INSERT INTO claims (user_id, claim_no, patient_code, payer, cpt, icd, modifier, dos, billed, status, validation, created_at)
+    VALUES (?,?,?,?,?,?,?,?,?,'DRAFT','NOT_VALIDATED',?)`,
+    [req.session.userId, 'PENDING', ch.patient_code, payer, ch.cpt, ch.icd, ch.modifier, ch.dos, ch.amount, snow()]);
+  const claimNo = `CLM-${Date.now()}-${r.id}`;
+  await db.run('UPDATE claims SET claim_no = ? WHERE id = ?', [claimNo, r.id]);
+  await db.run('UPDATE charges SET claim_id = ?, status = ? WHERE id = ?', [r.id, 'LINKED', ch.id]);
+  res.json({ id: r.id, claim_no: claimNo });
+}));
+app.post('/api/rcm/claims/:id/validate', requireAuth, ah(async (req, res) => {
+  const c = await db.get('SELECT * FROM claims WHERE id = ? AND user_id = ?', [req.params.id, req.session.userId]);
+  if (!c) throw Object.assign(new Error('Claim not found.'), { status: 404 });
+  const r = labData.scrubClaim({
+    patientId: c.patient_code, payer: payerKey(c.payer), dos: c.dos, pos: '11',
+    npiR: '1234567890', npiB: '0987654321',
+    icds: [c.icd],
+    lines: [{ cpt: c.cpt, dx: [1], mod: c.modifier ? [c.modifier] : [], units: 1, charge: c.billed }]
+  });
+  const validation = r.errors.length ? 'FAILED' : 'PASSED';
+  await db.run('UPDATE claims SET validation = ? WHERE id = ?', [validation, c.id]);
+  res.json({ validation, errors: r.errors, warnings: r.warnings, score: r.score });
+}));
+app.post('/api/rcm/claims/:id/submit', requireAuth, ah(async (req, res) => {
+  const c = await db.get('SELECT * FROM claims WHERE id = ? AND user_id = ?', [req.params.id, req.session.userId]);
+  if (!c) throw Object.assign(new Error('Claim not found.'), { status: 404 });
+  if (c.status !== 'DRAFT') throw Object.assign(new Error('Only draft claims can be submitted.'), { status: 409 });
+  if (c.validation !== 'PASSED') throw Object.assign(new Error('Validate the claim first — only clean (PASSED) claims can be submitted.'), { status: 409 });
+  const a = adjudicate(c), now = snow();
+  await db.run(`UPDATE claims SET status = ?, denial_code = ?, allowed = ?, paid = ?, adjustment = ?,
+    patient_resp = ?, submitted_at = ?, follow_up = 'NOT_STARTED' WHERE id = ?`,
+    [a.status, a.denial_code || '', a.allowed || 0, a.paid || 0, a.adjustment || 0, a.patient_resp || 0, now, c.id]);
+  res.json({ status: a.status, denial_code: a.denial_code || null, adjudication: a });
+}));
+
+app.get('/api/rcm/payments', requireAuth, ah(async (req, res) => {
+  res.json({ payments: await db.all(`SELECT p.*, c.claim_no FROM payments p JOIN claims c ON c.id = p.claim_id
+    WHERE p.user_id = ? ORDER BY p.id DESC`, [req.session.userId]) });
+}));
+app.post('/api/rcm/payments', requireAuth, ah(async (req, res) => {
+  const b = req.body || {};
+  const c = await db.get('SELECT * FROM claims WHERE id = ? AND user_id = ?', [b.claim_id, req.session.userId]);
+  if (!c) throw Object.assign(new Error('Claim not found.'), { status: 404 });
+  if (!['SUBMITTED', 'PAID'].includes(c.status)) throw Object.assign(new Error('Payments can only be posted on submitted claims.'), { status: 409 });
+  const paid = r2(b.paid), adj = r2(b.adjustment), pr = r2(b.patient_resp);
+  if (paid < 0 || adj < 0 || pr < 0) throw Object.assign(new Error('Payment amounts cannot be negative.'), { status: 400 });
+  if (r2(paid + pr) > r2(c.allowed || c.billed)) throw Object.assign(new Error('Paid + patient share cannot exceed the allowed/billed amount.'), { status: 400 });
+  await db.run('INSERT INTO payments (user_id, claim_id, paid, adjustment, patient_resp, method, created_at) VALUES (?,?,?,?,?,?,?)',
+    [req.session.userId, c.id, paid, adj, pr, b.method || 'ERA', snow()]);
+  const bal = r2((c.allowed || c.billed) - paid - pr);
+  await db.run('UPDATE claims SET paid = ?, adjustment = ?, patient_resp = ?, status = ? WHERE id = ?',
+    [paid, adj, pr, bal <= 0 ? 'PAID' : 'SUBMITTED', c.id]);
+  res.json({ ok: true, balance: bal });
+}));
+
+app.get('/api/rcm/ar', requireAuth, ah(async (req, res) => {
+  const rows = await db.all(`SELECT * FROM claims WHERE user_id = ? AND status IN ('SUBMITTED','DENIED','APPEALED','PAID')
+    AND (paid < allowed OR (allowed = 0 AND status != 'PAID') OR patient_resp > 0 OR status IN ('DENIED','APPEALED')) ORDER BY submitted_at DESC, id DESC`,
+    [req.session.userId]);
+  const open = rows.filter(c => c.status !== 'PAID' || c.patient_resp > 0);
+  const withAge = open.map(c => ({ ...c, age: ageDays(c), bucket: ageBucket(ageDays(c)),
+    balance: r2((c.status === 'PAID' ? c.patient_resp : (c.allowed || c.billed) - c.paid)) }));
+  const buckets = { '0-30': 0, '31-60': 0, '61-90': 0, '91+': 0 };
+  let total = 0, patAR = 0;
+  for (const c of withAge) { buckets[c.bucket]++; total += c.balance; if (c.patient_resp > 0) patAR += Math.min(c.balance, c.patient_resp); }
+  const notes = await db.all('SELECT claim_id, COUNT(*) AS n FROM ar_notes WHERE user_id = ? GROUP BY claim_id', [req.session.userId]);
+  const noteMap = Object.fromEntries(notes.map(n => [n.claim_id, n.n]));
+  res.json({ rows: withAge.map(c => ({ ...c, notes: noteMap[c.id] || 0 })), buckets,
+    total: r2(total), insuranceAR: r2(total - patAR), patientAR: r2(patAR), open: withAge.length });
+}));
+app.post('/api/rcm/ar/note', requireAuth, ah(async (req, res) => {
+  const b = req.body || {};
+  const c = await db.get('SELECT id FROM claims WHERE id = ? AND user_id = ?', [b.claim_id, req.session.userId]);
+  if (!c) throw Object.assign(new Error('Claim not found.'), { status: 404 });
+  if (!String(b.note || '').trim()) throw Object.assign(new Error('Note cannot be empty.'), { status: 400 });
+  await db.run('INSERT INTO ar_notes (user_id, claim_id, note, created_at) VALUES (?,?,?,?)',
+    [req.session.userId, c.id, String(b.note).trim().slice(0, 500), snow()]);
+  await db.run("UPDATE claims SET follow_up = 'IN_PROGRESS' WHERE id = ? AND follow_up = 'NOT_STARTED'", [c.id]);
+  res.json({ ok: true });
+}));
+
+app.get('/api/rcm/denials', requireAuth, ah(async (req, res) => {
+  res.json({ denials: await db.all(`SELECT * FROM claims WHERE user_id = ? AND status IN ('DENIED','APPEALED') ORDER BY id DESC`, [req.session.userId]) });
+}));
+app.post('/api/rcm/denials/:id/resolve', requireAuth, ah(async (req, res) => {
+  const b = req.body || {};
+  const c = await db.get('SELECT * FROM claims WHERE id = ? AND user_id = ?', [req.params.id, req.session.userId]);
+  if (!c || !['DENIED', 'APPEALED'].includes(c.status)) throw Object.assign(new Error('Denial not found.'), { status: 404 });
+  const action = b.action;
+  if (!['appeal', 'correct', 'writeoff'].includes(action)) throw Object.assign(new Error('Unknown action.'), { status: 400 });
+  const note = String(b.note || '').trim().slice(0, 500);
+  if (note) await db.run('INSERT INTO ar_notes (user_id, claim_id, note, created_at) VALUES (?,?,?,?)',
+    [req.session.userId, c.id, `[denial] ${note}`, snow()]);
+  if (action === 'appeal') {
+    await db.run("UPDATE claims SET status = 'APPEALED', follow_up = 'IN_PROGRESS' WHERE id = ?", [c.id]);
+    // deterministic appeal outcome
+    const win = (((c.id * 40503) >>> 0) % 100) < 60;
+    if (win) {
+      const a = { status: 'PAID' };
+      const allowed = r2(c.billed * 0.7), pr = r2(allowed * 0.2);
+      await db.run(`UPDATE claims SET status='PAID', denial_code='', allowed=?, paid=?, adjustment=?, patient_resp=? WHERE id = ?`,
+        [allowed, r2(allowed - pr), r2(c.billed - allowed), pr, c.id]);
+      return res.json({ ok: true, status: 'PAID', message: 'Appeal won — payer released payment.' });
+    }
+    return res.json({ ok: true, status: 'APPEALED', message: 'Appeal submitted — awaiting payer decision (still denied).' });
+  }
+  if (action === 'correct') {
+    await db.run("UPDATE claims SET status='DRAFT', validation='NOT_VALIDATED', denial_code='', follow_up='NOT_STARTED' WHERE id = ?", [c.id]);
+    return res.json({ ok: true, status: 'DRAFT', message: 'Claim returned to draft — fix and re-validate.' });
+  }
+  await db.run("UPDATE claims SET status='WRITTEN_OFF' WHERE id = ?", [c.id]);
+  res.json({ ok: true, status: 'WRITTEN_OFF', message: 'Balance written off.' });
+}));
+
+app.get('/api/rcm/work-queue', requireAuth, ah(async (req, res) => {
+  const u = req.session.userId, items = [];
+  const claims = await db.all('SELECT * FROM claims WHERE user_id = ?', [u]);
+  const charges = await db.all('SELECT * FROM charges WHERE user_id = ? AND claim_id IS NULL', [u]);
+  for (const c of claims) {
+    if (c.status === 'DRAFT' && c.validation !== 'PASSED')
+      items.push({ kind: 'claim', priority: 'HIGH', title: `Validate claim ${c.claim_no}`, sub: `${c.patient_code} • ${c.payer} • $${c.billed}`, amount: c.billed, action: 'Validate →', href: '/claims' });
+    if (c.status === 'DRAFT' && c.validation === 'PASSED')
+      items.push({ kind: 'claim', priority: 'MEDIUM', title: `Submit claim ${c.claim_no}`, sub: `${c.patient_code} • ${c.payer} • $${c.billed}`, amount: c.billed, action: 'Submit →', href: '/claims' });
+    if (c.status === 'DENIED')
+      items.push({ kind: 'denial', priority: 'HIGH', title: `Denial ${c.denial_code} — ${c.claim_no}`, sub: `${c.patient_code} • ${c.payer} • $${c.billed}`, amount: c.billed, action: 'Work denial →', href: '/denials' });
+    if (c.status === 'SUBMITTED') {
+      const bal = r2((c.allowed || c.billed) - c.paid);
+      if (bal > 0) items.push({ kind: 'ar', priority: ageDays(c) > 30 ? 'HIGH' : 'MEDIUM', title: `A/R follow-up — ${c.claim_no}`, sub: `${ageBucket(ageDays(c))} days • balance $${bal}`, amount: bal, action: 'Work A/R →', href: '/ar' });
+      else items.push({ kind: 'payment', priority: 'LOW', title: `Post payment — ${c.claim_no}`, sub: `${c.patient_code} • billed $${c.billed}`, amount: c.billed, action: 'Post →', href: '/payments' });
+    }
+  }
+  for (const ch of charges)
+    items.push({ kind: 'charge', priority: 'MEDIUM', title: `Create claim — ${ch.cpt} / ${ch.icd}`, sub: `${ch.patient_code} • DOS ${ch.dos} • $${ch.amount}`, amount: ch.amount, action: 'Create claim →', href: '/charges' });
+  const prog = await db.all(`SELECT c.code, c.points, MAX(100.0*a.score/NULLIF(a.max_score,0)) AS best, COUNT(a.id) AS n FROM cases c
+    LEFT JOIN attempts a ON a.case_id = c.id AND a.user_id = ? AND a.status = 'completed' GROUP BY c.id`, [u]);
+  for (const p of prog)
+    if (!p.n) items.push({ kind: 'case', priority: 'LOW', title: `Start training ${p.code}`, sub: 'Not attempted yet', amount: 0, action: 'Start →', href: '/training' });
+    else if ((p.best || 0) < 70) items.push({ kind: 'case', priority: 'MEDIUM', title: `Improve ${p.code} (best ${Math.round(p.best)}%)`, sub: 'Below 70% mastery', amount: 0, action: 'Retry →', href: '/training' });
+  const pw = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+  items.sort((a, b) => pw[a.priority] - pw[b.priority]);
+  res.json({ items });
+}));
+
+app.get('/api/rcm/overview', requireAuth, ah(async (req, res) => {
+  const u = req.session.userId;
+  const cl = await db.all('SELECT status, billed, paid, allowed FROM claims WHERE user_id = ?', [u]);
+  const open = cl.filter(c => ['SUBMITTED', 'DENIED', 'APPEALED'].includes(c.status));
+  const outstanding = r2(open.reduce((s, c) => s + Math.max(0, (c.allowed || c.billed) - c.paid), 0));
+  res.json({
+    openTasks: open.length,
+    highPriority: cl.filter(c => c.status === 'DENIED').length,
+    outstanding,
+    denials: cl.filter(c => ['DENIED', 'APPEALED'].includes(c.status)).length,
+    totalClaims: cl.length,
+    collected: r2(cl.reduce((s, c) => s + c.paid, 0)),
+    denialRate: cl.length ? Math.round(100 * cl.filter(c => ['DENIED', 'APPEALED'].includes(c.status)).length / cl.length) : 0,
+  });
+}));
+
+app.get('/api/rcm/reports', requireAuth, ah(async (req, res) => {
+  const u = req.session.userId;
+  const att = await db.all(`SELECT a.*, c.code, c.title FROM attempts a JOIN cases c ON c.id = a.case_id
+    WHERE a.user_id = ? AND a.status = 'finished' ORDER BY a.id DESC`, [u]);
+  const labs = await db.all('SELECT lab_key, MAX(score) AS best, COUNT(*) AS n FROM lab_runs WHERE user_id = ? GROUP BY lab_key', [u]);
+  const cl = await db.all('SELECT * FROM claims WHERE user_id = ?', [u]);
+  const validated = cl.filter(c => ['PASSED', 'FAILED'].includes(c.validation));
+  const open = cl.filter(c => ['SUBMITTED', 'DENIED', 'APPEALED'].includes(c.status));
+  res.json({
+    training: {
+      attempts: att.length,
+      avgScore: att.length ? Math.round(att.reduce((s, a) => s + (a.score / Math.max(1, a.max_score)) * 100, 0) / att.length) : 0,
+      bestScore: att.length ? Math.round(Math.max(...att.map(a => (a.score / Math.max(1, a.max_score)) * 100))) : 0,
+      labs: labs.map(l => ({ lab: l.lab_key, best: l.best, runs: l.n })),
+    },
+    rcm: {
+      totalClaims: cl.length, totalBilled: r2(cl.reduce((s, c) => s + c.billed, 0)),
+      collected: r2(cl.reduce((s, c) => s + c.paid, 0)),
+      adjustments: r2(cl.reduce((s, c) => s + c.adjustment, 0)),
+      denialRate: cl.length ? Math.round(100 * cl.filter(c => ['DENIED', 'APPEALED'].includes(c.status)).length / cl.length) : 0,
+      cleanClaimRate: validated.length ? Math.round(100 * validated.filter(c => c.validation === 'PASSED').length / validated.length) : 0,
+      openAR: open.length,
+      avgDaysAR: open.length ? Math.round(open.reduce((s, c) => s + ageDays(c), 0) / open.length) : 0,
+    },
+    recent: att.slice(0, 10).map(a => ({ code: a.code, title: a.title, score: a.score, max: a.max_score, when: a.finished_at || a.created_at })),
+  });
+}));
+
+app.post('/api/rcm/demo', requireAuth, ah(async (req, res) => {
+  const u = req.session.userId, now = snow();
+  const n = (await db.get('SELECT COUNT(*) AS n FROM claims WHERE user_id = ?', [u])).n;
+  if (n > 0) throw Object.assign(new Error('Demo data already exists — clear your workspace first.'), { status: 409 });
+  const demoCharges = [
+    ['PT-10005', '2026-10-02', '99213', 'J06.9', '', 120],
+    ['PT-10008', '2026-10-05', '99214', 'I10', '25', 220],
+    ['PT-10011', '2026-10-09', '87880', 'J02.9', '', 85],
+  ];
+  for (const [pc, dos, cpt, icd, mod, amt] of demoCharges) {
+    const ch = await db.run(`INSERT INTO charges (user_id, patient_code, dos, cpt, icd, modifier, units, amount, status, created_at)
+      VALUES (?,?,?,?,?,?,?,?,'READY',?)`, [u, pc, dos, cpt, icd, mod, 1, amt, now]);
+    const ins = await db.get('SELECT payer FROM insurance WHERE patient_code = ? AND user_id IS NULL LIMIT 1', [pc]);
+    const cl = await db.run(`INSERT INTO claims (user_id, claim_no, patient_code, payer, cpt, icd, modifier, dos, billed, status, validation, created_at)
+      VALUES (?,?,?,?,?,?,? ,?,?,'DRAFT','NOT_VALIDATED',?)`,
+      [u, 'PENDING', pc, ins ? ins.payer : 'BlueCross BlueShield (Simulated)', cpt, icd, mod, dos, amt, now]);
+    const claimNo = `CLM-${Date.now()}-${cl.id}`;
+    await db.run('UPDATE claims SET claim_no = ? WHERE id = ?', [claimNo, cl.id]);
+    await db.run('UPDATE charges SET claim_id = ?, status = ? WHERE id = ?', [cl.id, 'LINKED', ch.id]);
+    // validate + submit through the real lifecycle
+    const r = labData.scrubClaim({ patientId: pc, payer: payerKey(ins ? ins.payer : ''), dos, pos: '11',
+      npiR: '1234567890', npiB: '0987654321', icds: [icd],
+      lines: [{ cpt, dx: [1], mod: mod ? [mod] : [], units: 1, charge: amt }] });
+    const val = r.errors.length ? 'FAILED' : 'PASSED';
+    await db.run('UPDATE claims SET validation = ? WHERE id = ?', [val, cl.id]);
+    if (val === 'PASSED') {
+      const a = adjudicate({ id: cl.id, billed: amt });
+      await db.run(`UPDATE claims SET status=?, denial_code=?, allowed=?, paid=?, adjustment=?, patient_resp=?, submitted_at=? WHERE id = ?`,
+        [a.status, a.denial_code || '', a.allowed || 0, a.paid || 0, a.adjustment || 0, a.patient_resp || 0, now, cl.id]);
+    }
+  }
+  res.json({ ok: true, charges: 3, claims: 3 });
+}));
+
 // ---------- admin API ----------
 app.get('/api/admin/overview', requireAdmin, ah(async (req, res) => {
   res.json({
@@ -408,7 +723,8 @@ app.use((req, res) => res.status(404).sendFile(path.join(__dirname, 'public', '4
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error('[error]', err.message);
-  res.status(500).json({ error: 'Server error.' });
+  const s = err.status && Number.isInteger(err.status) ? err.status : 500;
+  res.status(s).json({ error: s === 500 ? 'Server error.' : err.message });
 });
 
 async function main() {

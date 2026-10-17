@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Denials — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
+  <div class="phead"><div>
+    <div class="eyebrow2">Revenue Cycle</div><h1>Denial Work Queue</h1>
+    <p class="psub">Investigate denied claims, document corrective actions and manage appeals.</p>
+  </div></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="info-panel">🚫 <b>Denial management training:</b> every denial has a root cause. Decide the right move — <b>appeal</b> when the claim was correct, <b>correct &amp; rebill</b> when it wasn't, <b>write off</b> only when recovery isn't possible.</div>
+  <div class="panel"><div class="prow"><h3 style="margin:0">Open Denials</h3>
+    <input class="search" id="q" placeholder="Search denials…"></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Claim</th><th>Patient</th><th>Payer</th><th>Billed</th><th>Denial Code</th><th>Status</th><th></th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="empty" id="empty" style="display:none">No open denials — clean claiming! 🎉</div>
+  </div>
+</div></main></div>
+<script src="/js/app.js"></script>
+<script>
+let rows = [], q = '';
+async function load() {
+  const u = await requireLogin(); if (!u) return;
+  shell('denialsq', u);
+  const d = await api('/api/rcm/denials'); rows = d.denials;
+  const open = rows.filter(r => r.status === 'DENIED').length;
+  const prog = rows.filter(r => r.status === 'APPEALED').length;
+  document.getElementById('kpis').innerHTML = [
+    ['Open', open, 'Denials requiring work'],
+    ['In progress', prog, 'Appeals in process'],
+    ['Appealed', prog, 'Awaiting payer'],
+    ['Resolved', 0, 'Completed denials'],
+  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  render();
+}
+function render() {
+  const rs = rows.filter(r => (r.claim_no + ' ' + r.patient_code + ' ' + r.denial_code).toLowerCase().includes(q));
+  document.getElementById('rows').innerHTML = rs.map(r => `<tr>
+    <td><b><code>${esc(r.claim_no)}</code></b></td><td>${esc(r.patient_code)}</td>
+    <td style="max-width:170px">${esc(r.payer)}</td><td>${money(r.billed)}</td>
+    <td><span class="bdg b-red">${esc(r.denial_code)}</span></td>
+    <td><span class="bdg ${r.status === 'DENIED' ? 'b-red' : 'b-blue'}">${esc(r.status)}</span></td>
+    <td><button class="btn btn-teal btn-sm" onclick="workDenial(${r.id}, '${esc(r.claim_no)}', '${esc(r.denial_code)}')">Work Denial</button></td></tr>`).join('');
+  document.getElementById('empty').style.display = rs.length ? 'none' : 'block';
+}
+const DENIAL_HELP = {
+  'CO-16': 'Claim lacks information — check what the payer needs and resubmit with documentation.',
+  'CO-96': 'Non-covered charges — verify benefits; may need patient responsibility or write-off.',
+  'CO-97': 'Bundling — the procedure is included in another; rebill with the correct X-modifier (XE/XS/XP/XU).',
+  'CO-29': 'Timely filing expired — appeal only with proof of timely submission; otherwise write off.',
+};
+function workDenial(id, no, code) {
+  openModal('Work Denial — ' + no, `
+    <div class="info-panel"><b>${esc(code)}</b> — ${esc(DENIAL_HELP[code] || 'Investigate the remittance advice and choose the corrective action.')}</div>
+    <div class="fld"><label>Action</label><select id="f_act">
+      <option value="appeal">📨 Appeal — claim was correct, fight it</option>
+      <option value="correct">🔧 Correct &amp; rebill — fix the claim, resubmit</option>
+      <option value="writeoff">🗑 Write off — not recoverable</option></select></div>
+    <div class="fld"><label>Work note</label><textarea id="f_note" rows="3" placeholder="Document what you did and why…"></textarea></div>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-teal btn-sm" id="save">Apply</button></div>`, w => {
+    w.querySelector('#save').onclick = async () => {
+      try {
+        const r = await api(`/api/rcm/denials/${id}/resolve`, { method: 'POST', body: {
+          action: w.querySelector('#f_act').value, note: w.querySelector('#f_note').value } });
+        closeModal();
+        openModal('Denial Updated', `<div class="info-panel">${esc(r.message)}</div>
+          <div class="mfoot"><button class="btn btn-teal btn-sm" onclick="closeModal()">OK</button></div>`);
+        load();
+      } catch (e) { alert(e.message); }
+    };
+  });
+}
+document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+load();
+</script></body></html>

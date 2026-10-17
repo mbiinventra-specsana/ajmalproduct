@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patients — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
+  <div class="phead"><div>
+    <div class="eyebrow2">Patient Management</div><h1>Patients</h1>
+    <p class="psub">Fictional patient records used across charge entry, claims and eligibility training.</p>
+  </div></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(3,1fr)"></div>
+  <div class="panel"><div class="prow"><h3 style="margin:0">Patient Records</h3>
+    <input class="search" id="q" placeholder="Search patients…"></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Patient ID</th><th>Name</th><th>DOB</th><th>Gender</th><th>Phone</th><th>Status</th><th></th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+  </div>
+  <div class="info-panel">🔒 <b>Training data only:</b> every patient here is fictional — names, dates of birth and phone numbers are generated for training. Never real patient information.</div>
+</div></main></div>
+<script src="/js/app.js"></script>
+<script>
+let pts = [], q = '';
+async function load() {
+  const u = await requireLogin(); if (!u) return;
+  shell('patients', u);
+  const d = await api('/api/rcm/patients'); pts = d.patients;
+  const ins = await api('/api/rcm/insurance');
+  const covBy = {}; ins.insurance.forEach(r => { if (!covBy[r.patient_code]) covBy[r.patient_code] = r; });
+  window._cov = covBy;
+  document.getElementById('kpis').innerHTML = [
+    ['Patients', pts.length, 'In database'],
+    ['With coverage', Object.keys(covBy).length, 'Insurance on file'],
+    ['Active', pts.length, 'Status active'],
+  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  render();
+}
+function render() {
+  const rows = pts.filter(p => (p.code + ' ' + p.name).toLowerCase().includes(q));
+  document.getElementById('rows').innerHTML = rows.map(p => `<tr>
+    <td><b>${esc(p.code)}</b></td><td>${esc(p.name)}</td><td>${esc(p.dob)}</td><td>${esc(p.gender)}</td>
+    <td>${esc(p.phone)}</td><td><span class="bdg b-green">Active</span></td>
+    <td><button class="btn btn-line btn-sm" onclick="viewPt('${p.code}')">View</button></td></tr>`).join('');
+}
+function viewPt(code) {
+  const p = pts.find(x => x.code === code), c = (window._cov || {})[code];
+  openModal('Patient ' + code, `
+    <div class="frow"><div class="fld"><label>Name</label><div><b>${esc(p.name)}</b></div></div>
+    <div class="fld"><label>DOB</label><div>${esc(p.dob)}</div></div></div>
+    <div class="frow"><div class="fld"><label>Gender</label><div>${esc(p.gender)}</div></div>
+    <div class="fld"><label>Phone</label><div>${esc(p.phone)}</div></div></div>
+    <div class="fld"><label>Insurance</label><div>${c ? `${esc(c.payer)} · ${esc(c.member_id)} · copay ${money(c.copay)}` : '— none on file —'}</div></div>
+    <div class="mfoot" style="padding:16px 0 0;border:0"><a class="btn btn-teal btn-sm" href="/eligibility">Verify eligibility →</a></div>`);
+}
+document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+load();
+</script></body></html>

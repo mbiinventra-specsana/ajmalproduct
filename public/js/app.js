@@ -23,16 +23,45 @@ async function logout() {
 }
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function openModal(title, bodyHTML, onMount) {
+  closeModal();
+  const w = document.createElement('div');
+  w.className = 'mwrap'; w.id = 'mwrap';
+  w.innerHTML = `<div class="mbox"><div class="mhead"><b>${esc(title)}</b><button class="mx" onclick="closeModal()">✕</button></div><div class="mbody"></div></div>`;
+  w.querySelector('.mbody').innerHTML = bodyHTML;
+  w.addEventListener('click', e => { if (e.target === w) closeModal(); });
+  document.body.appendChild(w);
+  if (onMount) onMount(w);
+}
+function closeModal() { const w = document.getElementById('mwrap'); if (w) w.remove(); }
+const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 function shell(active, user) {
   const nav = [
     ['Workspace', [
-      ['dashboard', 'Dashboard', '/dashboard', '🏠'],
-      ['progress', 'My Progress', '/progress', '📊'],
+      ['dashboard', 'Command Center', '/dashboard', '🏠'],
+      ['workqueue', 'Work Queue', '/work-queue', '📥'],
+    ]],
+    ['Patients', [
+      ['patients', 'Patients', '/patients', '🧑‍⚕️'],
+      ['insurance', 'Insurance', '/insurance', '🛡️'],
+      ['eligibility', 'Eligibility', '/eligibility', '✅'],
+    ]],
+    ['Billing', [
+      ['charges', 'Charge Entry', '/charges', '🧾'],
+      ['claims', 'Claims', '/claims', '📄'],
+    ]],
+    ['Revenue Cycle', [
+      ['payments', 'Payments', '/payments', '💳'],
+      ['ar', 'A/R Follow-up', '/ar', '📊'],
+      ['denialsq', 'Denials', '/denials', '🚫'],
+      ['reports', 'Reports', '/reports', '📈'],
     ]],
     ['Training', [
       ['training', 'Case Center', '/training', '🎯'],
+      ['assignments', 'Assignments', '/assignments', '📝'],
       ['lab', 'Practice Lab', '/lab', '🧪'],
+      ['progress', 'My Progress', '/progress', '🏅'],
     ]],
     ['Advanced Labs', [
       ['scrubber', 'Claim Scrubber', '/labs/scrubber', '🧹'],

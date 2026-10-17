@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payments — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
+  <div class="phead"><div>
+    <div class="eyebrow2">Revenue Cycle</div><h1>Payment Posting</h1>
+    <p class="psub">Practice posting the EOB/ERA — payer paid, contractual adjustment, patient responsibility.</p>
+  </div></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="info-panel">💳 <b>Payment posting training:</b> read the remittance, post the payer's payment and adjustment, and move the leftover to patient responsibility. Paid + patient share can never exceed the allowed amount.</div>
+  <div class="panel"><div class="prow"><h3 style="margin:0">Claims Awaiting Payment</h3></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Claim #</th><th>Patient</th><th>Billed</th><th>Allowed</th><th>Paid</th><th>Balance</th><th>Status</th><th></th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="empty" id="empty" style="display:none">No submitted claims yet — submit a validated claim first. 📄</div>
+  </div>
+  <div class="panel"><div class="prow"><h3 style="margin:0">Posted Payments</h3></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Date</th><th>Claim #</th><th>Paid</th><th>Adjustment</th><th>Patient Resp.</th><th>Method</th>
+    </tr></thead><tbody id="prows"></tbody></table></div>
+  </div>
+</div></main></div>
+<script src="/js/app.js"></script>
+<script>
+let claims = [];
+async function load() {
+  const u = await requireLogin(); if (!u) return;
+  shell('payments', u);
+  const [c, p] = await Promise.all([api('/api/rcm/claims'), api('/api/rcm/payments')]);
+  claims = c.claims.filter(x => ['SUBMITTED', 'PAID'].includes(x.status));
+  const posted = p.payments;
+  const totPaid = posted.reduce((s, x) => s + Number(x.paid), 0);
+  document.getElementById('kpis').innerHTML = [
+    ['Awaiting payment', claims.filter(x => x.status === 'SUBMITTED').length, 'Open'],
+    ['Posted payments', posted.length, 'This workspace'],
+    ['Total posted', money(totPaid), 'Payer payments'],
+    ['Patient A/R', money(claims.reduce((s, x) => s + Number(x.patient_resp), 0)), 'Patient share'],
+  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  document.getElementById('rows').innerHTML = claims.map(x => {
+    const bal = Math.max(0, Number(x.allowed || x.billed) - Number(x.paid) - 0);
+    return `<tr><td><b><code>${esc(x.claim_no)}</code></b></td><td>${esc(x.patient_code)}</td>
+    <td>${money(x.billed)}</td><td>${money(x.allowed)}</td><td>${money(x.paid)}</td>
+    <td><b>${money(Math.max(0, Number(x.allowed || x.billed) - Number(x.paid)))}</b></td>
+    <td><span class="bdg ${x.status === 'PAID' ? 'b-green' : 'b-blue'}">${x.status}</span></td>
+    <td>${x.status === 'SUBMITTED' ? `<button class="btn btn-teal btn-sm" onclick="postPay(${x.id})">Post Payment</button>` : ''}</td></tr>`;
+  }).join('');
+  document.getElementById('empty').style.display = claims.length ? 'none' : 'block';
+  document.getElementById('prows').innerHTML = posted.map(x => `<tr>
+    <td>${esc(x.created_at.slice(0, 10))}</td><td><code>${esc(x.claim_no)}</code></td>
+    <td>${money(x.paid)}</td><td>${money(x.adjustment)}</td><td>${money(x.patient_resp)}</td><td>${esc(x.method)}</td></tr>`).join('')
+    || `<tr><td colspan="6" class="empty">No payments posted yet.</td></tr>`;
+}
+function postPay(id) {
+  const c = claims.find(x => x.id === id);
+  const allowed = Number(c.allowed || c.billed);
+  openModal('Post Payment — ' + c.claim_no, `
+    <div class="info-panel">ERA summary: Billed ${money(c.billed)} · <b>Allowed ${money(allowed)}</b> · Already paid ${money(c.paid)}</div>
+    <div class="frow"><div class="fld"><label>Payer paid ($)</label><input id="f_paid" type="number" min="0" step="0.01" value="${(allowed * 0.8).toFixed(2)}"></div>
+    <div class="fld"><label>Adjustment ($)</label><input id="f_adj" type="number" min="0" step="0.01" value="${Math.max(0, c.billed - allowed).toFixed(2)}"></div></div>
+    <div class="frow"><div class="fld"><label>Patient responsibility ($)</label><input id="f_pr" type="number" min="0" step="0.01" value="${(allowed * 0.2).toFixed(2)}"></div>
+    <div class="fld"><label>Method</label><select id="f_m"><option>ERA</option><option>EOB</option></select></div></div>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-teal btn-sm" id="save">Post Payment</button></div>`, w => {
+    w.querySelector('#save').onclick = async () => {
+      try {
+        const r = await api('/api/rcm/payments', { method: 'POST', body: { claim_id: id,
+          paid: w.querySelector('#f_paid').value, adjustment: w.querySelector('#f_adj').value,
+          patient_resp: w.querySelector('#f_pr').value, method: w.querySelector('#f_m').value } });
+        closeModal();
+        openModal('Payment Posted', `<div class="info-panel" style="background:#f0fdf4;border-color:#86efac;color:#14532d">✅ Payment posted. Remaining balance: <b>${money(r.balance)}</b>${r.balance > 0 ? ' — moved to A/R follow-up.' : ' — claim fully paid!'}</div>
+          <div class="mfoot"><a class="btn btn-teal btn-sm" href="/ar">Go to A/R →</a></div>`);
+        load();
+      } catch (e) { alert(e.message); }
+    };
+  });
+}
+load();
+</script></body></html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Insurance — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
+  <div class="phead"><div>
+    <div class="eyebrow2">Insurance Management</div><h1>Insurance</h1>
+    <p class="psub">Fictional patient coverage and payer information for RCM training.</p>
+  </div><button class="btn btn-teal btn-sm" id="addBtn">+ Add Insurance</button></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="panel"><div class="prow"><h3 style="margin:0">Insurance Records</h3>
+    <input class="search" id="q" placeholder="Search insurance…"></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Patient</th><th>Payer</th><th>Member ID</th><th>Plan</th><th>Type</th><th>Status</th><th>Copay</th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+  </div>
+</div></main></div>
+<script src="/js/app.js"></script>
+<script>
+let rows = [], q = '', pts = [];
+async function load() {
+  const u = await requireLogin(); if (!u) return;
+  shell('insurance', u);
+  const [d, p] = await Promise.all([api('/api/rcm/insurance'), api('/api/rcm/patients')]);
+  rows = d.insurance; pts = p.patients;
+  const payers = [...new Set(rows.map(r => r.payer))];
+  document.getElementById('kpis').innerHTML = [
+    ['Patients', pts.length, 'In database'],
+    ['Payers', payers.length, 'On file'],
+    ['Insurance records', rows.length, 'Total'],
+    ['Active coverage', rows.filter(r => r.status === 'ACTIVE').length, 'Active'],
+  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  render();
+}
+function render() {
+  const rs = rows.filter(r => (r.patient_code + ' ' + r.payer + ' ' + r.member_id).toLowerCase().includes(q));
+  const pname = c => (pts.find(p => p.code === c) || {}).name || c;
+  document.getElementById('rows').innerHTML = rs.map(r => `<tr>
+    <td><b>${esc(r.patient_code)}</b><br><span style="color:#64748b;font-size:12px">${esc(pname(r.patient_code))}</span></td>
+    <td>${esc(r.payer)}</td><td><code>${esc(r.member_id)}</code></td><td>${esc(r.plan)}</td><td>${esc(r.type)}</td>
+    <td><span class="bdg ${r.status === 'ACTIVE' ? 'b-green' : 'b-red'}">${esc(r.status)}</span></td>
+    <td>${money(r.copay)}</td></tr>`).join('');
+}
+document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+document.getElementById('addBtn').onclick = () => {
+  openModal('Add Insurance', `
+    <div class="fld"><label>Patient</label><select id="f_pt">${pts.map(p => `<option value="${p.code}">${p.code} — ${esc(p.name)}</option>`).join('')}</select></div>
+    <div class="fld"><label>Payer</label><input id="f_payer" placeholder="e.g. BlueCross BlueShield (Simulated)"></div>
+    <div class="frow"><div class="fld"><label>Member ID</label><input id="f_mid" placeholder="ABC-123456"></div>
+    <div class="fld"><label>Plan</label><input id="f_plan" placeholder="Commercial PPO"></div></div>
+    <div class="frow"><div class="fld"><label>Type</label><select id="f_type"><option>PPO</option><option>HMO</option><option>EPO</option><option>POS</option></select></div>
+    <div class="fld"><label>Copay ($)</label><input id="f_copay" type="number" min="0" step="1" value="30"></div></div>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-teal btn-sm" id="save">Save Insurance</button></div>`, w => {
+    w.querySelector('#save').onclick = async () => {
+      try {
+        await api('/api/rcm/insurance', { method: 'POST', body: {
+          patient_code: w.querySelector('#f_pt').value, payer: w.querySelector('#f_payer').value,
+          member_id: w.querySelector('#f_mid').value, plan: w.querySelector('#f_plan').value,
+          type: w.querySelector('#f_type').value, copay: w.querySelector('#f_copay').value } });
+        closeModal(); load();
+      } catch (e) { alert(e.message); }
+    };
+  });
+};
+load();
+</script></body></html>

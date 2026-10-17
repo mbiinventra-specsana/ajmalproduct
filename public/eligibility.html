@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eligibility — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
+  <div class="phead"><div>
+    <div class="eyebrow2">Eligibility Verification</div><h1>Eligibility</h1>
+    <p class="psub">Verify fictional insurance coverage before claim submission — the 270/271 workflow.</p>
+  </div><button class="btn btn-teal btn-sm" id="verifyBtn">+ Verify Eligibility</button></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="info-panel">🏥 <b>RCM training workflow:</b> eligibility verification confirms the patient's coverage is active and reveals copay, deductible and plan details <i>before</i> a claim is submitted — preventing the #1 cause of denials.</div>
+  <div class="panel"><div class="prow"><h3 style="margin:0">Verification History</h3>
+    <input class="search" id="q" placeholder="Search verifications…"></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Date</th><th>Patient</th><th>Payer</th><th>Member ID</th><th>Service</th><th>Coverage</th><th>Copay</th><th>Deductible</th><th>Result</th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="empty" id="empty" style="display:none">No verifications yet — run your first eligibility check. 🔍</div>
+  </div>
+</div></main></div>
+<script src="/js/app.js"></script>
+<script>
+let rows = [], q = '', pts = [], ins = [];
+async function load() {
+  const u = await requireLogin(); if (!u) return;
+  shell('eligibility', u);
+  const [d, p, i] = await Promise.all([api('/api/rcm/eligibility'), api('/api/rcm/patients'), api('/api/rcm/insurance')]);
+  rows = d.checks; pts = p.patients; ins = i.insurance;
+  document.getElementById('kpis').innerHTML = [
+    ['Insurance records', ins.length, 'On file'],
+    ['Verified', rows.filter(r => r.result === 'VERIFIED').length, 'Checks passed'],
+    ['Active coverage', ins.filter(r => r.status === 'ACTIVE').length, 'Active'],
+    ['Inactive coverage', ins.filter(r => r.status !== 'ACTIVE').length, 'Inactive'],
+  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  render();
+}
+function render() {
+  const rs = rows.filter(r => (r.patient_code + ' ' + r.payer).toLowerCase().includes(q));
+  document.getElementById('rows').innerHTML = rs.map(r => `<tr>
+    <td>${esc(r.created_at.slice(0, 10))}</td><td><b>${esc(r.patient_code)}</b></td><td>${esc(r.payer)}</td>
+    <td><code>${esc((ins.find(x => x.patient_code === r.patient_code && x.payer === r.payer) || {}).member_id || '—')}</code></td>
+    <td>${esc(r.service)}</td>
+    <td><span class="bdg ${r.coverage === 'ACTIVE' ? 'b-green' : 'b-red'}">${esc(r.coverage)}</span></td>
+    <td>${r.copay ? money(r.copay) : '—'}</td><td>${r.deductible ? money(r.deductible) : '—'}</td>
+    <td><span class="bdg ${r.result === 'VERIFIED' ? 'b-green' : 'b-red'}">${esc(r.result)}</span></td></tr>`).join('');
+  document.getElementById('empty').style.display = rs.length ? 'none' : 'block';
+}
+document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+document.getElementById('verifyBtn').onclick = () => {
+  const payersFor = pc => ins.filter(x => x.patient_code === pc);
+  openModal('Verify Eligibility', `
+    <div class="fld"><label>Patient</label><select id="f_pt">${pts.map(p => `<option value="${p.code}">${p.code} — ${esc(p.name)}</option>`).join('')}</select></div>
+    <div class="fld"><label>Payer</label><select id="f_payer"></select></div>
+    <div class="fld"><label>Service</label><select id="f_svc"><option>Office Visit</option><option>Specialist Visit</option><option>Preventive Visit</option><option>Lab Work</option><option>Imaging</option></select></div>
+    <div id="vres"></div>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button>
+    <button class="btn btn-teal btn-sm" id="run">Run Verification</button></div>`, w => {
+    const pt = w.querySelector('#f_pt'), py = w.querySelector('#f_payer');
+    const fill = () => { py.innerHTML = payersFor(pt.value).map(x => `<option>${esc(x.payer)}</option>`).join('') || '<option value="">— no coverage on file —</option>'; };
+    pt.onchange = fill; fill();
+    w.querySelector('#run').onclick = async () => {
+      try {
+        const r = await api('/api/rcm/eligibility/verify', { method: 'POST', body: {
+          patient_code: pt.value, payer: py.value, service: w.querySelector('#f_svc').value } });
+        w.querySelector('#vres').innerHTML = `<div class="info-panel" style="margin:14px 0 0">
+          <b style="color:${r.result === 'VERIFIED' ? '#15803d' : '#b91c1c'}">${r.result}</b> — coverage ${r.coverage.toLowerCase()}.
+          ${r.result === 'VERIFIED' ? `Copay ${money(r.copay)} · Deductible ${money(r.deductible)}.` : 'Claim cannot be submitted for this payer.'}</div>`;
+        load();
+      } catch (e) { alert(e.message); }
+    };
+  });
+};
+load();
+</script></body></html>

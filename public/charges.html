@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charge Entry — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
+  <div class="phead"><div>
+    <div class="eyebrow2">Charge Entry</div><h1>Charges</h1>
+    <p class="psub">Enter billable services — date of service, CPT, diagnosis, units and amount. Saved charges become claims.</p>
+  </div><button class="btn btn-teal btn-sm" id="addBtn">+ Enter Charge</button></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="info-panel">🧾 <b>Charge entry training:</b> a charge represents one billable service. Enter the DOS, CPT code, ICD-10 diagnosis, modifier, units and fee — accuracy here decides whether the claim pays or denies.</div>
+  <div class="panel"><div class="prow"><h3 style="margin:0">Charge History</h3>
+    <input class="search" id="q" placeholder="Search charges…"></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Date</th><th>Patient</th><th>Provider</th><th>CPT</th><th>Diagnosis</th><th>Mod</th><th>Units</th><th>Amount</th><th>Status</th><th>Claim</th><th></th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="empty" id="empty" style="display:none">No charges yet — enter your first charge. 🧾</div>
+  </div>
+</div></main></div>
+<script src="/js/app.js"></script>
+<script>
+let rows = [], q = '', pts = [];
+const CPTS = [['99213', 'Office visit, est. low'], ['99214', 'Office visit, est. mod'], ['99204', 'Office visit, new mod'], ['87880', 'Strep test'], ['72100', 'X-ray spine'], ['99312', 'Subseq. nursing care']];
+const ICDS = [['J06.9', 'Acute URI'], ['I10', 'Hypertension'], ['E11.9', 'Type 2 diabetes'], ['M54.50', 'Low back pain'], ['R05.1', 'Acute cough'], ['J02.9', 'Acute pharyngitis'], ['R07.9', 'Chest pain']];
+async function load() {
+  const u = await requireLogin(); if (!u) return;
+  shell('charges', u);
+  const [d, p] = await Promise.all([api('/api/rcm/charges'), api('/api/rcm/patients')]);
+  rows = d.charges; pts = p.patients;
+  document.getElementById('kpis').innerHTML = [
+    ['Total charges', rows.length, 'Entered'],
+    ['Ready', rows.filter(r => r.status === 'READY').length, 'Awaiting claim'],
+    ['Linked to claims', rows.filter(r => r.claim_id).length, 'Converted'],
+    ['Total billed', money(rows.reduce((s, r) => s + Number(r.amount), 0)), 'All charges'],
+  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  render();
+}
+function render() {
+  const rs = rows.filter(r => (r.patient_code + ' ' + r.cpt + ' ' + r.icd).toLowerCase().includes(q));
+  document.getElementById('rows').innerHTML = rs.map(r => `<tr>
+    <td>${esc(r.dos)}</td><td><b>${esc(r.patient_code)}</b></td><td>${esc(r.provider)}</td>
+    <td><code>${esc(r.cpt)}</code></td><td><code>${esc(r.icd)}</code></td><td>${esc(r.modifier) || '—'}</td>
+    <td>${r.units}</td><td><b>${money(r.amount)}</b></td>
+    <td><span class="bdg ${r.status === 'READY' ? 'b-green' : 'b-blue'}">${esc(r.status)}</span></td>
+    <td>${r.claim_id ? '<span class="bdg b-teal">Created</span>' : '<span style="color:#94a3b8">Not created</span>'}</td>
+    <td>${!r.claim_id ? `<a class="btn btn-teal btn-sm" href="/claims">Claim →</a>` : ''}</td></tr>`).join('');
+  document.getElementById('empty').style.display = rs.length ? 'none' : 'block';
+}
+document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+document.getElementById('addBtn').onclick = () => {
+  const today = new Date().toISOString().slice(0, 10);
+  openModal('Enter Charge', `
+    <div class="frow"><div class="fld"><label>Patient</label><select id="f_pt">${pts.map(p => `<option value="${p.code}">${p.code} — ${esc(p.name)}</option>`).join('')}</select></div>
+    <div class="fld"><label>Date of service</label><input id="f_dos" type="date" value="${today}" max="${today}"></div></div>
+    <div class="frow"><div class="fld"><label>CPT</label><select id="f_cpt">${CPTS.map(([c, d]) => `<option value="${c}">${c} — ${d}</option>`).join('')}</select></div>
+    <div class="fld"><label>ICD-10</label><select id="f_icd">${ICDS.map(([c, d]) => `<option value="${c}">${c} — ${d}</option>`).join('')}</select></div></div>
+    <div class="frow"><div class="fld"><label>Modifier (optional)</label><input id="f_mod" placeholder="25, 59, XE…" maxlength="4"></div>
+    <div class="fld"><label>Units</label><input id="f_units" type="number" min="1" max="99" value="1"></div></div>
+    <div class="fld"><label>Amount ($)</label><input id="f_amt" type="number" min="1" step="0.01" placeholder="120.00"></div>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-teal btn-sm" id="save">Save Charge</button></div>`, w => {
+    w.querySelector('#save').onclick = async () => {
+      try {
+        await api('/api/rcm/charges', { method: 'POST', body: {
+          patient_code: w.querySelector('#f_pt').value, dos: w.querySelector('#f_dos').value,
+          cpt: w.querySelector('#f_cpt').value, icd: w.querySelector('#f_icd').value,
+          modifier: w.querySelector('#f_mod').value, units: w.querySelector('#f_units').value,
+          amount: w.querySelector('#f_amt').value } });
+        closeModal(); load();
+      } catch (e) { alert(e.message); }
+    };
+  });
+};
+load();
+</script></body></html>

@@ -15,6 +15,7 @@
       <div class="panel"><h3>Per-case mastery</h3><div id="perCase"></div></div>
       <div class="panel"><h3>Attempt history</h3><div id="hist"></div></div>
     </div>
+    <div class="panel" style="margin-top:20px"><h3>🧬 Advanced lab bests</h3><div id="labBest"></div></div>
   </main>
 </div>
 <script src="/js/app.js"></script>
@@ -24,6 +25,14 @@
   shell('progress', u);
   const p = await api('/api/progress');
   const s = p.stats;
+  const LABN = { scrubber: '🧹 Claim Scrubber', denials: '🔍 Denial Crime-Scene', sprints: '⚡ Coding Sprints', quiz: '🎲 Quiz Arena' };
+  try {
+    const lb = await api('/api/labs/bests');
+    const keys = Object.keys(LABN);
+    document.getElementById('labBest').innerHTML = keys.map(k =>
+      `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f7">
+        <div>${LABN[k]}</div><b>${lb.bests[k] != null ? lb.bests[k] + '%' : '—'}</b></div>`).join('');
+  } catch { document.getElementById('labBest').innerHTML = `<div class="empty">No lab runs yet.</div>`; }
   document.getElementById('stats').innerHTML = `
     <div class="card stat"><span>Level</span><b>${esc(s.level)}</b></div>
     <div class="card stat"><span>Points</span><b>${s.points}</b></div>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claims — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
+  <div class="phead"><div>
+    <div class="eyebrow2">Claims Management</div><h1>Claims</h1>
+    <p class="psub">Create claims from charges, validate them with the scrubber, then submit — only clean claims go out.</p>
+  </div><button class="btn btn-teal btn-sm" id="addBtn">+ Create Claim</button></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="info-panel">📄 <b>Claim creation training:</b> pick a READY charge — the patient, payer and charge auto-connect into a professional claim. <b>Validate</b> runs the 13-rule scrubber; only <b>PASSED</b> claims can be <b>submitted</b>.</div>
+  <div class="panel"><div class="prow"><h3 style="margin:0">Claim History</h3>
+    <input class="search" id="q" placeholder="Search claims…"></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Claim #</th><th>Patient</th><th>Payer</th><th>CPT</th><th>DOS</th><th>Billed</th><th>Status</th><th>Validation</th><th>Action</th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="empty" id="empty" style="display:none">No claims yet — create one from a charge. 📄</div>
+  </div>
+</div></main></div>
+<script src="/js/app.js"></script>
+<script>
+let rows = [], q = '', charges = [];
+const SCLS = { DRAFT: 'b-gray', SUBMITTED: 'b-blue', PAID: 'b-green', DENIED: 'b-red', APPEALED: 'b-amber', WRITTEN_OFF: 'b-gray' };
+const VCLS = { PASSED: 'b-green', FAILED: 'b-red', NOT_VALIDATED: 'b-amber' };
+async function load() {
+  const u = await requireLogin(); if (!u) return;
+  shell('claims', u);
+  const [d, ch] = await Promise.all([api('/api/rcm/claims'), api('/api/rcm/charges')]);
+  rows = d.claims; charges = ch.charges.filter(c => !c.claim_id);
+  document.getElementById('kpis').innerHTML = [
+    ['Total claims', rows.length, 'Created'],
+    ['Draft', rows.filter(r => r.status === 'DRAFT').length, 'Not submitted'],
+    ['Submitted', rows.filter(r => ['SUBMITTED', 'PAID'].includes(r.status)).length, 'Out / paid'],
+    ['Total billed', money(rows.reduce((s, r) => s + Number(r.billed), 0)), 'All claims'],
+  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  render();
+}
+function render() {
+  const rs = rows.filter(r => (r.claim_no + ' ' + r.patient_code + ' ' + r.payer).toLowerCase().includes(q));
+  document.getElementById('rows').innerHTML = rs.map(r => `<tr>
+    <td><b><code>${esc(r.claim_no)}</code></b>${r.denial_code ? `<br><span class="bdg b-red" style="margin-top:4px">${esc(r.denial_code)}</span>` : ''}</td>
+    <td>${esc(r.patient_code)}</td><td style="max-width:180px">${esc(r.payer)}</td>
+    <td><code>${esc(r.cpt)}</code></td><td>${esc(r.dos)}</td><td><b>${money(r.billed)}</b></td>
+    <td><span class="bdg ${SCLS[r.status] || 'b-gray'}">${esc(r.status.replace('_', ' '))}</span></td>
+    <td><span class="bdg ${VCLS[r.validation] || 'b-gray'}">${esc(r.validation.replace('_', ' '))}</span></td>
+    <td><div class="act-row">
+      ${r.status === 'DRAFT' ? `<button class="btn btn-line btn-sm" onclick="validate(${r.id})">Validate</button>` : ''}
+      ${r.status === 'DRAFT' && r.validation === 'PASSED' ? `<button class="btn btn-teal btn-sm" onclick="submitCl(${r.id})">Submit →</button>` : ''}
+      ${r.status === 'DENIED' ? `<a class="btn btn-teal btn-sm" href="/denials">Work denial →</a>` : ''}
+    </div></td></tr>`).join('');
+  document.getElementById('empty').style.display = rs.length ? 'none' : 'block';
+}
+async function validate(id) {
+  try {
+    const r = await api(`/api/rcm/claims/${id}/validate`, { method: 'POST' });
+    if (r.errors.length) {
+      openModal('Validation FAILED', `<p style="color:#b91c1c;margin-top:0"><b>${r.errors.length} error(s)</b> — fix the charge data, then re-validate.</p>` +
+        r.errors.map(e => `<div class="info-panel" style="background:#fef2f2;border-color:#fecaca;color:#7f1d1d;margin-bottom:8px"><b>${esc(e.code)}</b> — ${esc(e.msg)}</div>`).join('') +
+        (r.warnings.length ? `<p><b>Warnings:</b></p>` + r.warnings.map(e => `<div style="font-size:13px;color:#b45309;margin-bottom:6px">⚠ ${esc(e.msg)}</div>`).join('') : '') +
+        `<div class="mfoot"><button class="btn btn-teal btn-sm" onclick="closeModal()">Got it</button></div>`);
+    } else {
+      openModal('Validation PASSED', `<div class="info-panel" style="background:#f0fdf4;border-color:#86efac;color:#14532d">
+        ✅ <b>Clean claim!</b> Scrubber score ${r.score}/100 — ready to submit.${r.warnings.length ? '<br>⚠ ' + r.warnings.length + ' warning(s) noted.' : ''}</div>
+        <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Later</button>
+        <button class="btn btn-teal btn-sm" onclick="closeModal();submitCl(${id})">Submit now →</button></div>`);
+    }
+    load();
+  } catch (e) { alert(e.message); }
+}
+async function submitCl(id) {
+  if (!confirm('Submit this claim to the payer?')) return;
+  try {
+    const r = await api(`/api/rcm/claims/${id}/submit`, { method: 'POST' });
+    if (r.status === 'DENIED') {
+      openModal('Claim DENIED', `<div class="info-panel" style="background:#fef2f2;border-color:#fecaca;color:#7f1d1d">
+        🚫 <b>${esc(r.denial_code)}</b> — the payer denied this claim. It moved to your <b>Denials</b> queue.</div>
+        <div class="mfoot"><a class="btn btn-teal btn-sm" href="/denials">Work denial →</a></div>`);
+    } else {
+      openModal('Claim PAID', `<div class="info-panel" style="background:#f0fdf4;border-color:#86efac;color:#14532d">
+        ✅ <b>Paid!</b> Allowed ${money(r.adjudication.allowed)} · Payer paid ${money(r.adjudication.paid)} · Adjustment ${money(r.adjudication.adjustment)} · Patient owes ${money(r.adjudication.patient_resp)}.</div>
+        <div class="mfoot"><a class="btn btn-teal btn-sm" href="/payments">Post payment →</a></div>`);
+    }
+    load();
+  } catch (e) { alert(e.message); }
+}
+document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+document.getElementById('addBtn').onclick = () => {
+  if (!charges.length) { alert('No READY charges. Enter a charge first (Charge Entry).'); return; }
+  openModal('Create Claim', `
+    <div class="fld"><label>Select READY charge</label><select id="f_ch">${charges.map(c =>
+      `<option value="${c.id}">${c.patient_code} · ${c.cpt}/${c.icd} · DOS ${c.dos} · ${money(c.amount)}</option>`).join('')}</select></div>
+    <p style="font-size:13px;color:#64748b">Patient, payer and charge details auto-connect into the claim.</p>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-teal btn-sm" id="save">Create Claim</button></div>`, w => {
+    w.querySelector('#save').onclick = async () => {
+      try { await api('/api/rcm/claims', { method: 'POST', body: { charge_id: w.querySelector('#f_ch').value } }); closeModal(); load(); }
+      catch (e) { alert(e.message); }
+    };
+  });
+};
+load();
+</script></body></html>

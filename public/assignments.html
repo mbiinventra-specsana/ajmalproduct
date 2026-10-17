@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assignments — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
+  <div class="phead"><div>
+    <div class="eyebrow2">Training</div><h1>Assignments</h1>
+    <p class="psub">Your training cases as assignments — complete them in order, master each before moving on.</p>
+  </div></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="panel"><div class="prow"><h3 style="margin:0">My Assignments</h3></div>
+    <div id="list" style="display:grid;gap:12px"></div>
+  </div>
+</div></main></div>
+<script src="/js/app.js"></script>
+<script>
+let rows = [], tab = 'all';
+const SCLS = { ASSIGNED: 'b-blue', IN_PROGRESS: 'b-amber', COMPLETED: 'b-green' };
+const DCLS = { Beginner: 'b-green', Intermediate: 'b-amber', Advanced: 'b-red' };
+async function load() {
+  const u = await requireLogin(); if (!u) return;
+  shell('assignments', u);
+  const d = await api('/api/cases');
+  rows = d.cases.map(c => {
+    const pct = c.best != null ? Math.round(100 * c.best / Math.max(1, c.points)) : null;
+    const st = !c.attempts ? 'ASSIGNED' : pct >= 70 ? 'COMPLETED' : 'IN_PROGRESS';
+    return { ...c, st, pct };
+  });
+  const n = s => rows.filter(r => r.st === s).length;
+  document.getElementById('kpis').innerHTML = [
+    ['Total', rows.length, 'Assigned cases'],
+    ['Completed', n('COMPLETED'), 'Mastered (70%+)'],
+    ['In progress', n('IN_PROGRESS'), 'Being worked'],
+    ['Assigned', n('ASSIGNED'), 'Not started'],
+  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  renderTabs(); render();
+}
+function renderTabs() {
+  const tabs = [['all', 'All'], ['ASSIGNED', 'Assigned'], ['IN_PROGRESS', 'In Progress'], ['COMPLETED', 'Completed']];
+  const cnt = k => k === 'all' ? rows.length : rows.filter(r => r.st === k).length;
+  document.getElementById('tabs').innerHTML = tabs.map(([k, l]) =>
+    `<button class="tab ${tab === k ? 'on' : ''}" data-k="${k}">${l}<span class="cnt">${cnt(k)}</span></button>`).join('');
+  document.querySelectorAll('.tab').forEach(t => t.onclick = () => { tab = t.dataset.k; renderTabs(); render(); });
+}
+function render() {
+  const rs = rows.filter(r => tab === 'all' || r.st === tab);
+  document.getElementById('list').innerHTML = rs.map(c => `
+    <div class="panel-light" style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:0">
+      <div><b>${esc(c.code)}</b> — ${esc(c.title)}
+        <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">
+          <span class="bdg ${DCLS[c.difficulty] || 'b-gray'}">${esc(c.difficulty)}</span>
+          <span class="bdg ${SCLS[c.st]}">${esc(c.st.replace('_', ' '))}</span>
+          ${c.attempts ? `<span class="bdg b-gray">${c.attempts} attempt(s)${c.pct != null ? ` · best ${c.pct}%` : ''}</span>` : ''}
+        </div></div>
+      <div>${c.st === 'COMPLETED'
+        ? `<a class="btn btn-line btn-sm" href="/progress">Review</a>`
+        : c.attempts
+          ? `<a class="btn btn-teal btn-sm" href="/play?case=${c.id}">Continue →</a>`
+          : `<a class="btn btn-teal btn-sm" href="/play?case=${c.id}">Start →</a>`}</div>
+    </div>`).join('');
+}
+load();
+</script></body></html>

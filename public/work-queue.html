@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Queue — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
+  <div class="phead"><div>
+    <div class="eyebrow2">Revenue Cycle Management</div><h1>RCM Work Queue</h1>
+    <p class="psub">Centralized operational queue — validate claims, work denials, follow up A/R and keep training on track.</p>
+  </div><div class="act-row">
+    <button class="btn btn-line btn-sm" id="demoBtn">✨ Load demo data</button>
+  </div></div>
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="panel"><div class="prow"><h3 style="margin:0">Work Items</h3>
+    <input class="search" id="q" placeholder="Search queue…"></div>
+    <div class="twrap"><table><thead><tr>
+      <th>Priority</th><th>Type</th><th>Task</th><th>Detail</th><th>Amount</th><th></th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="empty" id="empty" style="display:none">Queue is clear — nice work. 🎉<br>
+      <button class="btn btn-line btn-sm empty-cta" onclick="document.getElementById('demoBtn').click()">Load demo data to practice</button></div>
+  </div>
+  <div class="info-panel">💡 <b>How the queue works:</b> every training action creates queue items — unvalidated claims, denials to work, A/R follow-ups and cases to improve. Clear high-priority items first, like a real billing team.</div>
+</div></main></div>
+<script src="/js/app.js"></script>
+<script>
+let items = [], tab = 'all', q = '';
+const KIND = { claim: 'CLAIM', denial: 'DENIAL', ar: 'A/R', payment: 'PAYMENT', charge: 'CHARGE', case: 'CASE' };
+const KCLS = { claim: 'b-blue', denial: 'b-red', ar: 'b-amber', payment: 'b-teal', charge: 'b-purple', case: 'b-gray' };
+const PCLS = { HIGH: 'b-red', MEDIUM: 'b-amber', LOW: 'b-gray' };
+async function load() {
+  const u = await requireLogin(); if (!u) return;
+  shell('workqueue', u);
+  const [ov, wq] = await Promise.all([api('/api/rcm/overview'), api('/api/rcm/work-queue')]);
+  items = wq.items;
+  document.getElementById('kpis').innerHTML = [
+    ['Open tasks', ov.openTasks, 'Active work items'],
+    ['High priority', ov.highPriority, 'Needs attention'],
+    ['Outstanding', money(ov.outstanding), 'Queue-associated amount'],
+    ['Denials', ov.denials, 'Open denial tasks'],
+  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  renderTabs(); render();
+}
+function renderTabs() {
+  const counts = { all: items.length };
+  for (const i of items) counts[i.kind] = (counts[i.kind] || 0) + 1;
+  const tabs = [['all', 'All'], ['claim', 'Claims'], ['ar', 'A/R'], ['denial', 'Denials'], ['payment', 'Payments'], ['charge', 'Charges'], ['case', 'Cases']];
+  document.getElementById('tabs').innerHTML = tabs.map(([k, l]) =>
+    `<button class="tab ${tab === k ? 'on' : ''}" data-k="${k}">${l}<span class="cnt">${counts[k] || 0}</span></button>`).join('');
+  document.querySelectorAll('.tab').forEach(t => t.onclick = () => { tab = t.dataset.k; renderTabs(); render(); });
+}
+function render() {
+  const rows = items.filter(i => (tab === 'all' || i.kind === tab) &&
+    (i.title + ' ' + i.sub).toLowerCase().includes(q));
+  document.getElementById('rows').innerHTML = rows.map(i => `<tr>
+    <td><span class="bdg ${PCLS[i.priority]}">${i.priority}</span></td>
+    <td><span class="bdg ${KCLS[i.kind] || 'b-gray'}">${KIND[i.kind] || i.kind}</span></td>
+    <td><b>${esc(i.title)}</b></td><td style="color:#64748b">${esc(i.sub)}</td>
+    <td>${i.amount ? money(i.amount) : '—'}</td>
+    <td><a class="btn btn-teal btn-sm" href="${i.href}">${esc(i.action)}</a></td></tr>`).join('');
+  document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
+}
+document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+document.getElementById('demoBtn').onclick = async () => {
+  if (!confirm('Load 3 demo charges + 3 demo claims into your workspace?')) return;
+  try { await api('/api/rcm/demo', { method: 'POST' }); location.reload(); }
+  catch (e) { alert(e.message); }
+};
+load();
+</script></body></html>
