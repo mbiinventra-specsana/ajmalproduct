@@ -256,6 +256,13 @@ function logActivity(userId, action, detail, req) {
 // ---------- pages ----------
 // Cache-busting: every deploy gets a fresh version so browsers never serve stale JS/CSS
 const APP_V = Date.now().toString(36);
+// MySQL returns DATETIME as JS Date objects, SQLite as strings — handle both
+const parseDbTs = (v) => {
+  if (!v) return 0;
+  if (v instanceof Date) return v.getTime();
+  const t = new Date(String(v).replace(' ', 'T') + 'Z').getTime();
+  return isNaN(t) ? 0 : t;
+};
 const send = (f) => (req, res) => {
   const fp = path.join(__dirname, 'public', f);
   if (!f.endsWith('.html')) return res.sendFile(fp);
@@ -1181,7 +1188,7 @@ app.get('/api/admin/sessions', requireAdmin, ah(async (req, res) => {
      FROM login_sessions s JOIN users u ON u.id = s.user_id
      ORDER BY s.last_seen DESC LIMIT 100`);
   const cutoff = Date.now() - 15 * 60 * 1000;
-  res.json({ sessions: rows.map(r => ({ ...r, online: new Date(r.last_seen.replace(' ', 'T') + 'Z').getTime() > cutoff })) });
+  res.json({ sessions: rows.map(r => ({ ...r, online: parseDbTs(r.last_seen) > cutoff })) });
 }));
 app.post('/api/admin/sessions/:id/kill', requireAdmin, ah(async (req, res) => {
   const s = await db.get('SELECT * FROM login_sessions WHERE id = ?', [req.params.id]);
@@ -1375,7 +1382,7 @@ app.get('/api/admin/insights', requireAdmin, ah(async (req, res) => {
   for (const st of students) {
     const reasons = [];
     const lt = lastMap[st.id];
-    const inactiveDays = lt ? Math.floor((nowMs - new Date(lt.replace(' ', 'T') + 'Z').getTime()) / 864e5) : 999;
+    const inactiveDays = lt ? Math.floor((nowMs - parseDbTs(lt)) / 864e5) : 999;
     if (inactiveDays >= 7) reasons.push({ kind: 'inactive', label: `Inactive ${inactiveDays >= 999 ? '— never active' : inactiveDays + 'd'}` });
     const sc = scoreMap[st.id] || [];
     if (sc.length >= 4) {
