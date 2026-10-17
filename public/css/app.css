@@ -487,3 +487,116 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-w
 .pulse-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#34d399;margin-right:6px;animation:ppulse 1.6s infinite}
 @keyframes ppulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
 @media(max-width:700px){.tl-item{padding-left:14px}}
+
+/* ================= PRO POLISH — professional component system ================= */
+
+/* ---- KPI cards: premium stat cards ---- */
+.kpi{position:relative;overflow:hidden;transition:transform .18s ease,box-shadow .22s ease,border-color .2s ease}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(10,22,40,.09);border-color:#cbd5e1}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--cyan));opacity:0;transition:opacity .2s}
+.kpi:hover::before,.kpi.hot::before{opacity:1}
+.kpi.hot{border-top:0}
+.kpi .krow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.kpi .kic{width:38px;height:38px;flex:none;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-size:18px;background:linear-gradient(135deg,#f0fdfa,#ecfeff);border:1px solid #99f6e4}
+.kpi b{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kpi .delta{font-size:11.5px;font-weight:700;margin-top:4px;display:inline-block}
+.kpi .delta.up{color:#15803d}.kpi .delta.down{color:#b3261e}.kpi .delta.flat{color:#64748b}
+
+/* ---- Panels: subtle hover lift for interactive cards ---- */
+.panel-light{transition:box-shadow .22s ease,transform .18s ease}
+.panel-lift:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(10,22,40,.1)}
+.pl-head{margin-bottom:12px}
+.pl-head h3{display:flex;align-items:center;gap:8px}
+
+/* ---- Tables: sticky header, refined rows ---- */
+.twrap{overflow:auto;border-radius:10px;max-height:640px}
+.twrap .dtable thead th{position:sticky;top:0;background:#f8fafc;z-index:2;box-shadow:0 1px 0 #e2e8f0}
+.dtable th{font-weight:700;white-space:nowrap}
+.dtable td{transition:background .12s ease}
+.dtable tbody tr{transition:background .12s ease}
+.dtable tbody tr:hover td{background:#f0fdfa}
+.dtable tr.sel td{background:#ecfdf5}
+.dtable .num{text-align:right;font-variant-numeric:tabular-nums}
+.dtable .c{text-align:center}
+
+/* ---- Buttons: press states, loading, focus ---- */
+.btn{position:relative;transition:transform .1s ease,box-shadow .2s ease,background .2s ease,border-color .2s ease;user-select:none}
+.btn:active:not(:disabled){transform:translateY(1px) scale(.99)}
+.btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.btn-teal:active:not(:disabled){box-shadow:0 4px 12px rgba(20,184,166,.3)}
+.btn-danger{background:#fef1f1;color:#b3261e;border:1px solid #f5c6c6}
+.btn-danger:hover{background:#fee2e2;border-color:#fca5a5}
+.btn .spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;
+  animation:btnspin .7s linear infinite;display:inline-block}
+.btn-line .spin{border-color:rgba(14,159,138,.3);border-top-color:var(--teal-d)}
+@keyframes btnspin{to{transform:rotate(360deg)}}
+.btn[disabled]{pointer-events:none}
+
+/* ---- Forms: refined focus rings ---- */
+.input,.fld input,.fld select,.fld textarea{transition:border-color .15s ease,box-shadow .15s ease}
+.input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(20,184,166,.18)}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(20,184,166,.18)}
+.fld label .req{color:var(--red);font-weight:700}
+input.search{width:100%;max-width:280px;padding:10px 14px 10px 36px;border:1px solid var(--line);border-radius:10px;font-size:13.5px;
+  background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.4'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3'/%3E%3C/svg%3E") 12px center no-repeat}
+input.search:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(20,184,166,.18)}
+
+/* ---- Modal: entrance animation ---- */
+.mwrap{animation:mfade .18s ease}
+.mbox{animation:mpop .24s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes mfade{from{opacity:0}}
+@keyframes mpop{from{opacity:0;transform:translateY(16px) scale(.97)}}
+.mhead{border-radius:18px 18px 0 0;z-index:5}
+.mx{transition:background .15s,transform .15s;display:flex;align-items:center;justify-content:center}
+.mx:hover{background:#e2e8f0;transform:rotate(90deg)}
+
+/* ---- Badge system: consistent status colors ---- */
+.bdg{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;
+  letter-spacing:.02em;white-space:nowrap}
+.bdg::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
+.bdg-green{background:#dcfce7;color:#166534}
+.bdg-amber{background:#fef3c7;color:#92400e}
+.bdg-red{background:#fee2e2;color:#b91c1c}
+.bdg-blue{background:#dbeafe;color:#1d4ed8}
+.bdg-teal{background:#ccfbf1;color:#0f766e}
+.bdg-slate{background:#f1f5f9;color:#475569}
+.bdg-purple{background:#ede9fe;color:#6d28d9}
+
+/* ---- Empty states: friendly + professional ---- */
+.empty{padding:48px 20px}
+.empty-ic{width:56px;height:56px;margin:0 auto 14px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+  font-size:26px;background:linear-gradient(135deg,#f0fdfa,#ecfeff);border:1px solid #99f6e4}
+.empty h4{font-size:15px;color:var(--ink);margin-bottom:6px}
+.empty p{font-size:13px;max-width:380px;margin:0 auto 4px}
+.empty .empty-cta{margin-top:16px}
+
+/* ---- Page headers: refined ---- */
+.phead{margin-bottom:22px}
+.phead h1{letter-spacing:-.02em;font-weight:800}
+.psub{line-height:1.65}
+
+/* ---- Filter pills: segmented control feel ---- */
+.fpills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.fpill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 15px;font-size:13px;font-weight:600;
+  color:var(--mut);transition:all .15s ease}
+.fpill:hover{border-color:var(--teal);color:var(--teal-d)}
+.fpill.on{background:var(--navy);border-color:var(--navy);color:#fff;box-shadow:0 4px 12px rgba(10,22,40,.2)}
+
+/* ---- Skeleton shimmer: smoother ---- */
+.skel{background:linear-gradient(90deg,#eef2f7 25%,#f8fafc 50%,#eef2f7 75%);background-size:200% 100%;
+  animation:sksh 1.4s ease-in-out infinite;border-radius:8px}
+@keyframes sksh{to{background-position:-200% 0}}
+
+/* ---- Scrollbar: subtle professional ---- */
+.twrap::-webkit-scrollbar,.mbox::-webkit-scrollbar{height:8px;width:8px}
+.twrap::-webkit-scrollbar-thumb,.mbox::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}
+.twrap::-webkit-scrollbar-track,.mbox::-webkit-scrollbar-track{background:transparent}
+
+/* ---- Responsive refinements ---- */
+@media(max-width:640px){
+  .phead h1{font-size:21px}
+  .panel-light{padding:15px}
+  .dtable{font-size:12.5px}
+  .dtable th,.dtable td{padding:9px 10px}
+}

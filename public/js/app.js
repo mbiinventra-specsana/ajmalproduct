@@ -83,6 +83,7 @@ const I = {
   pulse: _svg('<path d="M22 12h-4l-3 8-6-16-3 8H2"/>'),
   list: _svg('<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/>'),
   sliders: _svg('<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/>'),
+  logout: _svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>'),
 };
 // menu item → group mapping (mirrors MENU_ITEMS in server.js)
 const ITEM_GROUP = {
@@ -182,20 +183,39 @@ function shell(active, user) {
     .filter(([f]) => !f || !off.has(f))
     .map(([f, g, items]) => [f, g, items.filter(([k]) => !itemOff(user, k))])
     .filter(([, , items]) => items.length); // hide group header when all its items are off
+  const fresh = window._shellBuilt ? '' : ' fresh'; // staggered entrance only on first build
+  window._shellBuilt = true;
+  let _ni = 0; // stagger index
   document.getElementById('sidebar').innerHTML = `
     <div class="brand"><div class="mark">${I.grid}</div><div>MbiInventra<small>bill.mbiinventra.com</small></div></div>
-    <nav class="snav">${shown.map(([f, g, items]) => `
-      <div class="grp">${g}</div>
+    <nav class="snav${fresh}">${shown.map(([f, g, items]) => `
+      <div class="grp" style="--i:${_ni++}">${g}</div>
       ${items.map(([k, label, href, ic]) =>
-        `<a href="${href}" class="${active === k ? 'on' : ''}"><span class="ic">${I[ic] || ''}</span><span class="lbl">${label}</span></a>`).join('')}
+        `<a href="${href}" class="${active === k ? 'on' : ''}" style="--i:${_ni++}"><span class="ic">${I[ic] || ''}</span><span class="lbl">${label}</span></a>`).join('')}
     `).join('')}</nav>
     <div class="sfoot">
-      <div class="uinfo"><span class="uavatar">${esc((user.name || 'U')[0].toUpperCase())}</span><div>👤 ${esc(user.name)}<br><span class="urole">${esc(user.role)}</span></div></div>
-      <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
-      <div style="margin-top:10px"><span class="badge-fict">TRAINING MODE</span></div>
+      <div class="ucard">
+        <span class="uavatar">${esc((user.name || 'U')[0].toUpperCase())}<span class="udot"></span></span>
+        <div class="umeta"><b>${esc(user.name)}</b><span class="urole">${esc(user.role)}</span></div>
+        <button class="ulogout" onclick="logout()" title="Logout" aria-label="Logout">${I.logout}</button>
+      </div>
+      <div class="tmode"><span class="tmode-dot"></span>TRAINING MODE</div>
     </div>`;
   applyFnGates(user); // hide buttons for disabled per-student functions
+  // mobile drawer chrome (inject once)
+  if (!document.getElementById('navOverlay')) {
+    document.body.insertAdjacentHTML('beforeend',
+      '<div class="nav-overlay" id="navOverlay" onclick="toggleNav(false)"></div>' +
+      '<button class="nav-burger" id="navBurger" onclick="toggleNav()" aria-label="Open menu">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>');
+  }
 }
+// mobile drawer toggle (global)
+function toggleNav(force) {
+  const open = typeof force === 'boolean' ? force : !document.body.classList.contains('nav-open');
+  document.body.classList.toggle('nav-open', open);
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.body.classList.remove('nav-open'); });
 // Admin-only sidebar for the Owner Panel — no student items.
 function adminShell(active, user) {
   const nav = [
@@ -232,6 +252,7 @@ async function spaGo(href, push = true) {
   if (!href.startsWith('/')) { location.href = href; return; }
   if (href.startsWith('/owner') || href.startsWith('/login') || href === '/') { location.href = href; return; }
   _spaBusy = true;
+  document.body.classList.remove('nav-open'); // close mobile drawer
   document.body.classList.add('spa-loading');
   const main = document.querySelector('main.main');
   try {
