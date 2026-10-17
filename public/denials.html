@@ -22,6 +22,7 @@ let rows = [], q = '';
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('denialsq', u);
+  if (!guardFeature(u, 'revenue', 'Denials')) return;
   const d = await api('/api/rcm/denials'); rows = d.denials;
   const open = rows.filter(r => r.status === 'DENIED').length;
   const prog = rows.filter(r => r.status === 'APPEALED').length;

@@ -22,6 +22,7 @@ let rows = [], q = '', pts = [], ins = [];
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('eligibility', u);
+  if (!guardFeature(u, 'patients', 'Eligibility')) return;
   const [d, p, i] = await Promise.all([api('/api/rcm/eligibility'), api('/api/rcm/patients'), api('/api/rcm/insurance')]);
   rows = d.checks; pts = p.patients; ins = i.insurance;
   document.getElementById('kpis').innerHTML = [

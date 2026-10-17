@@ -21,6 +21,7 @@ let pts = [], q = '';
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('patients', u);
+  if (!guardFeature(u, 'patients', 'Patients')) return;
   const d = await api('/api/rcm/patients'); pts = d.patients;
   const ins = await api('/api/rcm/insurance');
   const covBy = {}; ins.insurance.forEach(r => { if (!covBy[r.patient_code]) covBy[r.patient_code] = r; });

@@ -87,6 +87,7 @@ async function finish() {
 (async () => {
   const u = await requireLogin(); if (!u) return;
   shell('training', u);
+  if (!guardFeature(u, 'training', 'Case Player')) return;
   const caseId = new URLSearchParams(location.search).get('case');
   if (!caseId) { location.href = '/training'; return; }
   stage.innerHTML = `<div class="empty">Loading case…</div>`;

@@ -46,8 +46,72 @@ async function loadUsers() {
     <table><tr><th>Name</th><th>Role</th><th></th></tr>
     ${users.map(x => `<tr><td>${esc(x.name)}<br><span style="font-size:12px;color:#8a97ad">${esc(x.email)}</span></td>
       <td><span class="pill ${x.role === 'admin' ? 'p-advanced' : 'p-beginner'}">${esc(x.role)}</span></td>
-      <td><button class="btn btn-line btn-sm" onclick="del(${x.id})">Delete</button></td></tr>`).join('')}
+      <td style="white-space:nowrap"><button class="btn btn-teal btn-sm" onclick="manage(${x.id})">Manage</button>
+      <button class="btn btn-line btn-sm" onclick="del(${x.id})">Delete</button></td></tr>`).join('')}
     </table>`;
+}
+// ---- per-student control panel (modal) ----
+async function manage(id) {
+  const d = await api('/api/admin/users/' + id);
+  const { user: u, stats, attempts, labs, rcm } = d;
+  const { features } = await api('/api/admin/features');
+  const off = new Set(d.features.filter(f => !f.enabled).map(f => f.feature));
+  const labName = { scrubber: '🧹 Scrubber', denial: '🔍 Denial Lab', 'quiz-timed': '⏱️ Timed Quiz',
+    'quiz-weakest': '🎯 Weakest', 'quiz-missed': '🔁 Missed Qs', 'quiz-mix': '🎲 Mix Quiz', 'quiz-sprint': '⚡ Sprint' };
+  openModal(`👤 ${u.name}`, `
+    <div style="font-size:13px;color:#8a97ad;margin-bottom:12px">${esc(u.email)} · <b>${esc(u.role)}</b><br>
+    Created: ${esc((u.created_at || '').slice(0, 10))} · Last login: ${esc((u.last_login || 'never').slice(0, 16).replace('T', ' '))}</div>
+    <div class="cards" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+      <div class="card stat"><span>Cases done</span><b>${stats.done}/${stats.n}</b></div>
+      <div class="card stat"><span>Avg score</span><b>${Math.round(stats.acc)}%</b></div>
+      <div class="card stat"><span>Lab runs</span><b>${labs.length}</b></div>
+      <div class="card stat"><span>Claims</span><b>${rcm.claims}</b><div class="sub">${rcm.paid} paid · ${rcm.denied} denied</div></div>
+    </div>
+    <h4 style="margin:12px 0 8px">🔧 Module access <span style="font-weight:400;font-size:12px;color:#8a97ad">(ON/OFF per student)</span></h4>
+    <div id="featToggles">${features.map(f => `
+      <label class="feat-row"><span><b>${f.icon} ${esc(f.label)}</b><br><span style="font-size:12px;color:#8a97ad">${esc(f.desc)}</span></span>
+      <span class="switch"><input type="checkbox" data-feat="${f.key}" ${off.has(f.key) ? '' : 'checked'}><span class="sl"></span></span></label>`).join('')}
+    </div>
+    <h4 style="margin:14px 0 8px">📝 Case attempts</h4>
+    ${attempts.length ? `<table><tr><th>Case</th><th>Score</th><th>Status</th><th>Date</th></tr>
+      ${attempts.map(a => `<tr><td><b>${esc(a.code)}</b></td><td><b>${a.score}/${a.max_score}</b></td>
+      <td><span class="pill ${a.status === 'completed' ? 'p-beginner' : 'p-prog'}">${esc(a.status)}</span></td>
+      <td>${esc((a.completed_at || a.started_at || '').slice(0, 10))}</td></tr>`).join('')}</table>`
+      : '<div class="empty">No attempts yet.</div>'}
+    <h4 style="margin:14px 0 8px">🧪 Lab runs</h4>
+    ${labs.length ? `<table><tr><th>Lab</th><th>Score</th><th>Date</th></tr>
+      ${labs.map(r => `<tr><td>${esc(labName[r.lab_key] || r.lab_key)}</td><td><b>${r.score}/${r.max_score}</b></td>
+      <td>${esc((r.created_at || '').slice(0, 16).replace('T', ' '))}</td></tr>`).join('')}</table>`
+      : '<div class="empty">No lab runs yet.</div>'}
+    <h4 style="margin:14px 0 8px">🔑 Reset password</h4>
+    <div style="display:flex;gap:8px"><input class="input" id="mPw" type="text" placeholder="New password (6+ chars)" style="flex:1">
+    <button class="btn btn-teal btn-sm" onclick="resetPw(${u.id})">Reset</button></div>
+    <div style="margin-top:14px"><button class="btn btn-line btn-sm" style="color:#d33;border-color:#d33" onclick="closeModal();del(${u.id})">🗑️ Delete this account</button></div>
+    <style>
+      .feat-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border:1px solid rgba(148,163,184,.18);border-radius:10px;margin-bottom:8px;cursor:pointer}
+      .feat-row:hover{border-color:#0e9f8a}
+      .switch{position:relative;display:inline-block;width:46px;height:26px;flex:none}
+      .switch input{opacity:0;width:0;height:0}
+      .switch .sl{position:absolute;inset:0;background:#94a3b8;border-radius:999px;transition:.2s;cursor:pointer}
+      .switch .sl:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+      .switch input:checked + .sl{background:#0e9f8a}
+      .switch input:checked + .sl:before{transform:translateX(20px)}
+    </style>`,
+    () => {
+      document.querySelectorAll('#featToggles input[data-feat]').forEach(cb => {
+        cb.onchange = async () => {
+          const body = { features: { [cb.dataset.feat]: cb.checked } };
+          try { await api('/api/admin/users/' + id + '/features', { method: 'POST', body }); }
+          catch (e) { alert(e.message); cb.checked = !cb.checked; }
+        };
+      });
+    });
+}
+async function resetPw(id) {
+  const pw = document.getElementById('mPw').value;
+  if (!pw || pw.length < 6) return alert('Password must be 6+ characters.');
+  try { await api('/api/admin/users/' + id + '/password', { method: 'POST', body: { password: pw } }); alert('Password updated.'); }
+  catch (e) { alert(e.message); }
 }
 async function del(id) {
   if (!confirm('Delete this account and all its attempts?')) return;

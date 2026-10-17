@@ -20,6 +20,7 @@ const DCLS = { Beginner: 'b-green', Intermediate: 'b-amber', Advanced: 'b-red' }
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('assignments', u);
+  if (!guardFeature(u, 'training', 'Assignments')) return;
   const d = await api('/api/cases');
   rows = d.cases.map(c => {
     const pct = c.best != null ? Math.round(100 * c.best / Math.max(1, c.points)) : null;

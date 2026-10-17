@@ -22,6 +22,7 @@ const CAT = { ELIGIBILITY:'🔍', CODING:'🧬', CHARGE_ENTRY:'🧾', CLAIMS:'�
 (async () => {
   const u = await requireLogin(); if (!u) return;
   shell('training', u);
+  if (!guardFeature(u, 'training', 'Case Center')) return;
   const { cases } = await api('/api/cases');
   document.getElementById('list').innerHTML = cases.map(c => `
     <div class="case-row">

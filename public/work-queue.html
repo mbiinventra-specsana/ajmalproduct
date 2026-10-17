@@ -29,6 +29,7 @@ const PCLS = { HIGH: 'b-red', MEDIUM: 'b-amber', LOW: 'b-gray' };
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('workqueue', u);
+  if (!guardFeature(u, 'workspace', 'Work Queue')) return;
   const [ov, wq] = await Promise.all([api('/api/rcm/overview'), api('/api/rcm/work-queue')]);
   items = wq.items;
   document.getElementById('kpis').innerHTML = [

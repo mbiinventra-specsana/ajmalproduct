@@ -20,6 +20,7 @@ let rows = [], q = '', pts = [];
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('insurance', u);
+  if (!guardFeature(u, 'patients', 'Insurance')) return;
   const [d, p] = await Promise.all([api('/api/rcm/insurance'), api('/api/rcm/patients')]);
   rows = d.insurance; pts = p.patients;
   const payers = [...new Set(rows.map(r => r.payer))];

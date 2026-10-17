@@ -56,7 +56,37 @@ const stripQ = (q) => ({ id: q.id, qnum: q.qnum, prompt: q.prompt,
 
 async function requireAuth(req, res, next) {
   if (!req.session.userId) return res.status(401).json({ error: 'Please log in.' });
+  const u = await db.get('SELECT * FROM users WHERE id = ?', [req.session.userId]);
+  if (!u) return res.status(401).json({ error: 'Please log in.' });
+  req.user = u;
+  // per-student feature gate (admin/instructor bypass; missing row = enabled)
+  if (u.role === 'student') {
+    const f = featureForPath(req.path);
+    if (f) {
+      const row = await db.get('SELECT enabled FROM student_features WHERE user_id=? AND feature=?', [u.id, f]);
+      if (row && !row.enabled)
+        return res.status(403).json({ error: 'This module is disabled for your account.', featureDisabled: f });
+    }
+  }
   next();
+}
+// student-side feature groups; used for per-student ON/OFF + sidebar filtering
+const FEATURES = [
+  ['workspace', 'Workspace', '🏠', 'Command Center, Work Queue'],
+  ['patients', 'Patients', '🧑‍⚕️', 'Patients, Insurance, Eligibility'],
+  ['billing', 'Billing', '🧾', 'Charge Entry, Claims'],
+  ['revenue', 'Revenue Cycle', '💳', 'Payments, A/R, Denials, Reports'],
+  ['training', 'Training', '🎯', 'Case Center, Assignments, Practice Lab, My Progress'],
+  ['labs', 'Advanced Labs', '🧪', 'Scrubber, Denial Lab, Sprints, Quiz Arena'],
+];
+function featureForPath(p) {
+  if (p === '/api/dashboard' || p.startsWith('/api/rcm/overview') || p.startsWith('/api/rcm/work-queue') || p.startsWith('/api/rcm/demo')) return 'workspace';
+  if (p === '/api/patients' || p.startsWith('/api/rcm/patients') || p.startsWith('/api/rcm/insurance') || p.startsWith('/api/rcm/eligibility')) return 'patients';
+  if (p.startsWith('/api/rcm/charges') || p.startsWith('/api/rcm/claims')) return 'billing';
+  if (p.startsWith('/api/rcm/payments') || p.startsWith('/api/rcm/ar') || p.startsWith('/api/rcm/denials') || p.startsWith('/api/rcm/reports')) return 'revenue';
+  if (p.startsWith('/api/cases') || p.startsWith('/api/attempts') || p.startsWith('/api/progress')) return 'training';
+  if (p.startsWith('/api/labs/')) return 'labs';
+  return null;
 }
 async function requireAdmin(req, res, next) {
   const u = req.session.userId && await db.get('SELECT * FROM users WHERE id = ?', [req.session.userId]);
@@ -157,7 +187,8 @@ app.post('/api/logout', (req, res) => req.session.destroy(() => res.json({ ok: t
 app.get('/api/me', ah(async (req, res) => {
   const u = req.session.userId && await db.get('SELECT * FROM users WHERE id = ?', [req.session.userId]);
   if (!u) return res.status(401).json({ error: 'Not logged in.' });
-  res.json({ user: pub(u) });
+  const feats = await db.all('SELECT feature, enabled FROM student_features WHERE user_id = ?', [u.id]);
+  res.json({ user: { ...pub(u), disabledFeatures: feats.filter(f => !f.enabled).map(f => f.feature) } });
 }));
 
 // ---------- student API ----------
@@ -675,8 +706,11 @@ app.post('/api/rcm/demo', requireAuth, ah(async (req, res) => {
 }));
 
 // ---------- admin API ----------
-app.get('/api/admin/overview', requireAdmin, ah(async (req, res) => {
-  res.json({
+// feature catalog for per-student ON/OFF (mirrored in owner.html manage modal)
+app.get('/api/admin/features', requireAdmin, ah(async (req, res) => {
+  res.json({ features: FEATURES.map(([key, label, icon, desc]) => ({ key, label, icon, desc })) });
+}));
+app.get('/api/admin/overview', requireAdmin, ah(async (req, res) => {  res.json({
     users: (await db.get('SELECT COUNT(*) AS n FROM users')).n,
     students: (await db.get("SELECT COUNT(*) AS n FROM users WHERE role='student'")).n,
     cases: (await db.get('SELECT COUNT(*) AS n FROM cases WHERE active=1')).n,
@@ -767,6 +801,51 @@ app.delete('/api/admin/users/:id', requireAdmin, ah(async (req, res) => {
   if (Number(req.params.id) === req.adminUser.id)
     return res.status(400).json({ error: 'Cannot delete yourself.' });
   await db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
+  res.json({ ok: true });
+}));
+// ---- per-student control panel ----
+app.get('/api/admin/users/:id', requireAdmin, ah(async (req, res) => {
+  const u = await db.get('SELECT id,name,email,role,created_at,last_login FROM users WHERE id = ?', [req.params.id]);
+  if (!u) return res.status(404).json({ error: 'Not found.' });
+  const id = u.id;
+  const feats = await db.all('SELECT feature, enabled FROM student_features WHERE user_id = ?', [id]);
+  const att = await db.get(
+    `SELECT COUNT(*) AS n, COUNT(CASE WHEN status='completed' THEN 1 END) AS done,
+            COALESCE(AVG(CASE WHEN status='completed' THEN 100.0*score/NULLIF(max_score,0) END),0) AS acc
+     FROM attempts WHERE user_id = ?`, [id]);
+  const attempts = await db.all(
+    `SELECT a.id, a.status, a.score, a.max_score, a.started_at, a.completed_at, c.code, c.title
+     FROM attempts a JOIN cases c ON c.id = a.case_id WHERE a.user_id = ? ORDER BY a.started_at DESC LIMIT 30`, [id]);
+  const labs = await db.all('SELECT id, lab_key, score, max_score, created_at FROM lab_runs WHERE user_id = ? ORDER BY id DESC LIMIT 30', [id]);
+  const rcm = await db.get(
+    `SELECT (SELECT COUNT(*) FROM charges WHERE user_id=?) AS charges,
+            (SELECT COUNT(*) FROM claims WHERE user_id=?) AS claims,
+            (SELECT COUNT(*) FROM claims WHERE user_id=? AND status='PAID') AS paid,
+            (SELECT COUNT(*) FROM claims WHERE user_id=? AND status='DENIED') AS denied,
+            (SELECT COUNT(*) FROM payments WHERE user_id=?) AS payments`, [id, id, id, id, id]);
+  res.json({ user: u, features: feats, stats: att, attempts, labs, rcm });
+}));
+app.post('/api/admin/users/:id/features', requireAdmin, ah(async (req, res) => {
+  const u = await db.get('SELECT id FROM users WHERE id = ?', [req.params.id]);
+  if (!u) return res.status(404).json({ error: 'Not found.' });
+  const feats = (req.body && req.body.features) || {};
+  const valid = FEATURES.map(f => f[0]);
+  for (const k of Object.keys(feats)) {
+    if (!valid.includes(k)) return res.status(400).json({ error: 'Invalid feature: ' + k });
+    const en = feats[k] ? 1 : 0;
+    // upsert (both engines)
+    const has = await db.get('SELECT 1 FROM student_features WHERE user_id=? AND feature=?', [u.id, k]);
+    if (has) await db.run('UPDATE student_features SET enabled=? WHERE user_id=? AND feature=?', [en, u.id, k]);
+    else await db.run('INSERT INTO student_features (user_id, feature, enabled) VALUES (?,?,?)', [u.id, k, en]);
+  }
+  res.json({ ok: true });
+}));
+app.post('/api/admin/users/:id/password', requireAdmin, ah(async (req, res) => {
+  const u = await db.get('SELECT id FROM users WHERE id = ?', [req.params.id]);
+  if (!u) return res.status(404).json({ error: 'Not found.' });
+  const pw = String((req.body && req.body.password) || '');
+  if (pw.length < 6) return res.status(400).json({ error: 'Password must be 6+ characters.' });
+  await db.run('UPDATE users SET pass_hash=? WHERE id=?', [db.hashPassword(pw), u.id]);
   res.json({ ok: true });
 }));
 

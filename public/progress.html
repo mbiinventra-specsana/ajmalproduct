@@ -23,6 +23,7 @@
 (async () => {
   const u = await requireLogin(); if (!u) return;
   shell('progress', u);
+  if (!guardFeature(u, 'training', 'My Progress')) return;
   const p = await api('/api/progress');
   const s = p.stats;
   const LABN = { scrubber: '🧹 Claim Scrubber', denials: '🔍 Denial Crime-Scene', sprints: '⚡ Coding Sprints', quiz: '🎲 Quiz Arena' };

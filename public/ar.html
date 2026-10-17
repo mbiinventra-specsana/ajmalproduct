@@ -23,6 +23,7 @@ const FCLS = { NOT_STARTED: 'b-amber', IN_PROGRESS: 'b-blue', DONE: 'b-green' };
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('ar', u);
+  if (!guardFeature(u, 'revenue', 'A/R Follow-up')) return;
   const d = await api('/api/rcm/ar');
   rows = d.rows; meta = d;
   document.getElementById('kpis').innerHTML = [

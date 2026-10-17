@@ -21,6 +21,16 @@ async function logout() {
   try { await api('/api/logout', { method: 'POST' }); } catch {}
   location.href = '/';
 }
+// page-level feature gate: returns false + shows notice if the module is off for this student
+function guardFeature(user, fkey, label) {
+  if (!(user.disabledFeatures || []).includes(fkey)) return true;
+  const back = (user.disabledFeatures || []).includes('workspace') ? '' :
+    `<p><a href="/dashboard" style="color:#0e9f8a">← Back to Command Center</a></p>`;
+  document.querySelector('.main').innerHTML = `<div class="empty" style="margin-top:80px;text-align:center">
+    <h2>🔒 ${esc(label || 'This module')} is disabled</h2>
+    <p>Your administrator has turned off this module for your account.</p>${back}</div>`;
+  return false;
+}
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function openModal(title, bodyHTML, onMount) {
@@ -37,33 +47,34 @@ function closeModal() { const w = document.getElementById('mwrap'); if (w) w.rem
 const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 function shell(active, user) {
+  const off = new Set(user.disabledFeatures || []); // per-student feature gates
   const nav = [
-    ['Workspace', [
+    ['workspace', 'Workspace', [
       ['dashboard', 'Command Center', '/dashboard', '🏠'],
       ['workqueue', 'Work Queue', '/work-queue', '📥'],
     ]],
-    ['Patients', [
+    ['patients', 'Patients', [
       ['patients', 'Patients', '/patients', '🧑‍⚕️'],
       ['insurance', 'Insurance', '/insurance', '🛡️'],
       ['eligibility', 'Eligibility', '/eligibility', '✅'],
     ]],
-    ['Billing', [
+    ['billing', 'Billing', [
       ['charges', 'Charge Entry', '/charges', '🧾'],
       ['claims', 'Claims', '/claims', '📄'],
     ]],
-    ['Revenue Cycle', [
+    ['revenue', 'Revenue Cycle', [
       ['payments', 'Payments', '/payments', '💳'],
       ['ar', 'A/R Follow-up', '/ar', '📊'],
       ['denialsq', 'Denials', '/denials', '🚫'],
       ['reports', 'Reports', '/reports', '📈'],
     ]],
-    ['Training', [
+    ['training', 'Training', [
       ['training', 'Case Center', '/training', '🎯'],
       ['assignments', 'Assignments', '/assignments', '📝'],
       ['lab', 'Practice Lab', '/lab', '🧪'],
       ['progress', 'My Progress', '/progress', '🏅'],
     ]],
-    ['Advanced Labs', [
+    ['labs', 'Advanced Labs', [
       ['scrubber', 'Claim Scrubber', '/labs/scrubber', '🧹'],
       ['denials', 'Denial Crime-Scene', '/labs/denials', '🔍'],
       ['sprints', 'Coding Sprints', '/labs/sprints', '⚡'],
@@ -71,11 +82,12 @@ function shell(active, user) {
     ]],
   ];
   if (user.role === 'admin' || user.role === 'instructor') {
-    nav.push(['Manage', [['owner', '👑 Owner Panel', '/owner', '👑']]]);
+    nav.push(['', 'Manage', [['owner', '👑 Owner Panel', '/owner', '👑']]]);
   }
+  const shown = nav.filter(([f]) => !f || !off.has(f));
   document.getElementById('sidebar').innerHTML = `
     <div class="brand"><div class="mark">⚕</div><div>MbiInventra<small>bill.mbiinventra.com</small></div></div>
-    <nav class="snav">${nav.map(([g, items]) => `
+    <nav class="snav">${shown.map(([f, g, items]) => `
       <div class="grp">${g}</div>
       ${items.map(([k, label, href, e]) =>
         `<a href="${href}" class="${active === k ? 'on' : ''}"><span class="e">${e}</span>${label}</a>`).join('')}
@@ -94,10 +106,7 @@ function adminShell(active, user) {
       ['accounts', 'Accounts', '/owner#users', '👥'],
       ['syshealth', 'System health', '/owner#syshealth', '🖥️'],
     ]],
-    ['Preview', [
-      ['studentview', 'Student view', '/dashboard', '🎓'],
-    ]],
-  ];
+  ]; // pure admin — no student items here
   document.getElementById('sidebar').innerHTML = `
     <div class="brand"><div class="mark">👑</div><div>MbiInventra<small>owner console</small></div></div>
     <nav class="snav">${nav.map(([g, items]) => `
