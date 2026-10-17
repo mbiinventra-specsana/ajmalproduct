@@ -5,105 +5,171 @@
 <title>ERA Posting Simulator — MbiInventra RCM Academy</title>
 <link rel="stylesheet" href="/css/app.css">
 <style>
-/* ===== ERA Posting Lab ULTRA ===== */
-.lab-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:26px 30px;color:#fff;
-  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
-.lab-hero::before{content:"";position:absolute;top:-60px;right:8%;width:260px;height:260px;border-radius:50%;
-  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
-.lab-hero::after{content:"";position:absolute;bottom:-90px;left:32%;width:180px;height:180px;border-radius:50%;
-  background:radial-gradient(circle,rgba(52,211,189,.12),transparent 70%)}
-.lab-hero h1{margin:0 0 8px;font-size:24px;position:relative;z-index:1}
-.lab-hero .psub{color:#b9d4e8;margin:0;font-size:14px;position:relative;z-index:1;max-width:660px;line-height:1.6}
-.lab-hero .act-row{position:relative;z-index:1;margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
-  padding:8px 16px;font-size:13px;backdrop-filter:blur(6px);color:#dbeafe}
-.hstat b{font-size:16px;color:#5eead4}
-.eyebrow2{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#34d3bd;margin-bottom:8px;position:relative;z-index:1}
-@keyframes labIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.lab-anim{animation:labIn .45s cubic-bezier(.2,.8,.2,1) backwards}
-.era-grid{display:grid;grid-template-columns:290px 1fr;gap:16px}
-.scard{border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:12px;cursor:pointer;background:#fff;
-  transition:all .2s;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(10,22,40,.05)}
-.scard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent;transition:all .2s}
-.scard:hover{border-color:#0e9f8a;transform:translateX(4px);box-shadow:0 4px 14px rgba(14,159,138,.12)}
-.scard:hover::before{background:#0e9f8a}
-.scard.on{border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.18)}
-.scard.on::before{background:#0e9f8a}
-.scard b{font-size:13.5px;color:#0a1628}
-.scard .meta{font-size:11.5px;color:#64748b;margin-top:5px}
-.scard .cno{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9px;
-  background:linear-gradient(135deg,#0f2743,#1a3a5c);color:#5eead4;font-weight:800;font-size:12px;margin-right:8px}
-.scard .diff{font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px;letter-spacing:.5px}
-.diff.Beginner{background:#dcfce7;color:#166534}.diff.Intermediate{background:#fef3c7;color:#92400e}.diff.Advanced{background:#fee2e2;color:#991b1b}
-.era-doc{background:linear-gradient(135deg,#0a1628,#0f2743);color:#e2e8f0;border-radius:14px;padding:20px;
-  font-family:ui-monospace,monospace;font-size:13px;margin-bottom:18px;box-shadow:0 6px 20px rgba(10,22,40,.25);
-  border:1px solid rgba(52,211,189,.15)}
-.era-doc .eh{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:1px solid #1e293b;
-  padding-bottom:12px;margin-bottom:12px}
-.era-doc .eh b{color:#5eead4}
-.era-doc table{width:100%;margin-top:10px;border-collapse:collapse;font-size:12px}
-.era-doc th{text-align:left;color:#7c8ea8;font-weight:600;padding:6px 8px;border-bottom:1px solid #334155;font-size:11px;
-  text-transform:uppercase;letter-spacing:.5px}
-.era-doc td{padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;vertical-align:top}
+/* ===== ERA Posting Lab — PREMIUM REBUILD ===== */
+:root{--navy:#0f2743;--teal:#0e9f8a;--teal-lt:#5eead4;--ink:#0a1628;--mut:#64748b;--line:#e2e8f0}
+
+/* Hero */
+.lab-hero{background:linear-gradient(120deg,#0f2743 0%,#143a5e 60%,#0e6f62 100%);border-radius:18px;
+  padding:30px 34px;color:#fff;margin-bottom:22px;position:relative;overflow:hidden;
+  box-shadow:0 10px 32px rgba(15,39,67,.25)}
+.lab-hero::before{content:"";position:absolute;top:-70px;right:6%;width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.28),transparent 70%);pointer-events:none}
+.lab-hero::after{content:"";position:absolute;bottom:-100px;left:30%;width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.14),transparent 70%);pointer-events:none}
+.lab-hero .eyebrow{font-size:11px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;
+  color:#34d3bd;margin-bottom:10px;position:relative;z-index:1}
+.lab-hero h1{margin:0 0 10px;font-size:26px;font-weight:800;position:relative;z-index:1;letter-spacing:-.3px}
+.lab-hero .psub{color:#b9d4e8;margin:0;font-size:14.5px;position:relative;z-index:1;max-width:700px;line-height:1.65}
+.lab-hero .psub b{color:#5eead4}
+.lab-hero .stats{position:relative;z-index:1;margin-top:20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:12px;
+  padding:9px 18px;font-size:13px;backdrop-filter:blur(8px);color:#dbeafe;font-weight:500}
+.hstat b{font-size:17px;color:#5eead4;font-weight:800;margin-left:4px}
+
+/* Entrance animation */
+@keyframes labIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.lab-anim{animation:labIn .5s cubic-bezier(.2,.8,.2,1) backwards}
+
+/* Legend */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;font-size:12.5px;color:var(--mut);
+  background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:13px 18px;
+  box-shadow:0 1px 4px rgba(10,22,40,.04)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:11px;height:11px;border-radius:4px;display:inline-block;flex:none}
+.legend b{color:var(--ink)}
+
+/* Two-column layout */
+.era-grid{display:grid;grid-template-columns:310px minmax(0,1fr);gap:18px;align-items:start}
+
+/* Scenario cards */
+.scen-head{font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--mut);
+  margin:0 0 12px;padding:0 2px}
+.scard{border:1.5px solid var(--line);border-radius:14px;padding:15px 16px;margin-bottom:12px;cursor:pointer;
+  background:#fff;transition:all .22s cubic-bezier(.2,.8,.2,1);position:relative;overflow:hidden;
+  box-shadow:0 1px 4px rgba(10,22,40,.05)}
+.scard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent;transition:all .22s}
+.scard:hover{border-color:var(--teal);transform:translateX(5px);box-shadow:0 6px 18px rgba(14,159,138,.14)}
+.scard:hover::before{background:var(--teal)}
+.scard.on{border-color:var(--teal);box-shadow:0 0 0 3px rgba(14,159,138,.18),0 4px 14px rgba(14,159,138,.1)}
+.scard.on::before{background:var(--teal)}
+.scard .srow{display:flex;align-items:center;gap:10px}
+.scard .cno{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:10px;
+  background:linear-gradient(135deg,#0f2743,#1e4a6e);color:#5eead4;font-weight:800;font-size:13px;flex:none;
+  box-shadow:0 2px 8px rgba(15,39,67,.2)}
+.scard.on .cno{background:linear-gradient(135deg,#0e9f8a,#0b7d6d);color:#fff}
+.scard b{font-size:13.5px;color:var(--ink);line-height:1.4}
+.scard .meta{font-size:11.5px;color:var(--mut);margin-top:7px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.scard .diff{font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.6px;text-transform:uppercase}
+.diff.Beginner{background:#dcfce7;color:#166534}
+.diff.Intermediate{background:#fef3c7;color:#92400e}
+.diff.Advanced{background:#fee2e2;color:#991b1b}
+
+/* ERA document — dark realistic */
+.era-doc{background:linear-gradient(135deg,#0a1628 0%,#0f2743 100%);color:#e2e8f0;border-radius:16px;
+  padding:22px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;margin-bottom:20px;
+  box-shadow:0 8px 26px rgba(10,22,40,.3);border:1px solid rgba(52,211,189,.18);position:relative;overflow:hidden}
+.era-doc::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,#0e9f8a,#5eead4,#0e9f8a)}
+.era-doc .eh{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:14px;margin-bottom:14px}
+.era-doc .eh b{color:#5eead4;letter-spacing:.5px}
+.era-doc .einfo{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;margin-bottom:14px;font-size:12.5px}
+.era-doc .einfo .k{color:#7c8ea8}
+.era-doc .einfo .v{color:#e2e8f0;font-weight:600}
+.era-doc table{width:100%;margin-top:6px;border-collapse:collapse;font-size:12px}
+.era-doc th{text-align:left;color:#7c8ea8;font-weight:700;padding:8px;border-bottom:1px solid rgba(255,255,255,.12);
+  font-size:10.5px;text-transform:uppercase;letter-spacing:.8px}
+.era-doc td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);color:#cbd5e1;vertical-align:top}
+.era-doc tr:last-child td{border-bottom:none}
 .era-doc .carc{color:#fbbf24;font-weight:800}
 .era-doc .pr{color:#f9a8d4;font-weight:700}
 .era-doc .money{color:#5eead4;font-weight:700}
-.post-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;padding:20px;margin-bottom:14px;
-  box-shadow:0 2px 8px rgba(10,22,40,.05);transition:box-shadow .2s}
-.post-card:hover{box-shadow:0 4px 16px rgba(10,22,40,.08)}
-.post-card h4{margin:0 0 4px;font-size:14px;color:#0a1628}
+.era-doc .cptb{color:#fff;font-weight:800}
+.era-doc .desc{color:#7c8ea8;font-size:11px}
+
+/* Posting cards */
+.post-card{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px;
+  box-shadow:0 2px 10px rgba(10,22,40,.05);transition:box-shadow .22s}
+.post-card:hover{box-shadow:0 6px 20px rgba(10,22,40,.09)}
+.post-card h4{margin:0 0 6px;font-size:15px;color:var(--ink);font-weight:800}
 .post-card .cpt-tag{display:inline-block;background:#f0fdfa;border:1px solid #99f6e4;color:#0f766e;font-weight:800;
-  font-size:12px;padding:3px 10px;border-radius:8px;margin-bottom:12px;font-family:ui-monospace,monospace}
-.post-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:4px}
-.post-field label{display:block;font-size:11.5px;font-weight:700;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
-.post-field input,.post-field select{width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;
-  font-size:14px;font-family:inherit;color:#0f1e33;background:#fff;box-sizing:border-box}
-.post-field input:focus,.post-field select:focus{outline:none;border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.12)}
-.line-fb{border-radius:12px;padding:12px 16px;font-size:13px;margin-top:12px;line-height:1.6;display:none}
-.line-fb.show{display:block}
-.line-fb.good{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
-.line-fb.bad{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  font-size:12px;padding:4px 12px;border-radius:9px;margin-bottom:16px;font-family:ui-monospace,monospace}
+.post-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.post-field label{display:block;font-size:11px;font-weight:800;color:var(--mut);margin-bottom:7px;
+  text-transform:uppercase;letter-spacing:.6px}
+.post-field input,.post-field select{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;
+  font-size:14.5px;font-family:inherit;color:#0f1e33;background:#fff;box-sizing:border-box;transition:all .18s}
+.post-field input:focus,.post-field select:focus{outline:none;border-color:var(--teal);
+  box-shadow:0 0 0 3px rgba(14,159,138,.14)}
+.post-field input::placeholder{color:#a0aec0}
+
+/* Feedback */
+.line-fb{border-radius:12px;padding:14px 18px;font-size:13.5px;margin-top:14px;line-height:1.65;display:none}
+.line-fb.show{display:block;animation:labIn .4s ease backwards}
+.line-fb.good{background:#f0fdf4;border:1.5px solid #bbf7d0;color:#166534}
+.line-fb.bad{background:#fef2f2;border:1.5px solid #fecaca;color:#991b1b}
 .line-fb .amt{font-family:ui-monospace,monospace;font-weight:800}
-.score-banner{border-radius:16px;padding:24px;text-align:center;margin-bottom:18px;display:none;
-  background:linear-gradient(135deg,#0f2743,#143a5e);color:#fff;border:1px solid rgba(52,211,189,.25);
-  box-shadow:0 8px 28px rgba(15,39,67,.25)}
-.score-banner.show{display:block}
-.score-banner .ring{font-size:42px;font-weight:800;color:#5eead4}
-.score-banner .perf{font-size:18px;font-weight:800;margin:6px 0;color:#5eead4}
-.btn-grade{background:linear-gradient(135deg,#0e9f8a,#0b7d6d);color:#fff;border:none;border-radius:12px;
-  padding:13px 28px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;
-  box-shadow:0 4px 14px rgba(14,159,138,.3);transition:all .2s}
-.btn-grade:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(14,159,138,.4)}
-.btn-grade:disabled{opacity:.5;cursor:default;transform:none}
-.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;font-size:12px;color:#64748b}
-.legend span{display:inline-flex;align-items:center;gap:6px}
-.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
-@media(max-width:900px){.era-grid{grid-template-columns:1fr}.post-row{grid-template-columns:1fr}}
+
+/* Score banner */
+.score-banner{border-radius:18px;padding:28px;text-align:center;margin-bottom:20px;display:none;
+  background:linear-gradient(135deg,#0f2743,#143a5e 60%,#0e6f62);color:#fff;
+  border:1px solid rgba(52,211,189,.25);box-shadow:0 10px 32px rgba(15,39,67,.28);
+  position:relative;overflow:hidden}
+.score-banner::before{content:"";position:absolute;top:-50px;right:10%;width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.score-banner.show{display:block;animation:labIn .5s ease backwards}
+.score-banner .ring{font-size:46px;font-weight:800;color:#5eead4;position:relative;z-index:1}
+.score-banner .perf{font-size:19px;font-weight:800;margin:8px 0;color:#5eead4;position:relative;z-index:1}
+.score-banner .sub{color:#b9d4e8;font-size:13.5px;position:relative;z-index:1}
+
+/* Grade button */
+.btn-grade{background:linear-gradient(135deg,#0e9f8a,#0b7d6d);color:#fff;border:none;border-radius:13px;
+  padding:14px 32px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.2px;
+  box-shadow:0 5px 16px rgba(14,159,138,.32);transition:all .22s;display:inline-flex;align-items:center;gap:8px}
+.btn-grade:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(14,159,138,.42)}
+.btn-grade:active{transform:translateY(0)}
+.btn-grade:disabled{opacity:.55;cursor:default;transform:none;box-shadow:none}
+
+/* Empty state */
+.empty-state{background:#fff;border:2px dashed var(--line);border-radius:16px;padding:48px 24px;text-align:center;
+  color:var(--mut);font-size:14px}
+
+/* Responsive */
+@media(max-width:900px){
+  .era-grid{grid-template-columns:1fr}
+  .post-row{grid-template-columns:1fr}
+  .lab-hero{padding:24px}
+  .lab-hero h1{font-size:22px}
+  .era-doc .einfo{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 <div class="shell">
-  <aside id="sidebar"></aside>
+  <aside class="side" id="sidebar"></aside>
   <main class="main">
     <div class="lab-hero lab-anim">
-      <div class="eyebrow2">Advanced Labs · Payment Posting</div>
-      <h1>💳 ERA Posting Simulator</h1>
-      <p class="psub">Post real-style Electronic Remittance Advice like a payment poster. For every line: compute the <b style="color:#5eead4">contractual adjustment</b>, the <b style="color:#5eead4">patient balance</b>, and pick the <b style="color:#5eead4">correct next action</b>. One wrong categorization = lost revenue or a compliance risk.</p>
-      <div class="act-row">
-        <span class="hstat">Scenarios <b id="st-total">–</b></span>
-        <span class="hstat">Best score <b id="st-best">–</b></span>
-        <span class="hstat">Completed <b id="st-done">–</b></span>
+      <div class="eyebrow">Advanced Labs &middot; Payment Posting</div>
+      <h1>&#x1F4B3; ERA Posting Simulator</h1>
+      <p class="psub">Post real-style Electronic Remittance Advice like a payment poster. For every line: compute the <b>contractual adjustment</b>, the <b>patient balance</b>, and pick the <b>correct next action</b>. One wrong categorization = lost revenue or a compliance risk.</p>
+      <div class="stats">
+        <span class="hstat">Scenarios<b id="st-total">&ndash;</b></span>
+        <span class="hstat">Best score<b id="st-best">&ndash;</b></span>
+        <span class="hstat">Completed<b id="st-done">&ndash;</b></span>
       </div>
     </div>
 
     <div class="legend lab-anim" style="animation-delay:.05s">
-      <span><i style="background:#fbbf24"></i> <b>CO</b> = Contractual (provider absorbs)</span>
-      <span><i style="background:#f9a8d4"></i> <b>PR</b> = Patient responsibility (bill patient)</span>
-      <span><i style="background:#5eead4"></i> <b>$</b> = money fields on the ERA</span>
+      <span><i style="background:#fbbf24"></i> <b>CO</b>&nbsp;= Contractual (provider absorbs)</span>
+      <span><i style="background:#f9a8d4"></i> <b>PR</b>&nbsp;= Patient responsibility (bill patient)</span>
+      <span><i style="background:#5eead4"></i> <b>$</b>&nbsp;= money fields on the ERA</span>
     </div>
 
     <div class="era-grid">
-      <div id="scen-list" class="lab-anim" style="animation-delay:.1s"></div>
+      <div class="lab-anim" style="animation-delay:.1s">
+        <p class="scen-head">Scenarios</p>
+        <div id="scen-list"></div>
+      </div>
       <div id="work" class="lab-anim" style="animation-delay:.15s"></div>
     </div>
   </main>
@@ -137,15 +203,15 @@ async function loadBest() {
     if (eras.length) {
       $('st-best').textContent = Math.max(...eras.map(x => x.score)) + '%';
       $('st-done').textContent = eras.length;
-    } else { $('st-best').textContent = '—'; $('st-done').textContent = '0'; }
+    } else { $('st-best').textContent = '\u2014'; $('st-done').textContent = '0'; }
   } catch (e) {}
 }
 function renderList() {
+  if (!SCEN.length) { $('scen-list').innerHTML = '<div class="empty-state">No scenarios available.</div>'; return; }
   $('scen-list').innerHTML = SCEN.map((s, i) =>
     `<div class="scard ${cur && cur.id === s.id ? 'on' : ''}" data-id="${s.id}">
-      <div><span class="cno">${i + 1}</span><b>${esc(s.title)}</b></div>
-      <div class="meta">${esc(s.payer.replace(' (Simulated)', ''))} · ${s.lines.length} line${s.lines.length > 1 ? 's' : ''}</div>
-      <div class="meta"><span class="diff ${s.difficulty}">${s.difficulty}</span></div>
+      <div class="srow"><span class="cno">${i + 1}</span><b>${esc(s.title)}</b></div>
+      <div class="meta">${esc(String(s.payer || '').replace(' (Simulated)', ''))} &middot; ${s.lines.length} line${s.lines.length > 1 ? 's' : ''}<span class="diff ${esc(s.difficulty)}">${esc(s.difficulty)}</span></div>
     </div>`).join('');
   document.querySelectorAll('.scard').forEach(c => c.onclick = () => select(c.dataset.id));
 }
@@ -156,47 +222,49 @@ function select(id) {
 }
 function renderWork() {
   const s = cur;
+  if (!s) { $('work').innerHTML = '<div class="empty-state">Select a scenario to begin posting.</div>'; return; }
   $('work').innerHTML = `
     <div class="era-doc">
       <div class="eh">
-        <div><b>ELECTRONIC REMITTANCE ADVICE</b> · ${esc(s.payer)}</div>
-        <div>EFT <b>${esc(s.checkNo)}</b> · ${esc(s.payDate)}</div>
+        <div><b>ELECTRONIC REMITTANCE ADVICE</b> &middot; ${esc(s.payer)}</div>
+        <div>EFT <b>${esc(s.checkNo)}</b> &middot; ${esc(s.payDate)}</div>
       </div>
-      <table>
-        <tr><td>Payee</td><td>${esc(s.payee)} · NPI ${esc(s.npi)}</td></tr>
-        <tr><td>Patient</td><td>${esc(s.patient)}</td></tr>
-        <tr><td>Claim</td><td>${esc(s.claimNo)} · DOS ${esc(s.dos)}</td></tr>
-      </table>
+      <div class="einfo">
+        <div><span class="k">Payee:</span> <span class="v">${esc(s.payee)} &middot; NPI ${esc(s.npi)}</span></div>
+        <div><span class="k">Patient:</span> <span class="v">${esc(s.patient)}</span></div>
+        <div><span class="k">Claim:</span> <span class="v">${esc(s.claimNo)}</span></div>
+        <div><span class="k">DOS:</span> <span class="v">${esc(s.dos)}</span></div>
+      </div>
       <table>
         <tr><th>CPT</th><th>Billed</th><th>Allowed</th><th>Paid</th><th>Adj. codes</th><th>Pt. resp.</th></tr>
         ${s.lines.map(l => `<tr>
-          <td><b>${esc(l.cpt)}</b><br><span style="color:#7c8ea8">${esc(l.desc)}</span></td>
+          <td><span class="cptb">${esc(l.cpt)}</span><br><span class="desc">${esc(l.desc)}</span></td>
           <td class="money">${money(l.billed)}</td><td class="money">${money(l.allowed)}</td><td class="money">${money(l.paid)}</td>
-          <td>${l.carc ? `<span class="carc">${esc(l.carc)}</span> ${esc(l.carcLabel)}` : '—'}${l.rarc ? `<br><span class="carc">${esc(l.rarc)}</span> ${esc(l.rarcLabel)}` : ''}</td>
-          <td>${l.prCode ? `<span class="pr">${esc(l.prCode)}</span> ${esc(l.prLabel)} <span class="money">${money(l.prAmt)}</span>` : '—'}</td>
+          <td>${l.carc ? `<span class="carc">${esc(l.carc)}</span> ${esc(l.carcLabel)}` : '\u2014'}${l.rarc ? `<br><span class="carc">${esc(l.rarc)}</span> ${esc(l.rarcLabel)}` : ''}</td>
+          <td>${l.prCode ? `<span class="pr">${esc(l.prCode)}</span> ${esc(l.prLabel)} <span class="money">${money(l.prAmt)}</span>` : '\u2014'}</td>
         </tr>`).join('')}
       </table>
     </div>
     <div id="scorebox"></div>
     ${s.lines.map((l, i) => `
     <div class="post-card" id="pc-${i}">
-      <h4>Line ${i + 1} — post this line</h4>
-      <div class="cpt-tag">${esc(l.cpt)} · ${esc(l.desc)} · Billed ${money(l.billed)}</div>
+      <h4>Line ${i + 1} &mdash; post this line</h4>
+      <div class="cpt-tag">${esc(l.cpt)} &middot; ${esc(l.desc)} &middot; Billed ${money(l.billed)}</div>
       <div class="post-row">
         <div class="post-field"><label>Contractual adjustment ($)</label>
           <input type="number" step="0.01" min="0" id="adj-${i}" placeholder="0.00"></div>
         <div class="post-field"><label>Patient balance ($)</label>
           <input type="number" step="0.01" min="0" id="bal-${i}" placeholder="0.00"></div>
         <div class="post-field"><label>Next action</label>
-          <select id="act-${i}"><option value="">— choose —</option>
-            ${ACTIONS.map(a => `<option value="${a.v}">${esc(a.t)}</option>`).join('')}</select></div>
+          <select id="act-${i}"><option value="">&mdash; choose &mdash;</option>
+            ${ACTIONS.map(a => `<option value="${esc(a.v)}">${esc(a.t)}</option>`).join('')}</select></div>
       </div>
       <div class="line-fb" id="fb-${i}"></div>
     </div>`).join('')}
-    <button class="btn-grade" id="gradeBtn" onclick="grade()">📮 Post ERA → Grade</button>`;
+    <button class="btn-grade" id="gradeBtn" onclick="grade()">&#x1F4EE; Post ERA &rarr; Grade</button>`;
 }
 async function grade() {
-  const btn = $('gradeBtn'); btn.disabled = true; btn.textContent = 'Grading…';
+  const btn = $('gradeBtn'); btn.disabled = true; btn.textContent = 'Grading\u2026';
   const lines = cur.lines.map((l, i) => ({
     adj: $('adj-' + i).value === '' ? NaN : parseFloat($('adj-' + i).value),
     bal: $('bal-' + i).value === '' ? NaN : parseFloat($('bal-' + i).value),
@@ -204,24 +272,24 @@ async function grade() {
   }));
   try {
     const r = await api('/api/labs/era/grade', { method: 'POST', body: { scenarioId: cur.id, lines } });
-    const perf = r.score >= 90 ? '🏆 Excellent posting!' : r.score >= 70 ? '👍 Solid work' : r.score >= 50 ? '📚 Keep practicing' : '🔁 Review the basics';
+    const perf = r.score >= 90 ? '\u{1F3C6} Excellent posting!' : r.score >= 70 ? '\u{1F44D} Solid work' : r.score >= 50 ? '\u{1F4DA} Keep practicing' : '\u{1F501} Review the basics';
     $('scorebox').innerHTML = `<div class="score-banner show"><div class="ring">${r.score}%</div>
-      <div class="perf">${perf}</div><div style="color:#b9d4e8;font-size:13px">${esc(cur.title)}</div></div>`;
+      <div class="perf">${perf}</div><div class="sub">${esc(cur.title)}</div></div>`;
     r.perLine.forEach(pl => {
       const fb = $('fb-' + pl.i);
       const ok = pl.adjOk && pl.balOk && pl.actOk;
       const actLabel = (ACTIONS.find(a => a.v === pl.correctAction) || {}).t || pl.correctAction;
       fb.className = 'line-fb show ' + (ok ? 'good' : 'bad');
-      fb.innerHTML = (ok ? '✅ <b>Posted correctly.</b> ' : '❌ <b>Not quite.</b> ')
-        + `Adjustment <span class="amt">$${pl.correctAdj.toFixed(2)}</span> ${pl.adjOk ? '✓' : '✗'} · `
-        + `Patient <span class="amt">$${pl.correctPtBal.toFixed(2)}</span> ${pl.balOk ? '✓' : '✗'} · `
-        + `Action: <b>${esc(actLabel)}</b> ${pl.actOk ? '✓' : '✗'}<br><span style="opacity:.9">${esc(pl.why)}</span>`;
+      fb.innerHTML = (ok ? '\u2705 <b>Posted correctly.</b> ' : '\u274C <b>Not quite.</b> ')
+        + `Adjustment <span class="amt">$${pl.correctAdj.toFixed(2)}</span> ${pl.adjOk ? '\u2713' : '\u2717'} &middot; `
+        + `Patient <span class="amt">$${pl.correctPtBal.toFixed(2)}</span> ${pl.balOk ? '\u2713' : '\u2717'} &middot; `
+        + `Action: <b>${esc(actLabel)}</b> ${pl.actOk ? '\u2713' : '\u2717'}<br><span style="opacity:.9">${esc(pl.why)}</span>`;
     });
     loadBest();
     $('scorebox').scrollIntoView({ behavior: 'smooth', block: 'center' });
   } catch (e) {
     alert('Grading failed: ' + e.message);
-    btn.disabled = false; btn.textContent = '📮 Post ERA → Grade';
+    btn.disabled = false; btn.textContent = '\u{1F4EE} Post ERA \u2192 Grade';
   }
 }
 init();
