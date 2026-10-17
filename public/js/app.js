@@ -201,7 +201,9 @@ function shell(active, user) {
   const fresh = window._shellBuilt ? '' : ' fresh'; // staggered entrance only on first build
   window._shellBuilt = true;
   let _ni = 0; // stagger index
-  document.getElementById('sidebar').innerHTML = `
+  const _sb = document.getElementById('sidebar');
+  _sb.classList.add('side');
+  _sb.innerHTML = `
     <div class="brand"><div class="mark">${I.grid}</div><div>MbiInventra<small>bill.mbiinventra.com</small></div></div>
     <nav class="snav${fresh}">${shown.map(([f, g, items]) => `
       <div class="grp" style="--i:${_ni++}">${g}</div>
