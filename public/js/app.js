@@ -197,10 +197,17 @@ function shell(active, user) {
       <div class="ucard">
         <span class="uavatar">${esc((user.name || 'U')[0].toUpperCase())}<span class="udot"></span></span>
         <div class="umeta"><b>${esc(user.name)}</b><span class="urole">${esc(user.role)}</span></div>
-        <button class="ulogout" onclick="logout()" title="Logout" aria-label="Logout">${I.logout}</button>
       </div>
-      <div class="tmode"><span class="tmode-dot"></span>TRAINING MODE</div>
+    </div>
     </div>`;
+  // fixed top-right logout (in body, so drawer transforms don't affect it)
+  if (!document.querySelector('.logout-fixed')) {
+    const lb = document.createElement('button');
+    lb.className = 'logout-fixed'; lb.title = 'Logout';
+    lb.innerHTML = '<span>⏻</span> Logout';
+    lb.onclick = () => logout();
+    document.body.appendChild(lb);
+  }
   applyFnGates(user); // hide buttons for disabled per-student functions
   // mobile drawer chrome (inject once)
   if (!document.getElementById('navOverlay')) {
