@@ -1,89 +1,242 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Insurance — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<title>Insurance — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css">
+<style>
+/* ===== Insurance ULTRA ===== */
+.in-hero{background:linear-gradient(120deg,#0f2743,#143a5e 55%,#0e6f62);border-radius:18px;padding:24px 28px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.in-hero::before{content:"";position:absolute;top:-50px;right:12%;width:230px;height:230px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.in-hero::after{content:"🛡️";position:absolute;right:28px;top:18px;font-size:64px;opacity:.14}
+.in-hero h1{margin:0 0 6px;font-size:22px;position:relative}
+.in-hero .psub{color:#b9d4e8;margin:0;font-size:13.5px;position:relative;max-width:620px}
+.in-hero .act-row{position:relative;margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.in-hero .hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 14px;font-size:13px;backdrop-filter:blur(6px)}
+.in-hero .hstat b{font-size:16px}
+/* payer cards */
+.payer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.payer-card{background:#fff;border:1px solid #e8eef4;border-radius:16px;padding:18px;cursor:pointer;
+  transition:all .2s cubic-bezier(.2,.8,.2,1);position:relative;overflow:hidden}
+.payer-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--pc,#0e9f8a);
+  opacity:0;transition:opacity .2s}
+.payer-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(15,39,67,.12);border-color:rgba(14,159,138,.35)}
+.payer-card:hover::before{opacity:1}
+.payer-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.payer-logo{width:46px;height:46px;border-radius:13px;color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:15px;flex:none;box-shadow:0 3px 10px rgba(0,0,0,.16)}
+.payer-name{font-weight:700;font-size:14.5px;color:#0f2743;line-height:1.3}
+.payer-id{font-size:11.5px;color:#94a3b8;font-family:ui-monospace,monospace}
+.payer-stats{display:flex;gap:8px;margin:12px 0}
+.pstat{flex:1;background:#f8fafc;border-radius:10px;padding:8px 6px;text-align:center}
+.pstat b{display:block;font-size:16px;color:#0f2743}
+.pstat span{font-size:10.5px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.payer-contact{font-size:12px;color:#64748b;line-height:1.8;border-top:1px solid #f1f5f9;padding-top:10px;margin-top:4px}
+.payer-contact a{color:#0e9f8a;text-decoration:none}
+/* filter pills */
+.pfilters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.pf{padding:8px 15px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;font-size:12.5px;font-weight:600;
+  color:#64748b;cursor:pointer;transition:all .16s}
+.pf:hover{border-color:#0e9f8a;color:#0f2743}
+.pf.on{background:#0f2743;color:#fff;border-color:#0f2743}
+.pf .cnt{background:#f1f5f9;color:#64748b;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:9px;margin-left:5px}
+.pf.on .cnt{background:rgba(255,255,255,.18);color:#fff}
+/* payer avatar in table */
+.pav2{width:34px;height:34px;border-radius:10px;color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:11.5px;flex:none}
+/* detail drawer rows */
+.drow{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f8fafc;
+  border-radius:10px;margin-bottom:8px;font-size:13px}
+.drow:hover{background:#f0fdfa}
+.cov-tl{position:relative;padding-left:26px;margin-top:6px}
+.cov-tl::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:#e8eef4;border-radius:2px}
+.cov-step{position:relative;padding-bottom:16px}
+.cov-step::before{content:"";position:absolute;left:-23px;top:5px;width:13px;height:13px;border-radius:50%;
+  background:#fff;border:2.5px solid var(--sc,#0e9f8a);box-shadow:0 0 0 3px rgba(14,159,138,.1)}
+@keyframes ccIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.in-anim{animation:ccIn .4s cubic-bezier(.2,.8,.2,1) backwards}
+</style></head>
 <body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
-  <div class="phead"><div>
-    <div class="eyebrow2">Insurance Management</div><h1>Insurance</h1>
-    <p class="psub">Fictional patient coverage and payer information for RCM training.</p>
-  </div><button class="btn btn-teal btn-sm" id="addBtn" data-fn="insurance-add">+ Add Insurance</button></div>
-  <div id="kpiSk" class="skel-cards" style="margin-bottom:14px"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr);display:none"></div>
-  <div class="panel" id="payerPanel" style="display:none"><div class="prow"><h3 style="margin:0">Payer Directory</h3></div>
-    <div id="payers" style="display:flex;flex-wrap:wrap;gap:10px"></div></div>
-  <div class="panel"><div class="prow"><h3 style="margin:0">Insurance Records</h3>
-    <input class="search" id="q" placeholder="Search patient, payer, member ID…"></div>
+  <div class="in-hero in-anim">
+    <div class="eyebrow2" style="color:#34d3bd">Coverage Management</div>
+    <h1>🛡️ Insurance</h1>
+    <p class="psub">Payers and patient coverage — the foundation every clean claim is built on. Verify before you bill.</p>
+    <div class="act-row">
+      <button class="btn-hero" id="addPayerBtn" data-fn="insurance-add" style="padding:9px 18px;font-size:13px">🏢 + Add Payer</button>
+      <button class="btn-hero-ghost" id="addBtn" data-fn="insurance-add" style="padding:9px 18px;font-size:13px">+ Add Insurance</button>
+      <span class="hstat"><b id="hPayers">—</b> payers</span>
+      <span class="hstat"><b id="hActive" style="color:#5eead4">—</b> active coverage</span>
+    </div>
+  </div>
+
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
+
+  <div class="panel in-anim" style="animation-delay:.08s;margin-bottom:18px">
+    <div class="prow"><h3 style="margin:0">🏢 Payer Directory</h3>
+      <span style="font-size:12.5px;color:#64748b">Click a payer for details</span></div>
+    <div id="payerSk"><div class="skel skel-line w80"></div><div class="skel skel-line"></div></div>
+    <div class="payer-grid" id="payers" style="display:none"></div>
+  </div>
+
+  <div class="panel in-anim" style="animation-delay:.12s">
+    <div class="prow"><h3 style="margin:0">📋 Insurance Records</h3>
+      <input class="search" id="q" placeholder="Search patient, payer, member ID…"></div>
+    <div class="pfilters" id="pfilters">
+      <button class="pf on" data-f="all">All</button>
+      <button class="pf" data-f="active">Active</button>
+      <button class="pf" data-f="inactive">Inactive</button>
+      <button class="pf" data-f="primary">Primary</button>
+      <button class="pf" data-f="secondary">Secondary</button>
+    </div>
     <div id="tblSk"><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div></div>
-    <div class="twrap" id="twrap" style="display:none"><table><thead><tr>
-      <th>Patient</th><th>Payer</th><th>Member ID</th><th>Plan · Type</th><th>Priority</th><th>Status</th><th>Copay</th><th></th>
+    <div class="twrap" id="twrap" style="display:none"><table class="wq-table"><thead><tr>
+      <th>Patient</th><th>Payer</th><th>Member ID</th><th>Plan · Type</th><th>Priority</th><th>Status</th><th>Copay</th><th style="text-align:right">Actions</th>
     </tr></thead><tbody id="rows"></tbody></table></div>
-    <div class="empty" id="empty" style="display:none">No insurance records match your search. 🔍</div>
+    <div class="empty" id="empty" style="display:none"><div class="empty-ic">🔍</div><h4>No records found</h4><p>Try a different search or filter.</p></div>
   </div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
-let rows = [], q = '', pts = [];
-const initials = n => n.split(/[\s()]+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
-const avColor = n => ['#0e9f8a', '#6366f1', '#d946ef', '#f59e0b', '#0ea5e9', '#ef4444'][n.length % 6];
-const prioBadge = pr => `<span class="bdg ${pr === 'primary' ? 'b-green' : pr === 'secondary' ? 'b-amber' : 'b-blue'}">${esc(pr || 'primary')}</span>`;
+let rows = [], q = '', qf = 'all', pts = [], payers = [], payerFilter = '';
+const initials = n => String(n || '').split(/[\s()]+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+const AVC = ['linear-gradient(135deg,#0e9f8a,#34d3bd)','linear-gradient(135deg,#6366f1,#a5b4fc)','linear-gradient(135deg,#d946ef,#f0abfc)','linear-gradient(135deg,#f59e0b,#fcd34d)','linear-gradient(135deg,#0ea5e9,#7dd3fc)','linear-gradient(135deg,#ef4444,#fca5a5)'];
+const avBg = n => AVC[String(n || '?').length % AVC.length];
+const prioBadge = pr => `<span class="bdg ${pr === 'primary' ? 'b-green' : pr === 'secondary' ? 'b-amber' : 'b-blue'}"><span class="dot"></span>${esc(pr || 'primary')}</span>`;
+const pname = c => (pts.find(p => p.code === c) || {}).name || c;
+
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('insurance', u);
   if (!guardFeature(u, 'insurance', 'Insurance')) return;
   const [d, p] = await Promise.all([api('/api/rcm/insurance'), api('/api/rcm/patients')]);
-  rows = d.insurance; pts = p.patients;
-  const payers = [...new Set(rows.map(r => r.payer))];
-  document.getElementById('kpiSk').style.display = 'none';
-  const kp = document.getElementById('kpis'); kp.style.display = 'grid';
-  kp.innerHTML = [
-    ['Patients', pts.length, 'In database'],
-    ['Payers', payers.length, 'On file'],
-    ['Insurance records', rows.length, 'Total'],
-    ['Active coverage', rows.filter(r => r.status === 'ACTIVE').length, 'Active'],
-  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
-  const pp = document.getElementById('payerPanel'); pp.style.display = 'block';
-  document.getElementById('payers').innerHTML = payers.map(py => {
-    const n = rows.filter(r => r.payer === py).length;
-    return `<button class="btn btn-line btn-sm" style="display:flex;align-items:center;gap:8px" onclick="filterPayer('${esc(py).replace(/'/g, "\\'")}')">
-      <span style="width:28px;height:28px;border-radius:8px;background:${avColor(py)};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px">${esc(initials(py))}</span>
-      ${esc(py)} <span class="bdg b-blue">${n}</span></button>`;
-  }).join('');
+  rows = d.insurance || []; pts = p.patients || [];
+  // rich payer API (graceful fallback to derived)
+  try {
+    const pr = await api('/api/rcm/payers');
+    payers = pr.payers || [];
+  } catch { payers = []; }
+  if (!payers.length) payers = derivePayers();
+  renderKPIs(); renderPayers(); render();
+  document.getElementById('payerSk').style.display = 'none';
+  document.getElementById('payers').style.display = 'grid';
   document.getElementById('tblSk').style.display = 'none';
-  document.getElementById('twrap').style.display = 'block';
-  render();
 }
-function filterPayer(py) { q = py.toLowerCase(); document.getElementById('q').value = py; render(); }
+function derivePayers() {
+  const m = {};
+  rows.forEach(r => {
+    (m[r.payer] = m[r.payer] || { name: r.payer, records: [] }).records.push(r);
+  });
+  return Object.values(m).map((g, i) => ({
+    id: 'd' + i, name: g.name, payer_id: '', phone: '', website: '',
+    patients: new Set(g.records.map(r => r.patient_code)).size,
+    records: g.records.length,
+    active: g.records.filter(r => r.status === 'ACTIVE').length,
+  }));
+}
+function renderKPIs() {
+  const act = rows.filter(r => r.status === 'ACTIVE').length;
+  document.getElementById('hPayers').textContent = payers.length;
+  document.getElementById('hActive').textContent = act;
+  document.getElementById('kpis').innerHTML = [
+    ['👥', 'Patients', pts.length, 'In database'],
+    ['🏢', 'Payers', payers.length, 'In directory'],
+    ['📋', 'Insurance records', rows.length, 'Total coverage'],
+    ['✅', 'Active coverage', act, rows.length ? Math.round(100 * act / rows.length) + '% active' : 'No records'],
+  ].map(([ic, l, v, s], i) => `<div class="kpi in-anim" style="animation-delay:${.04 * i}s"><span class="kic">${ic}</span><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+}
+function renderPayers() {
+  document.getElementById('payers').innerHTML = payers.map((py, i) => `
+    <div class="payer-card in-anim" style="--pc:${avBg(py.name)};animation-delay:${Math.min(i * .05, .3)}s" onclick="payerDetail('${esc(String(py.id)).replace(/'/g, "\\'")}')">
+      <div class="payer-top">
+        <span class="payer-logo" style="background:${avBg(py.name)}">${esc(initials(py.name))}</span>
+        <div><div class="payer-name">${esc(py.name)}</div>
+        <div class="payer-id">${esc(py.payer_id || 'ID —')}</div></div>
+      </div>
+      <div class="payer-stats">
+        <div class="pstat"><b>${py.patients}</b><span>patients</span></div>
+        <div class="pstat"><b>${py.records}</b><span>records</span></div>
+        <div class="pstat"><b style="color:#0e9f8a">${py.active}</b><span>active</span></div>
+      </div>
+      <div class="payer-contact">
+        ${py.phone ? '📞 ' + esc(py.phone) + '<br>' : ''}
+        ${py.website ? `🌐 <a href="${esc(py.website.startsWith('http') ? py.website : 'https://' + py.website)}" target="_blank" onclick="event.stopPropagation()">${esc(py.website)}</a>` : '<span style="color:#b6c2d2">No contact on file</span>'}
+      </div>
+    </div>`).join('') || `<div class="empty"><div class="empty-ic">🏢</div><h4>No payers yet</h4><p>Add your first payer to get started.</p></div>`;
+}
+function payerDetail(id) {
+  const py = payers.find(x => String(x.id) === String(id));
+  if (!py) return;
+  const recs = rows.filter(r => r.payer === py.name);
+  const plist = [...new Map(recs.map(r => [r.patient_code, r])).values()];
+  openModal(`<div style="display:flex;align-items:center;gap:12px"><span class="payer-logo" style="background:${avBg(py.name)}">${esc(initials(py.name))}</span><div><b style="font-size:16px">${esc(py.name)}</b><br><span class="payer-id">${esc(py.payer_id || 'No payer ID')}</span></div></div>`, `
+    <div class="frow" style="margin-bottom:14px">
+      <div class="fld"><label>Phone</label><div><b>${esc(py.phone || '—')}</b></div></div>
+      <div class="fld"><label>Website</label><div>${py.website ? `<a href="${esc(py.website.startsWith('http') ? py.website : 'https://' + py.website)}" target="_blank" style="color:#0e9f8a">${esc(py.website)}</a>` : '—'}</div></div>
+    </div>
+    <div class="fld"><label>Covered patients (${plist.length})</label>
+      <div style="max-height:280px;overflow:auto">
+      ${plist.length ? plist.map(r => `
+        <div class="drow"><div><b>${esc(r.patient_code)}</b> <span style="color:#64748b">· ${esc(pname(r.patient_code))}</span><br>
+          <span style="font-size:12px;color:#94a3b8">${esc(r.plan)} · <code>${esc(r.member_id)}</code></span></div>
+        <div style="text-align:right">${prioBadge(r.priority)}<br>
+        <a href="/eligibility?patient=${r.patient_code}&payer=${encodeURIComponent(r.payer)}" style="font-size:12px;color:#0e9f8a;font-weight:600">Verify →</a></div></div>`).join('')
+      : '<div class="empty">No patients covered by this payer yet.</div>'}</div></div>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button>
+    ${String(py.id).startsWith('d') ? '' : `<button class="btn btn-line btn-sm" onclick="editPayer('${esc(String(py.id))}')">Edit payer</button>`}</div>`);
+}
+function filtered() {
+  return rows.filter(r => {
+    if (payerFilter && r.payer !== payerFilter) return false;
+    if (!(r.patient_code + ' ' + pname(r.patient_code) + ' ' + r.payer + ' ' + r.member_id).toLowerCase().includes(q)) return false;
+    if (qf === 'active') return r.status === 'ACTIVE';
+    if (qf === 'inactive') return r.status !== 'ACTIVE';
+    if (qf === 'primary') return (r.priority || 'primary') === 'primary';
+    if (qf === 'secondary') return r.priority === 'secondary';
+    return true;
+  });
+}
 function render() {
-  const pname = c => (pts.find(p => p.code === c) || {}).name || c;
-  const rs = rows.filter(r => (r.patient_code + ' ' + pname(r.patient_code) + ' ' + r.payer + ' ' + r.member_id).toLowerCase().includes(q));
+  const rs = filtered();
   document.getElementById('empty').style.display = rs.length ? 'none' : 'block';
-  document.getElementById('rows').innerHTML = rs.map(r => `<tr>
-    <td><a href="#" onclick="covTimeline('${r.patient_code}');return false" style="color:#0e9f8a;font-weight:700">${esc(r.patient_code)}</a><br><span style="color:#64748b;font-size:12px">${esc(pname(r.patient_code))}</span></td>
-    <td><div style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:28px;border-radius:8px;background:${avColor(r.payer)};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex:none">${esc(initials(r.payer))}</span>${esc(r.payer)}</div></td>
-    <td><code>${esc(r.member_id)}</code></td><td>${esc(r.plan)}<br><span style="color:#64748b;font-size:12px">${esc(r.type)}</span></td>
+  document.getElementById('twrap').style.display = rs.length ? 'block' : 'none';
+  document.getElementById('rows').innerHTML = rs.map((r, ix) => `
+    <tr class="in-anim" style="animation-delay:${Math.min(ix * .03, .3)}s">
+    <td><a href="#" onclick="covTimeline('${r.patient_code}');return false" style="color:#0e9f8a;font-weight:700" title="Coverage timeline">${esc(r.patient_code)}</a><br><span style="color:#64748b;font-size:12px">${esc(pname(r.patient_code))}</span></td>
+    <td><div style="display:flex;align-items:center;gap:9px"><span class="pav2" style="background:${avBg(r.payer)}">${esc(initials(r.payer))}</span><b style="font-size:13px">${esc(r.payer)}</b></div></td>
+    <td><code style="font-size:12px;background:#f1f5f9;padding:3px 9px;border-radius:7px">${esc(r.member_id)}</code></td>
+    <td><b style="font-size:13px">${esc(r.plan)}</b><br><span style="color:#64748b;font-size:12px">${esc(r.type)}</span></td>
     <td>${prioBadge(r.priority)}</td>
-    <td><span class="bdg ${r.status === 'ACTIVE' ? 'b-green' : 'b-red'}">${esc(r.status)}</span><br><span style="color:#64748b;font-size:11px">eff. ${esc(r.effective || '—')}</span></td>
-    <td>${money(r.copay)}</td>
-    <td style="white-space:nowrap"><a class="btn btn-teal btn-sm" href="/eligibility?patient=${r.patient_code}&payer=${encodeURIComponent(r.payer)}">Verify →</a>
-    <button class="btn btn-ghost btn-sm" onclick="editIns(${r.id})">Edit</button></td></tr>`).join('');
+    <td><span class="bdg ${r.status === 'ACTIVE' ? 'b-green' : 'b-red'}"><span class="dot"></span>${esc(r.status)}</span><br><span style="color:#94a3b8;font-size:11px">eff. ${esc(r.effective || '—')}</span></td>
+    <td><b>${money(r.copay)}</b></td>
+    <td style="text-align:right;white-space:nowrap">
+      <a class="btn btn-teal btn-sm" href="/eligibility?patient=${r.patient_code}&payer=${encodeURIComponent(r.payer)}">Verify →</a>
+      <button class="btn btn-line btn-sm" onclick="editIns(${r.id})">Edit</button></td></tr>`).join('');
 }
 function covTimeline(code) {
   const p = pts.find(x => x.code === code) || { name: code };
+  const order = { primary: 0, secondary: 1, tertiary: 2 };
   const list = rows.filter(r => r.patient_code === code)
-    .sort((a, b) => ({ primary: 0, secondary: 1, tertiary: 2 }[a.priority || 'primary'] - { primary: 0, secondary: 1, tertiary: 2 }[b.priority || 'primary']));
-  openModal('Coverage Timeline — ' + code, `
-    <p style="color:#64748b;font-size:13px;margin:0 0 12px"><b>${esc(p.name)}</b> · coordination of benefits order</p>
-    ${list.length ? list.map((c, i) => `<div style="display:flex;gap:12px;margin-bottom:4px">
-      <div style="display:flex;flex-direction:column;align-items:center"><span style="width:28px;height:28px;border-radius:50%;background:${i === 0 ? '#0e9f8a' : '#cbd5e1'};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">${i + 1}</span>
-      ${i < list.length - 1 ? '<div style="width:2px;flex:1;background:#e2e8f0;min-height:20px"></div>' : ''}</div>
-      <div style="background:#f8fafc;border-radius:10px;padding:10px 14px;flex:1;margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center"><b>${esc(c.payer)}</b>${prioBadge(c.priority)}</div>
-        <div style="font-size:13px;color:#475569;margin-top:4px">${esc(c.plan)} · ${esc(c.type)} · <code>${esc(c.member_id)}</code></div>
-        <div style="font-size:12px;color:#64748b;margin-top:4px">Effective ${esc(c.effective || '—')} · Copay ${money(c.copay)} · <span class="bdg ${c.status === 'ACTIVE' ? 'b-green' : 'b-red'}">${esc(c.status)}</span></div>
-      </div></div>`).join('') : '<div class="empty">No coverage on file.</div>'}
+    .sort((a, b) => (order[a.priority || 'primary'] ?? 9) - (order[b.priority || 'primary'] ?? 9));
+  const sc = i => ['#0e9f8a', '#f59e0b', '#6366f1'][i] || '#cbd5e1';
+  openModal(`Coverage Timeline — ${esc(code)}`, `
+    <p style="color:#64748b;font-size:13px;margin:0 0 14px"><b>${esc(p.name)}</b> · coordination of benefits — billed in this order</p>
+    ${list.length ? `<div class="cov-tl">${list.map((c, i) => `
+      <div class="cov-step" style="--sc:${sc(i)}">
+        <div style="background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;padding:12px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <b style="font-size:14px">${i + 1}. ${esc(c.payer)}</b>${prioBadge(c.priority)}</div>
+          <div style="font-size:13px;color:#475569;margin-top:6px">${esc(c.plan)} · ${esc(c.type)} · <code style="font-size:12px">${esc(c.member_id)}</code></div>
+          <div style="font-size:12px;color:#64748b;margin-top:6px">Effective ${esc(c.effective || '—')} · Copay ${money(c.copay)} ·
+            <span class="bdg ${c.status === 'ACTIVE' ? 'b-green' : 'b-red'}"><span class="dot"></span>${esc(c.status)}</span></div>
+        </div></div>`).join('')}</div>`
+    : '<div class="empty"><div class="empty-ic">🛡️</div><h4>No coverage</h4><p>Add insurance for this patient first.</p></div>'}
     <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button></div>`);
 }
 function editIns(id) {
   const r = rows.find(x => x.id === id);
+  if (!r) return;
   openModal('Edit Insurance', `
     <div class="fld"><label>Payer</label><input id="e_payer" value="${esc(r.payer)}"></div>
     <div class="frow"><div class="fld"><label>Member ID</label><input id="e_mid" value="${esc(r.member_id)}"></div>
@@ -107,11 +260,52 @@ function editIns(id) {
     };
   });
 }
-document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+function editPayer(id) {
+  const py = payers.find(x => String(x.id) === String(id));
+  if (!py) return;
+  openModal('Edit Payer', `
+    <div class="fld"><label>Payer name</label><input id="p_name" value="${esc(py.name)}"></div>
+    <div class="fld"><label>Payer ID</label><input id="p_pid" value="${esc(py.payer_id || '')}"></div>
+    <div class="frow"><div class="fld"><label>Phone</label><input id="p_ph" value="${esc(py.phone || '')}" placeholder="(555) 000-0000"></div>
+    <div class="fld"><label>Website</label><input id="p_ws" value="${esc(py.website || '')}" placeholder="payer.com"></div></div>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="payerDetail('${esc(String(py.id))}')">Back</button>
+    <button class="btn btn-teal btn-sm" id="psave">Save</button></div>`, w => {
+    w.querySelector('#psave').onclick = async () => {
+      try {
+        await api('/api/rcm/payers/' + id, { method: 'PUT', body: {
+          name: w.querySelector('#p_name').value, phone: w.querySelector('#p_ph').value,
+          website: w.querySelector('#p_ws').value } });
+        closeModal(); load();
+      } catch (e) { alert(e.message || 'Payer API not available yet.'); }
+    };
+  });
+}
+document.getElementById('addPayerBtn').onclick = () => {
+  openModal('Add Payer', `
+    <div class="fld"><label>Payer name *</label><input id="np_name" placeholder="e.g. BlueCross BlueShield"></div>
+    <div class="fld"><label>Payer ID *</label><input id="np_pid" placeholder="e.g. BCBS-001"></div>
+    <div class="frow"><div class="fld"><label>Phone</label><input id="np_ph" placeholder="(555) 000-0000"></div>
+    <div class="fld"><label>Website</label><input id="np_ws" placeholder="bcbs.com"></div></div>
+    <div class="mfoot"><button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-teal btn-sm" id="npsave">Create Payer</button></div>`, w => {
+    w.querySelector('#npsave').onclick = async () => {
+      const name = w.querySelector('#np_name').value.trim(), pid = w.querySelector('#np_pid').value.trim();
+      if (!name || !pid) { alert('Payer name and Payer ID are required.'); return; }
+      try {
+        await api('/api/rcm/payers', { method: 'POST', body: {
+          name, payer_id: pid, phone: w.querySelector('#np_ph').value.trim(),
+          website: w.querySelector('#np_ws').value.trim() } });
+        closeModal(); load();
+      } catch (e) { alert(e.message || 'Payer API not available yet — backend is being updated.'); }
+    };
+  });
+};
 document.getElementById('addBtn').onclick = () => {
   openModal('Add Insurance', `
     <div class="fld"><label>Patient</label><select id="f_pt">${pts.map(p => `<option value="${p.code}">${p.code} — ${esc(p.name)}</option>`).join('')}</select></div>
-    <div class="fld"><label>Payer</label><input id="f_payer" placeholder="e.g. BlueCross BlueShield (Simulated)"></div>
+    <div class="fld"><label>Payer</label>${payers.length
+      ? `<select id="f_payer">${payers.map(py => `<option value="${esc(py.name)}">${esc(py.name)}</option>`).join('')}</select>`
+      : `<input id="f_payer" placeholder="e.g. BlueCross BlueShield">`}</div>
     <div class="frow"><div class="fld"><label>Member ID</label><input id="f_mid" placeholder="ABC-123456"></div>
     <div class="fld"><label>Plan</label><input id="f_plan" placeholder="Commercial PPO"></div></div>
     <div class="frow"><div class="fld"><label>Type</label><select id="f_type"><option>PPO</option><option>HMO</option><option>EPO</option><option>POS</option></select></div>
@@ -132,5 +326,10 @@ document.getElementById('addBtn').onclick = () => {
     };
   });
 };
+document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+document.querySelectorAll('#pfilters .pf').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#pfilters .pf').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); qf = b.dataset.f; render();
+});
 load();
 </script></body></html>

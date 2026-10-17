@@ -982,6 +982,56 @@ app.put('/api/rcm/insurance/:id', requireAuth, ah(async (req, res) => {
      st, (b.effective ?? r.effective), r2(b.copay ?? r.copay), pri, req.params.id]);
   res.json({ ok: true });
 }));
+// ---- payer management ----
+app.get('/api/rcm/payers', requireAuth, ah(async (req, res) => {
+  const payers = await db.all('SELECT * FROM payers ORDER BY name');
+  const stats = await db.all(`SELECT payer, COUNT(DISTINCT patient_code) AS patients,
+      SUM(CASE WHEN status = 'ACTIVE' THEN 1 ELSE 0 END) AS active
+    FROM insurance WHERE user_id IS NULL OR user_id = ? GROUP BY payer`, [req.session.userId]);
+  const sm = Object.fromEntries(stats.map(x => [x.payer, x]));
+  res.json({ payers: payers.map(x => ({
+    id: x.id, name: x.name, payer_id: x.payer_id, phone: x.phone, website: x.website,
+    patients: Number(sm[x.name]?.patients || 0), active: Number(sm[x.name]?.active || 0),
+  })) });
+}));
+app.post('/api/rcm/payers', requireAuth, requireFn('insurance-add'), ah(async (req, res) => {
+  const b = req.body || {};
+  const name = String(b.name || '').trim();
+  if (!name) throw Object.assign(new Error('Payer name is required.'), { status: 400 });
+  let r;
+  try {
+    r = await db.run('INSERT INTO payers (name, payer_id, phone, website, created_at) VALUES (?,?,?,?,?)',
+      [name, b.payer_id || '', b.phone || '', b.website || '', db.now()]);
+  } catch (e) {
+    if (/duplicate|unique/i.test(e.message || '')) throw Object.assign(new Error('A payer with this name already exists.'), { status: 409 });
+    throw e;
+  }
+  res.json({ payer: { id: r.id, name, payer_id: b.payer_id || '', phone: b.phone || '', website: b.website || '' } });
+}));
+app.put('/api/rcm/payers/:id', requireAuth, requireFn('insurance-add'), ah(async (req, res) => {
+  const b = req.body || {};
+  const p = await db.get('SELECT * FROM payers WHERE id = ?', [req.params.id]);
+  if (!p) throw Object.assign(new Error('Payer not found.'), { status: 404 });
+  const name = String(b.name || '').trim() || p.name;
+  try {
+    await db.run('UPDATE payers SET name = ?, phone = ?, website = ? WHERE id = ?',
+      [name, b.phone ?? p.phone, b.website ?? p.website, req.params.id]);
+  } catch (e) {
+    if (/duplicate|unique/i.test(e.message || '')) throw Object.assign(new Error('A payer with this name already exists.'), { status: 409 });
+    throw e;
+  }
+  res.json({ payer: { id: p.id, name, payer_id: p.payer_id, phone: b.phone ?? p.phone, website: b.website ?? p.website } });
+}));
+app.get('/api/rcm/payers/:id', requireAuth, ah(async (req, res) => {
+  const p = await db.get('SELECT * FROM payers WHERE id = ?', [req.params.id]);
+  if (!p) throw Object.assign(new Error('Payer not found.'), { status: 404 });
+  const rows = await db.all(`SELECT i.patient_code, i.member_id, i.plan, i.type, i.status, i.priority,
+      pt.name, pt.dob
+    FROM insurance i LEFT JOIN patients pt ON pt.code = i.patient_code
+    WHERE i.payer = ? AND (i.user_id IS NULL OR i.user_id = ?)
+    ORDER BY i.patient_code`, [p.name, req.session.userId]);
+  res.json({ payer: p, patients: rows });
+}));
 app.get('/api/rcm/eligibility', requireAuth, ah(async (req, res) => {
   res.json({ checks: await db.all('SELECT * FROM eligibility_checks WHERE user_id = ? ORDER BY id DESC LIMIT 100', [req.session.userId]) });
 }));
