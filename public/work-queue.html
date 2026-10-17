@@ -8,7 +8,6 @@
   </div><div class="act-row">
     <span class="bdg b-teal" style="font-size:11px"><span class="pulse-dot"></span> LIVE QUEUE</span>
     <button class="btn btn-teal btn-sm" id="workNext">⚡ Work next</button>
-    <button class="btn btn-line btn-sm" id="demoBtn" data-fn="demo">✨ Load demo data</button>
   </div></div>
   <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)">
     <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
@@ -20,7 +19,7 @@
       <th>Score</th><th>Priority</th><th>Type</th><th>Task</th><th>Detail</th><th>Amount</th><th></th>
     </tr></thead><tbody id="rows"><tr><td colspan="7"><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div></td></tr></tbody></table></div>
     <div class="empty" id="empty" style="display:none">Queue is clear — nice work. 🎉<br>
-      <button class="btn btn-line btn-sm empty-cta" onclick="document.getElementById('demoBtn').click()">Load demo data to practice</button></div>
+      <span style="font-size:13px;color:#5b6b85">Create charges and claims from the Billing menu to fill your queue.</span></div>
   </div>
   <div class="info-panel">💡 <b>Priority score</b> = urgency × amount × aging × denial risk. <b>⚡ Work next</b> jumps straight to your highest-impact item — work the queue like a real billing team lead.</div>
 </div></main></div>
@@ -69,10 +68,5 @@ function render() {
   document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
 }
 document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
-document.getElementById('demoBtn').onclick = async () => {
-  if (!confirm('Load 3 demo charges + 3 demo claims into your workspace?')) return;
-  try { await api('/api/rcm/demo', { method: 'POST' }); location.reload(); }
-  catch (e) { alert(e.message); }
-};
 load();
 </script></body></html>

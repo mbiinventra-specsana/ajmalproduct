@@ -126,7 +126,7 @@ const FEATURES = [
   ['labs', 'Advanced Labs', '🧪', 'Scrubber, Denial Lab, Sprints, Quiz Arena'],
 ];
 function featureForPath(p) {
-  if (p === '/api/dashboard' || p.startsWith('/api/rcm/overview') || p.startsWith('/api/rcm/work-queue') || p.startsWith('/api/rcm/demo')) return 'workspace';
+  if (p === '/api/dashboard' || p.startsWith('/api/rcm/overview') || p.startsWith('/api/rcm/work-queue')) return 'workspace';
   if (p === '/api/patients' || p.startsWith('/api/rcm/patients') || p.startsWith('/api/rcm/insurance') || p.startsWith('/api/rcm/eligibility')) return 'patients';
   if (p.startsWith('/api/rcm/charges') || p.startsWith('/api/rcm/claims')) return 'billing';
   if (p.startsWith('/api/rcm/payments') || p.startsWith('/api/rcm/ar') || p.startsWith('/api/rcm/denials') || p.startsWith('/api/rcm/reports')) return 'revenue';
@@ -173,7 +173,6 @@ const FN_ITEMS = [
   ['eligibility-verify', 'Run Verification'],
   ['insurance-add', 'Add Policy'],
   ['lab-run', 'Run Lab / Submit Quiz'],
-  ['demo', 'Load Demo Data'],
 ];
 const FN_KEYS = FN_ITEMS.map(f => f[0]);
 // middleware: block students when fn:<key> is disabled (admin/instructor bypass)
@@ -205,7 +204,7 @@ function requireFnAction(map) {
 // maps an API path to a single menu item key (null = ambiguous/shared → group fallback)
 function menuItemForPath(p) {
   if (p === '/api/dashboard') return 'dashboard';
-  if (p.startsWith('/api/rcm/work-queue') || p.startsWith('/api/rcm/demo')) return 'workqueue';
+  if (p.startsWith('/api/rcm/work-queue')) return 'workqueue';
   if (p === '/api/patients' || p.startsWith('/api/rcm/patients')) return 'patients';
   if (p.startsWith('/api/rcm/insurance')) return 'insurance';
   if (p.startsWith('/api/rcm/eligibility')) return 'eligibility';
@@ -1342,39 +1341,7 @@ app.get('/api/rcm/reports', requireAuth, ah(cached('stu-reports', 60000, async (
   };
 })));
 
-app.post('/api/rcm/demo', requireAuth, requireFn('demo'), ah(async (req, res) => {
-  const u = req.session.userId, now = snow();
-  const n = (await db.get('SELECT COUNT(*) AS n FROM claims WHERE user_id = ?', [u])).n;
-  if (n > 0) throw Object.assign(new Error('Demo data already exists — clear your workspace first.'), { status: 409 });
-  const demoCharges = [
-    ['PT-10005', '2026-10-02', '99213', 'J06.9', '', 120],
-    ['PT-10008', '2026-10-05', '99214', 'I10', '25', 220],
-    ['PT-10011', '2026-10-09', '87880', 'J02.9', '', 85],
-  ];
-  for (const [pc, dos, cpt, icd, mod, amt] of demoCharges) {
-    const ch = await db.run(`INSERT INTO charges (user_id, patient_code, dos, cpt, icd, modifier, units, amount, status, created_at)
-      VALUES (?,?,?,?,?,?,?,?,'READY',?)`, [u, pc, dos, cpt, icd, mod, 1, amt, now]);
-    const ins = await db.get('SELECT payer FROM insurance WHERE patient_code = ? AND user_id IS NULL LIMIT 1', [pc]);
-    const cl = await db.run(`INSERT INTO claims (user_id, claim_no, patient_code, payer, cpt, icd, modifier, dos, billed, status, validation, created_at)
-      VALUES (?,?,?,?,?,?,? ,?,?,'DRAFT','NOT_VALIDATED',?)`,
-      [u, 'PENDING', pc, ins ? ins.payer : 'BlueCross BlueShield (Simulated)', cpt, icd, mod, dos, amt, now]);
-    const claimNo = `CLM-${Date.now()}-${cl.id}`;
-    await db.run('UPDATE claims SET claim_no = ? WHERE id = ?', [claimNo, cl.id]);
-    await db.run('UPDATE charges SET claim_id = ?, status = ? WHERE id = ?', [cl.id, 'LINKED', ch.id]);
-    // validate + submit through the real lifecycle
-    const r = labData.scrubClaim({ patientId: pc, payer: payerKey(ins ? ins.payer : ''), dos, pos: '11',
-      npiR: '1234567890', npiB: '0987654321', icds: [icd],
-      lines: [{ cpt, dx: [1], mod: mod ? [mod] : [], units: 1, charge: amt }] });
-    const val = r.errors.length ? 'FAILED' : 'PASSED';
-    await db.run('UPDATE claims SET validation = ? WHERE id = ?', [val, cl.id]);
-    if (val === 'PASSED') {
-      const a = adjudicate({ id: cl.id, billed: amt });
-      await db.run(`UPDATE claims SET status=?, denial_code=?, allowed=?, paid=?, adjustment=?, patient_resp=?, submitted_at=? WHERE id = ?`,
-        [a.status, a.denial_code || '', a.allowed || 0, a.paid || 0, a.adjustment || 0, a.patient_resp || 0, now, cl.id]);
-    }
-  }
-  res.json({ ok: true, charges: 3, claims: 3 });
-}));
+
 
 // ---------- admin API ----------
 // feature catalog for per-student ON/OFF (mirrored in owner.html manage modal)
