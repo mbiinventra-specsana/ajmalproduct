@@ -23,7 +23,7 @@
 .lab-anim{animation:labIn .45s cubic-bezier(.2,.8,.2,1) backwards}
 .era-grid{display:grid;grid-template-columns:290px 1fr;gap:16px}
 .scard{border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:12px;cursor:pointer;background:#fff;
-  transition:all .2s;position:relative;overflow:hidden}
+  transition:all .2s;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(10,22,40,.05)}
 .scard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent;transition:all .2s}
 .scard:hover{border-color:#0e9f8a;transform:translateX(4px);box-shadow:0 4px 14px rgba(14,159,138,.12)}
 .scard:hover::before{background:#0e9f8a}
@@ -48,7 +48,9 @@
 .era-doc .carc{color:#fbbf24;font-weight:800}
 .era-doc .pr{color:#f9a8d4;font-weight:700}
 .era-doc .money{color:#5eead4;font-weight:700}
-.post-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:18px;margin-bottom:14px}
+.post-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;padding:20px;margin-bottom:14px;
+  box-shadow:0 2px 8px rgba(10,22,40,.05);transition:box-shadow .2s}
+.post-card:hover{box-shadow:0 4px 16px rgba(10,22,40,.08)}
 .post-card h4{margin:0 0 4px;font-size:14px;color:#0a1628}
 .post-card .cpt-tag{display:inline-block;background:#f0fdfa;border:1px solid #99f6e4;color:#0f766e;font-weight:800;
   font-size:12px;padding:3px 10px;border-radius:8px;margin-bottom:12px;font-family:ui-monospace,monospace}
@@ -114,7 +116,11 @@ const money = n => '$' + Number(n).toFixed(2);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 async function init() {
-  shell('era');
+  const u = await currentUser();
+  if (!u) { location.href = '/login'; return; }
+  if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
+  shell('era', u);
+  if (!guardFeature(u, 'era', 'ERA Posting Simulator')) return;
   try {
     const d = await api('/api/labs/era');
     SCEN = d.scenarios || []; ACTIONS = d.actions || [];

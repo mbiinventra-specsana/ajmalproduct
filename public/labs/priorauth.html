@@ -9,6 +9,8 @@
   margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
 .lab-hero::before{content:"";position:absolute;top:-60px;right:8%;width:260px;height:260px;border-radius:50%;
   background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.lab-hero::after{content:"";position:absolute;bottom:-90px;left:32%;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.12),transparent 70%)}
 .lab-hero h1{margin:0 0 8px;font-size:24px;position:relative;z-index:1}
 .lab-hero .psub{color:#b9d4e8;margin:0;font-size:14px;position:relative;z-index:1;max-width:680px;line-height:1.6}
 .lab-hero .act-row{position:relative;z-index:1;margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -20,7 +22,7 @@
 .lab-anim{animation:labIn .45s cubic-bezier(.2,.8,.2,1) backwards}
 .pa-grid{display:grid;grid-template-columns:290px 1fr;gap:16px}
 .scard{border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:12px;cursor:pointer;background:#fff;
-  transition:all .2s;position:relative;overflow:hidden}
+  transition:all .2s;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(10,22,40,.05)}
 .scard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent;transition:all .2s}
 .scard:hover{border-color:#0e9f8a;transform:translateX(4px);box-shadow:0 4px 14px rgba(14,159,138,.12)}
 .scard:hover::before{background:#0e9f8a}
@@ -51,7 +53,9 @@
 .step-tab.on .n{background:#0e9f8a;color:#fff}
 .step-tab.done{color:#0e9f8a}
 .step-tab.done .n{background:#0e9f8a;color:#fff}
-.qcard{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:20px;margin-bottom:14px}
+.qcard{background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;padding:22px;margin-bottom:14px;
+  box-shadow:0 2px 8px rgba(10,22,40,.05);transition:box-shadow .2s}
+.qcard:hover{box-shadow:0 4px 16px rgba(10,22,40,.08)}
 .qcard h4{margin:0 0 6px;font-size:14.5px;color:#0a1628}
 .qcard .step-tag{display:inline-block;background:#f0fdfa;border:1px solid #99f6e4;color:#0f766e;font-weight:800;
   font-size:11px;padding:3px 10px;border-radius:8px;margin-bottom:12px;letter-spacing:.5px}
@@ -82,8 +86,9 @@
 </style>
 </head>
 <body>
-<div id="shell"></div>
-<main class="page">
+<div class="shell">
+  <aside class="side" id="sidebar"></aside>
+  <main class="main">
   <div class="lab-hero lab-anim">
     <div class="eyebrow2">Advanced Lab · Revenue Cycle</div>
     <h1>📋 Prior Authorization Workflow Lab</h1>
@@ -99,7 +104,8 @@
     <div class="lab-anim" style="animation-delay:.05s"><div id="scen-list"></div></div>
     <div class="lab-anim" style="animation-delay:.1s"><div id="work"></div></div>
   </div>
-</main>
+  </main>
+</div>
 <script src="/js/app.js"></script>
 <script>
 let SCEN = [], cur = null, sel = {};
@@ -107,7 +113,11 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 async function init() {
-  shell('priorauth');
+  const u = await currentUser();
+  if (!u) { location.href = '/login'; return; }
+  if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
+  shell('priorauth', u);
+  if (!guardFeature(u, 'priorauth', 'Prior Authorization Lab')) return;
   try {
     const d = await api('/api/labs/priorauth');
     SCEN = d.scenarios || [];

@@ -54,6 +54,33 @@
 .search-row input{flex:1;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit}
 .search-row input:focus{outline:none;border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.12)}
 @media(max-width:700px){.check-grid{grid-template-columns:1fr}.lab-hero{padding:20px}}
+/* ===== PREMIUM POLISH ===== */
+.lab-hero::after{content:"";position:absolute;bottom:-90px;left:32%;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.12),transparent 70%)}
+.lab-hero .wm{position:absolute;right:30px;top:50%;transform:translateY(-50%) rotate(-8deg);font-size:104px;
+  opacity:.09;pointer-events:none;user-select:none}
+.ex-chips{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 16px}
+.ex-chip{font-size:12.5px;font-weight:600;padding:8px 15px;border-radius:20px;border:1.5px solid #e2e8f0;
+  background:#f8fafc;color:#475569;cursor:pointer;transition:all .18s;font-family:inherit}
+.ex-chip b{color:#0f2743}
+.ex-chip small{color:#94a3b8}
+.ex-chip:hover{border-color:#0e9f8a;color:#0f2743;transform:translateY(-1px);box-shadow:0 3px 10px rgba(14,159,138,.14)}
+.ex-chip:active{transform:translateY(0) scale(.97)}
+.result.show{animation:resIn .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes resIn{from{opacity:0;transform:scale(.97) translateY(6px)}to{opacity:1;transform:none}}
+.scen{animation:scenIn .3s ease backwards}
+@keyframes scenIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+.search-row{position:relative}
+.search-row .clr{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:#f1f5f9;
+  color:#64748b;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:12px;display:none;transition:all .15s}
+.search-row .clr.show{display:block}
+.search-row .clr:hover{background:#e2e8f0;color:#0f2743}
+.field input{text-transform:uppercase}
+.abn-box{position:relative;overflow:hidden}
+.abn-box::before{content:"📝";position:absolute;right:18px;top:50%;transform:translateY(-50%);
+  font-size:64px;opacity:.08;pointer-events:none}
+.abn-box h4,.abn-box p{position:relative;z-index:1}
+@media(max-width:700px){.lab-hero .wm{font-size:64px;right:14px}}
 </style>
 </head>
 <body>
@@ -62,13 +89,17 @@
   <main class="main">
     <div class="lab-hero lab-anim">
       <div class="eyebrow2">Advanced Labs · Medical Necessity</div>
-      <h1>🔍 LCD / NCD Coverage Checker</h1>
+      <h1>🔍 LCD / NCD Coverage Checker</h1><div class="wm" aria-hidden="true">🔍</div>
       <p class="psub">Before you bill, check whether the payer covers it. Enter a <b style="color:#5eead4">CPT/HCPCS</b> + <b style="color:#5eead4">ICD-10</b> pair and see the Local/National Coverage Determination verdict — covered, conditional, or not covered — plus when to get an <b style="color:#5eead4">ABN</b> signed.</p>
     </div>
 
     <div class="panel lab-anim" style="animation-delay:.05s">
       <h3>🧪 Check coverage</h3>
       <p class="psub">Type a procedure code and a diagnosis code. Example: <b>82306</b> + <b>E55.9</b> (covered) vs <b>82306</b> + <b>Z13.1</b> (not covered — screening).</p>
+      <div class="ex-chips">
+        <button class="ex-chip" data-cpt="82306" data-icd="E55.9">Try: <b>82306 + E55.9</b> <small>· covered</small></button>
+        <button class="ex-chip" data-cpt="82306" data-icd="Z13.1">Try: <b>82306 + Z13.1</b> <small>· not covered</small></button>
+      </div>
       <div class="check-grid">
         <div class="field"><label>CPT / HCPCS code</label><input id="in-cpt" placeholder="e.g. 82306" maxlength="8" autocomplete="off"></div>
         <div class="field"><label>ICD-10 diagnosis</label><input id="in-icd" placeholder="e.g. E55.9" maxlength="10" autocomplete="off"></div>
@@ -87,7 +118,7 @@
     <div class="panel lab-anim" style="animation-delay:.1s">
       <h3>📚 Coverage scenario library <span style="font-size:12px;color:#64748b;font-weight:600" id="lib-count"></span></h3>
       <p class="psub">16 real coverage scenarios. Click any scenario to load it into the checker.</p>
-      <div class="search-row"><input id="lib-search" placeholder="Search by CPT, ICD, keyword… (e.g. vitamin, acupuncture, BRCA)"></div>
+      <div class="search-row"><input id="lib-search" placeholder="Search by CPT, ICD, keyword… (e.g. vitamin, acupuncture, BRCA)"><button class="clr" id="lib-clear" title="Clear search">✕</button></div>
       <div id="lib-list"></div>
     </div>
   </main>
@@ -138,7 +169,7 @@ function showResult(data){
 function renderSimilar(list){
   const r = $('result');
   r.innerHTML += '<div style="margin-top:12px"><b style="font-size:13px">Similar scenarios for this CPT:</b></div>' +
-    list.map(x => '<div class="scen" data-id="'+x.id+'"><span class="codes">'+esc(x.cpt)+' + '+esc(x.icd)+
+    list.map((x,i) => '<div class="scen" data-id="'+x.id+'" style="animation-delay:'+(i*25)+'ms"><span class="codes">'+esc(x.cpt)+' + '+esc(x.icd)+
       '</span><span class="badge '+x.decision+'">'+VLABEL[x.decision][0]+'</span><div class="desc">'+esc(x.cptDesc)+' · '+esc(x.icdDesc)+'</div></div>').join('');
   bindScenClicks();
 }
@@ -147,8 +178,8 @@ function renderLib(q){
   q = q.toLowerCase();
   const list = LIB.filter(x => !q || (x.cpt+' '+x.icd+' '+x.cptDesc+' '+x.icdDesc+' '+x.why).toLowerCase().includes(q));
   $('lib-count').textContent = '· '+list.length+' shown';
-  $('lib-list').innerHTML = list.map(x =>
-    '<div class="scen" data-id="'+x.id+'"><span class="codes">'+esc(x.cpt)+' + '+esc(x.icd)+'</span>'+
+  $('lib-list').innerHTML = list.map((x,i) =>
+    '<div class="scen" data-id="'+x.id+'" style="animation-delay:'+Math.min(i*25,400)+'ms"><span class="codes">'+esc(x.cpt)+' + '+esc(x.icd)+'</span>'+
     '<span class="badge '+x.decision+'">'+VLABEL[x.decision][0]+'</span>'+
     '<div class="desc">'+esc(x.cptDesc)+' · '+esc(x.icdDesc)+'</div></div>').join('') ||
     '<p style="color:#64748b;font-size:13.5px">No scenarios match.</p>';
@@ -175,7 +206,12 @@ async function check(){
 }
 $('btn-check').onclick = check;
 [$('in-cpt'), $('in-icd')].forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') check(); }));
-$('lib-search').addEventListener('input', e => renderLib(e.target.value));
+$('lib-search').addEventListener('input', e => { renderLib(e.target.value); toggleClear(); });
+function toggleClear(){ $('lib-clear').classList.toggle('show', $('lib-search').value.length > 0); }
+$('lib-clear').onclick = () => { $('lib-search').value = ''; renderLib(''); toggleClear(); };
+document.querySelectorAll('.ex-chip').forEach(c => c.onclick = () => {
+  $('in-cpt').value = c.dataset.cpt; $('in-icd').value = c.dataset.icd; check();
+});
 
 init();
 </script>
