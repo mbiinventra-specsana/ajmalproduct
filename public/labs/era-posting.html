@@ -187,14 +187,25 @@ async function init() {
   if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
   shell('era', u);
   if (!guardFeature(u, 'era', 'ERA Posting Simulator')) return;
-  try {
-    const d = await api('/api/labs/era');
-    SCEN = d.scenarios || []; ACTIONS = d.actions || [];
-    $('st-total').textContent = SCEN.length;
-    renderList();
-    if (SCEN.length) select(SCEN[0].id);
-    loadBest();
-  } catch (e) { $('work').innerHTML = '<div class="post-card">Failed to load scenarios: ' + esc(e.message) + '</div>'; }
+  // Retry logic for hard refresh race conditions
+  let d = null, retries = 3;
+  while (retries-- > 0) {
+    try {
+      d = await api('/api/labs/era');
+      break;
+    } catch (e) {
+      if (retries === 0) {
+        $('scen-list').innerHTML = '<div class="post-card" style="color:#dc2626">Failed to load scenarios: ' + esc(e.message) + '<br><button onclick="location.reload()" style="margin-top:10px;padding:8px 16px;background:#0e9f8a;color:#fff;border:none;border-radius:8px;cursor:pointer">Retry</button></div>';
+        return;
+      }
+      await new Promise(r => setTimeout(r, 500));
+    }
+  }
+  SCEN = d.scenarios || []; ACTIONS = d.actions || [];
+  $('st-total').textContent = SCEN.length;
+  renderList();
+  if (SCEN.length) select(SCEN[0].id);
+  loadBest();
 }
 async function loadBest() {
   try {
