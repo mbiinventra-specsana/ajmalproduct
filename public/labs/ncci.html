@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NCCI Interactive Checker — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+<style>
+.lab-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:26px 30px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.lab-hero::before{content:"";position:absolute;top:-60px;right:8%;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.lab-hero h1{margin:0 0 8px;font-size:24px;position:relative;z-index:1}
+.lab-hero .psub{color:#b9d4e8;margin:0;font-size:14px;position:relative;z-index:1;max-width:680px;line-height:1.6}
+.lab-hero .act-row{position:relative;z-index:1;margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 16px;font-size:13px;backdrop-filter:blur(6px);color:#dbeafe}
+.hstat b{font-size:16px;color:#5eead4}
+.eyebrow2{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#34d3bd;margin-bottom:8px;position:relative;z-index:1}
+@keyframes labIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.lab-anim{animation:labIn .45s cubic-bezier(.2,.8,.2,1) backwards}
+.tabs{display:flex;gap:8px;margin-bottom:18px}
+.tab{padding:10px 20px;border-radius:12px;border:1.5px solid #e2e8f0;background:#fff;font-weight:700;font-size:13.5px;
+  cursor:pointer;color:#64748b;font-family:inherit;transition:all .2s}
+.tab.on{background:#0f2743;border-color:#0f2743;color:#fff;box-shadow:0 4px 12px rgba(15,39,67,.25)}
+.checker{background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;padding:24px;margin-bottom:18px}
+.checker .inputs{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px}
+.cfield label{display:block;font-size:11.5px;font-weight:700;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.cfield input{width:160px;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:16px;
+  font-family:ui-monospace,monospace;font-weight:700;color:#0f1e33;text-transform:uppercase}
+.cfield input:focus{outline:none;border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.12)}
+.vs{font-size:20px;font-weight:800;color:#94a3b8;align-self:center;padding-bottom:4px}
+.btn-check{background:linear-gradient(135deg,#0e9f8a,#0b7d6d);color:#fff;border:none;border-radius:12px;
+  padding:12px 26px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit}
+.btn-check:hover{transform:translateY(-2px)}
+.result{border-radius:14px;padding:18px;margin-top:16px;display:none;line-height:1.7;font-size:14px}
+.result.show{display:block}
+.result.ind0{background:#fef2f2;border:1.5px solid #fca5a5}
+.result.ind1{background:#fffbeb;border:1.5px solid #fcd34d}
+.result.ind9{background:#f0fdf4;border:1.5px solid #86efac}
+.result .badge{display:inline-block;font-weight:800;font-size:12px;padding:4px 12px;border-radius:8px;margin-bottom:10px;letter-spacing:.5px}
+.ind0 .badge{background:#dc2626;color:#fff}.ind1 .badge{background:#d97706;color:#fff}.ind9 .badge{background:#16a34a;color:#fff}
+.result .mod{font-family:ui-monospace,monospace;font-weight:800;background:rgba(0,0,0,.06);padding:2px 8px;border-radius:6px}
+.legend{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px 18px;margin-bottom:18px;font-size:13px;line-height:1.8;color:#475569}
+.legend b{color:#0f2743}
+.quiz-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;padding:24px;margin-bottom:14px}
+.quiz-card .pair{font-family:ui-monospace,monospace;font-size:22px;font-weight:800;color:#0f2743;margin-bottom:6px}
+.quiz-card .q{font-size:14.5px;color:#334155;margin-bottom:16px;font-weight:600}
+.quiz-card .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.quiz-card .opt{border:1.5px solid #e2e8f0;border-radius:10px;padding:12px;cursor:pointer;font-size:13.5px;font-weight:600;
+  color:#334155;transition:all .15s;background:#fff;text-align:center}
+.quiz-card .opt:hover{border-color:#0e9f8a;transform:translateY(-1px)}
+.quiz-card .opt.right{border-color:#16a34a;background:#f0fdf4;color:#166534}
+.quiz-card .opt.wrong{border-color:#dc2626;background:#fef2f2;color:#991b1b}
+.quiz-card .qfb{font-size:13px;margin-top:12px;line-height:1.7;display:none;border-radius:10px;padding:12px 14px}
+.quiz-card .qfb.show{display:block}
+.quiz-card .qfb.good{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.quiz-card .qfb.bad{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.score-banner{border-radius:16px;padding:24px;text-align:center;margin-bottom:18px;display:none;
+  background:linear-gradient(135deg,#0f2743,#143a5e);color:#fff;border:1px solid rgba(52,211,189,.25)}
+.score-banner.show{display:block}
+.score-banner .ring{font-size:42px;font-weight:800;color:#5eead4}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside id="sidebar"></aside>
+  <main>
+    <div class="lab-hero lab-anim">
+      <div class="eyebrow2">Advanced Labs · Coding Compliance</div>
+      <h1>🔗 NCCI Interactive Checker</h1>
+      <p class="psub">Can these two codes be billed together? Check <b style="color:#5eead4">PTP edits</b>, read the <b style="color:#5eead4">modifier indicator</b> (0/1/9), and learn which modifier — if any — saves the pair. Then test yourself in quiz mode.</p>
+      <div class="act-row">
+        <span class="hstat">Code pairs <b id="st-total">–</b></span>
+        <span class="hstat">Quiz best <b id="st-best">–</b></span>
+      </div>
+    </div>
+
+    <div class="legend lab-anim" style="animation-delay:.05s">
+      <b>📖 How to read an NCCI indicator:</b><br>
+      <b>0</b> = NEVER together — no modifier overrides this. Drop one code.<br>
+      <b>1</b> = Together ONLY with a qualifying modifier (59, XE/XS/XP/XU) on the column-2 code.<br>
+      <b>9</b> = No edit exists (or trap: the codes are inherently bundled — delete, don't modify).
+    </div>
+
+    <div class="tabs lab-anim" style="animation-delay:.08s">
+      <button class="tab on" id="tab-check">🔍 Checker</button>
+      <button class="tab" id="tab-quiz">🎯 Quiz Mode</button>
+    </div>
+
+    <div id="pane-check" class="lab-anim" style="animation-delay:.1s">
+      <div class="checker">
+        <div class="inputs">
+          <div class="cfield"><label>Code 1 (column 1)</label><input id="in-c1" placeholder="99213" maxlength="10"></div>
+          <span class="vs">+</span>
+          <div class="cfield"><label>Code 2 (column 2)</label><input id="in-c2" placeholder="36415" maxlength="10"></div>
+          <button class="btn-check" id="checkBtn">Check pair →</button>
+        </div>
+        <div class="result" id="checkResult"></div>
+      </div>
+      <div class="checker">
+        <h3 style="margin:0 0 12px;color:#0a1628;font-size:15px">📚 Browse all pairs</h3>
+        <div id="pair-list"></div>
+      </div>
+    </div>
+
+    <div id="pane-quiz" style="display:none">
+      <div class="score-banner" id="qbanner"></div>
+      <div id="quiz-box"></div>
+      <button class="btn-check" id="quizGrade" style="margin-top:8px">Grade quiz →</button>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+let PAIRS = [], qsel = {}, qorder = [];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+async function init() {
+  shell('ncci');
+  try {
+    const d = await api('/api/labs/ncci');
+    PAIRS = d.pairs || [];
+    $('st-total').textContent = PAIRS.length;
+    renderPairList(); renderQuiz(); loadBest();
+  } catch (e) { $('pane-check').innerHTML = '<div class="checker">Failed to load: ' + esc(e.message) + '</div>'; }
+  $('tab-check').onclick = () => switchTab('check');
+  $('tab-quiz').onclick = () => switchTab('quiz');
+  $('checkBtn').onclick = checkPair;
+  $('quizGrade').onclick = gradeQuiz;
+}
+function switchTab(t) {
+  $('tab-check').classList.toggle('on', t === 'check');
+  $('tab-quiz').classList.toggle('on', t === 'quiz');
+  $('pane-check').style.display = t === 'check' ? '' : 'none';
+  $('pane-quiz').style.display = t === 'quiz' ? '' : 'none';
+}
+async function loadBest() {
+  try {
+    const b = await api('/api/labs/bests');
+    const rows = (b.bests || []).filter(x => x.lab_key === 'ncci');
+    $('st-best').textContent = rows.length ? Math.max(...rows.map(x => x.score)) + '%' : '—';
+  } catch (e) {}
+}
+function indBadge(ind) {
+  if (ind === 0) return '<span class="badge">INDICATOR 0 — NEVER TOGETHER</span>';
+  if (ind === 1) return '<span class="badge">INDICATOR 1 — MODIFIER REQUIRED</span>';
+  return '<span class="badge">INDICATOR 9 — NO EDIT / INHERENT</span>';
+}
+function showResult(el, p) {
+  el.className = 'result show ind' + p.ind;
+  el.innerHTML = indBadge(p.ind) +
+    `<div style="font-family:ui-monospace,monospace;font-weight:800;font-size:17px;margin-bottom:8px">${esc(p.c1)} + ${esc(p.c2)}</div>
+     <div><b>Modifier:</b> <span class="mod">${esc(p.modifier)}</span></div>
+     <div style="margin-top:8px">${esc(p.why)}</div>`;
+}
+async function checkPair() {
+  const c1 = $('in-c1').value.trim(), c2 = $('in-c2').value.trim();
+  const el = $('checkResult');
+  if (!c1 || !c2) { el.className = 'result show ind1'; el.innerHTML = 'Enter both codes first.'; return; }
+  el.className = 'result show ind9'; el.innerHTML = 'Checking…';
+  try {
+    const r = await api('/api/labs/ncci/check', { method: 'POST', body: { c1, c2 } });
+    if (r.found) showResult(el, r.pair);
+    else { el.className = 'result show ind9'; el.innerHTML = `<span class="badge">NOT IN DATABASE</span><div>No PTP edit found for <b>${esc(c1)} + ${esc(c2)}</b> in our training set — in production, always verify in the CMS NCCI tables. Absence here ≠ safe to bill.</div>`; }
+  } catch (e) { el.innerHTML = 'Error: ' + esc(e.message); }
+}
+function renderPairList() {
+  $('pair-list').innerHTML = PAIRS.map((p, i) =>
+    `<div style="border-bottom:1px solid #f1f5f9;padding:10px 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <span style="font-family:ui-monospace,monospace;font-weight:800;font-size:13px;color:#0f2743">${esc(p.c1)} + ${esc(p.c2)}</span>
+      <span class="badge" style="font-size:10px;padding:2px 8px;border-radius:6px;background:${p.ind === 0 ? '#dc2626' : p.ind === 1 ? '#d97706' : '#16a34a'};color:#fff;font-weight:800">IND ${p.ind}</span>
+      <button class="tab" style="padding:4px 12px;font-size:11px" data-i="${i}">View →</button>
+    </div>`).join('');
+  document.querySelectorAll('#pair-list button').forEach(b => b.onclick = () => {
+    showResult($('checkResult'), PAIRS[+b.dataset.i]);
+    $('checkResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+}
+// ---- quiz mode ----
+const QOPTS = [
+  { v: 'never', t: '⛔ Never — drop one code (Indicator 0)' },
+  { v: 'modifier', t: '⚠️ Only with a modifier (Indicator 1)' },
+  { v: 'fine', t: '✅ Fine together — no edit (Indicator 9)' },
+];
+function renderQuiz() {
+  qorder = [...PAIRS].sort(() => Math.random() - 0.5).slice(0, 10);
+  qsel = {};
+  $('quiz-box').innerHTML = qorder.map((p, i) => `
+    <div class="quiz-card" data-i="${i}">
+      <div class="pair">${esc(p.c1)} + ${esc(p.c2)}</div>
+      <div class="q">Q${i + 1}. Can these be reported together on the same date of service?</div>
+      <div class="opts">${QOPTS.map(o =>
+        `<div class="opt" data-v="${o.v}">${o.t}</div>`).join('')}</div>
+      <div class="qfb" id="qfb-${i}"></div>
+    </div>`).join('');
+  document.querySelectorAll('.quiz-card .opt').forEach(o => o.onclick = () => {
+    const card = o.closest('.quiz-card'); const i = card.dataset.i;
+    card.querySelectorAll('.opt').forEach(x => x.classList.remove('sel'));
+    o.classList.add('sel'); o.style.borderColor = '#0e9f8a'; o.style.background = '#f0fdfa';
+    qsel[i] = o.dataset.v;
+  });
+  $('qbanner').className = 'score-banner';
+}
+function correctV(p) { return p.ind === 0 ? 'never' : p.ind === 1 ? 'modifier' : 'fine'; }
+async function gradeQuiz() {
+  const answers = qorder.map((p, i) => ({ c1: p.c1, c2: p.c2, v: qsel[i] || null }));
+  try {
+    const r = await api('/api/labs/ncci/quiz/grade', { method: 'POST', body: { answers } });
+    r.perQ.forEach((pq, i) => {
+      const card = document.querySelector(`.quiz-card[data-i="${i}"]`);
+      const fb = $('qfb-' + i);
+      card.querySelectorAll('.opt').forEach(o => {
+        o.style.pointerEvents = 'none'; o.classList.remove('sel'); o.style.background = ''; o.style.borderColor = '';
+        if (o.dataset.v === pq.correctV) o.classList.add('right');
+        else if (o.dataset.v === qsel[i] && !pq.ok) o.classList.add('wrong');
+      });
+      fb.className = 'qfb show ' + (pq.ok ? 'good' : 'bad');
+      fb.innerHTML = (pq.ok ? '✅ Correct! ' : '❌ ') + esc(pq.why) + `<br><b>Modifier guidance:</b> <span style="font-family:ui-monospace,monospace">${esc(pq.modifier)}</span>`;
+    });
+    const qb = $('qbanner');
+    qb.className = 'score-banner show';
+    qb.innerHTML = `<div class="ring">${r.score}%</div><div style="color:#5eead4;font-weight:800;font-size:17px">${r.score >= 80 ? 'NCCI Pro! 🌟' : r.score >= 60 ? 'Getting there! 💪' : 'Study the indicators 📚'}</div>
+      <div style="color:#b9d4e8;font-size:13px;margin-top:6px">${r.correct}/${r.total} correct</div>`;
+    qb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    loadBest();
+  } catch (e) { alert('Grading failed: ' + e.message); }
+}
+init();
+</script>
+</body>
+</html>

@@ -77,10 +77,64 @@
     </tr></thead><tbody id="rows"><tr><td colspan="9"><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div></td></tr></tbody></table></div>
     <div class="empty" id="empty" style="display:none"><div class="empty-ic">🎉</div><h4>No open A/R</h4><p>Everything is collected — great work! Balances appear here after payments are posted.</p><div style="margin-top:14px"><a class="btn btn-teal" href="/payments">Go to Payments →</a></div></div>
   </div>
+
+  <!-- Collections Queue: 91+ day accounts needing escalation -->
+  <div class="panel pt-anim" style="animation-delay:.12s;margin-top:18px;border:1.5px solid #fde68a;background:#fffdf5">
+    <div class="prow"><h3 style="margin:0">🏛️ Collections Queue <span style="font-size:12px;font-weight:600;color:#92400e">(91+ days)</span></h3>
+      <a class="btn btn-teal btn-sm" href="/labs/statements">Practice in Statements Lab →</a></div>
+    <p style="font-size:13px;color:#92400e;margin:8px 0 14px">Accounts aging past 91 days need escalation decisions. Choose the right action per account — <b>not every old balance goes to collections.</b></p>
+    <div class="twrap" style="overflow-x:auto"><table style="min-width:760px"><thead><tr>
+      <th>Claim</th><th>Patient</th><th>Balance</th><th>Aging</th><th style="text-align:right">Collection Action</th>
+    </tr></thead><tbody id="collRows"><tr><td colspan="5" style="color:#92400e;font-size:13px">Loading…</td></tr></tbody></table></div>
+    <div id="collEmpty" style="display:none;text-align:center;padding:20px;color:#92400e;font-size:13.5px">
+      ✅ No accounts in collections queue — nothing aging past 91 days!
+    </div>
+    <div style="margin-top:14px;padding:12px;background:#fff;border:1px solid #fde68a;border-radius:10px;font-size:12.5px;color:#92400e;line-height:1.6">
+      <b>⚖️ FDCPA reminders:</b> calls only 8 AM–9 PM · never discuss debt with third parties · send written validation within 5 days ·
+      pause on disputes · <b>No Surprises Act:</b> self-pay patients get a Good Faith Estimate; disputes allowed if bill exceeds GFE by $400+.
+    </div>
+  </div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
 let rows = [], bucket = 'all', q = '', meta = {};
+const COLL_ACTIONS = [
+  ['payment-plan', '📅 Payment Plan'],
+  ['hardship', '💛 Hardship Discount'],
+  ['collections', '🏛️ Send to Collections'],
+  ['writeoff', '📝 Bad-Debt Write-off'],
+];
+function renderCollections() {
+  const old = rows.filter(r => r.bucket === '91+');
+  const tb = document.getElementById('collRows');
+  document.getElementById('collEmpty').style.display = old.length ? 'none' : 'block';
+  tb.innerHTML = old.map(r => `<tr>
+    <td style="font-family:ui-monospace,monospace;font-size:12px">${esc(r.claim_no || '')}</td>
+    <td>${esc(r.patient_code || '')}</td>
+    <td style="font-family:ui-monospace,monospace;font-weight:700">$${Number(r.balance || 0).toFixed(2)}</td>
+    <td><span class="pill b-red">${esc(String(r.age ?? '?'))} days</span></td>
+    <td style="text-align:right"><select class="coll-act" data-id="${r.id}" data-claim="${esc(r.claim_no || '')}" data-bal="${r.balance || 0}"
+      style="padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-family:inherit;font-size:12.5px">
+      <option value="">Choose action…</option>
+      ${COLL_ACTIONS.map(([v, t]) => `<option value="${v}">${t}</option>`).join('')}
+    </select></td></tr>`).join('');
+  tb.querySelectorAll('.coll-act').forEach(sel => sel.onchange = () => doCollAction(sel));
+}
+async function doCollAction(sel) {
+  const v = sel.value; if (!v) return;
+  const claimId = sel.dataset.id, claim = sel.dataset.claim, bal = sel.dataset.bal;
+  const labels = { 'payment-plan': 'Payment plan offered', 'hardship': 'Hardship discount applied',
+    'collections': 'Sent to external collections', 'writeoff': 'Bad-debt write-off (pending approval)' };
+  const note = prompt(`${labels[v]} for ${claim} ($${bal})\nAdd a note (required for audit trail):`, '');
+  if (note === null) { sel.value = ''; return; }
+  if (!note.trim()) { alert('A note is required for the audit trail.'); sel.value = ''; return; }
+  try {
+    await api('/api/rcm/ar/note', { method: 'POST',
+      body: { claim_id: Number(claimId), note: `[COLLECTION: ${v}] ${note.trim()}`, kind: 'followup' } });
+    alert('✅ Action logged: ' + labels[v]);
+  } catch (e) { alert('Error: ' + e.message); }
+  sel.value = '';
+}
 const FCLS = { NOT_STARTED: 'b-amber', IN_PROGRESS: 'b-blue', DONE: 'b-green' };
 const KICON = { note: '📝', followup: '📞', promise: '🤝' };
 const initials = n => String(n || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -94,6 +148,7 @@ async function load() {
   document.getElementById('hTotal').textContent = money(d.total);
   document.getElementById('hOpen').textContent = d.open;
   document.getElementById('hOld').textContent = d.buckets['91+'] || 0;
+  renderCollections();
   document.getElementById('kpis').innerHTML = [
     ['💰', 'Total A/R', money(d.total), `${d.open} open account(s)`],
     ['🏥', 'Insurance A/R', money(d.insuranceAR), 'Outstanding from payer'],

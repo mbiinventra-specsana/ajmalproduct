@@ -79,6 +79,8 @@ const I = {
   help: _svg('<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.6-3 4"/><circle cx="12" cy="17.5" r=".5" fill="currentColor"/>'),
   crown: _svg('<path d="m3 8 4 4 5-6 5 6 4-4-1.5 10h-15z"/><path d="M5 21h14"/>'),
   doc: _svg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/>'),
+  building: _svg('<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2M10 21v-3h4v3"/>'),
+  link: _svg('<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>'),
   mega: _svg('<path d="m3 11 18-7-7 18-2.5-7.5z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'),
   monitor: _svg('<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>'),
   pulse: _svg('<path d="M22 12h-4l-3 8-6-16-3 8H2"/>'),
@@ -94,6 +96,7 @@ const ITEM_GROUP = {
   payments: 'revenue', ar: 'revenue', denialsq: 'revenue', reports: 'revenue',
   training: 'training', assignments: 'training', lab: 'training', progress: 'training',
   scrubber: 'labs', denials: 'labs', sprints: 'labs', quiz: 'labs',
+  era: 'labs', priorauth: 'labs', clearinghouse: 'labs',
 };
 // true if a menu item is off for this student (item key checked first, then group)
 function itemOff(user, itemKey) {
@@ -176,6 +179,11 @@ function shell(active, user) {
       ['sprints', 'Coding Sprints', '/labs/sprints', 'zap'],
       ['quiz', 'Quiz Arena', '/labs/quiz', 'help'],
       ['era', 'ERA Posting Sim', '/labs/era', 'doc'],
+      ['priorauth', 'Prior Auth Lab', '/labs/priorauth', 'clip'],
+      ['clearinghouse', 'Clearinghouse Sim', '/labs/clearinghouse', 'send'],
+      ['ub04', 'UB-04 Institutional', '/labs/ub04', 'building'],
+      ['ncci', 'NCCI Checker', '/labs/ncci', 'link'],
+      ['statements', 'Patient Statements', '/labs/statements', 'receipt'],
     ]],
   ];
   if (user.role === 'admin' || user.role === 'instructor') {

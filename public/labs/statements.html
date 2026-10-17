@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patient Statements & Collections — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+<style>
+/* ===== Patient Statements Lab ULTRA ===== */
+.lab-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:26px 30px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.lab-hero::before{content:"";position:absolute;top:-60px;right:8%;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.lab-hero::after{content:"";position:absolute;bottom:-90px;left:32%;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.12),transparent 70%)}
+.lab-hero h1{margin:0 0 8px;font-size:24px;position:relative;z-index:1}
+.lab-hero .psub{color:#b9d4e8;margin:0;font-size:14px;position:relative;z-index:1;max-width:660px;line-height:1.6}
+.eyebrow2{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#34d3bd;margin-bottom:8px;position:relative;z-index:1}
+@keyframes labIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.lab-anim{animation:labIn .45s cubic-bezier(.2,.8,.2,1) backwards}
+.stmt-grid{display:grid;grid-template-columns:290px 1fr;gap:16px}
+.scard{border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:12px;cursor:pointer;background:#fff;
+  transition:all .2s;position:relative;overflow:hidden}
+.scard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent;transition:all .2s}
+.scard:hover{border-color:#0e9f8a;transform:translateX(4px);box-shadow:0 4px 14px rgba(14,159,138,.12)}
+.scard:hover::before{background:#0e9f8a}
+.scard.on{border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.18)}
+.scard.on::before{background:#0e9f8a}
+.scard b{font-size:13.5px;color:#0a1628}
+.scard .meta{font-size:11.5px;color:#64748b;margin-top:5px}
+.scard .cno{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9px;
+  background:linear-gradient(135deg,#0f2743,#1a3a5c);color:#5eead4;font-weight:800;font-size:12px;margin-right:8px}
+.scard .diff{font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px;letter-spacing:.5px}
+.diff.Beginner{background:#dcfce7;color:#166534}.diff.Intermediate{background:#fef3c7;color:#92400e}.diff.Advanced{background:#fee2e2;color:#991b1b}
+/* statement document — paper look */
+.stmt-doc{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:0;margin-bottom:18px;
+  box-shadow:0 6px 20px rgba(10,22,40,.1);overflow:hidden}
+.stmt-doc .sh{background:linear-gradient(135deg,#0f2743,#1a3a5c);color:#fff;padding:16px 20px}
+.stmt-doc .sh b{font-size:15px}
+.stmt-doc .sh .sub{font-size:12px;color:#b9d4e8;margin-top:4px}
+.stmt-doc .sbody{padding:18px 20px;font-size:13.5px}
+.stmt-doc table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+.stmt-doc th{text-align:left;color:#64748b;font-weight:700;padding:8px;border-bottom:2px solid #e2e8f0;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}
+.stmt-doc td{padding:8px;border-bottom:1px solid #f1f5f9}
+.stmt-doc .total td{font-weight:800;border-bottom:none;border-top:2px solid #0f2743;font-size:14.5px;color:#0f2743}
+.stmt-doc .money{font-family:ui-monospace,monospace;font-weight:700}
+.stmt-doc .due{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 14px;margin-top:12px;font-size:13px;color:#991b1b}
+/* timeline */
+.tl{position:relative;margin:18px 0;padding-left:28px}
+.tl::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:#e2e8f0}
+.tl-ev{position:relative;margin-bottom:14px}
+.tl-ev::before{content:"";position:absolute;left:-24px;top:4px;width:12px;height:12px;border-radius:50%;
+  background:#0e9f8a;border:3px solid #fff;box-shadow:0 0 0 2px #0e9f8a}
+.tl-ev .day{display:inline-block;background:#f0fdfa;border:1px solid #99f6e4;color:#0f766e;font-weight:800;
+  font-size:11px;padding:2px 10px;border-radius:8px;margin-bottom:4px}
+.tl-ev b{font-size:13.5px;color:#0a1628;display:block}
+.tl-ev .det{font-size:12.5px;color:#64748b}
+/* tasks */
+.task-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:18px;margin-bottom:14px}
+.task-card h4{margin:0 0 10px;font-size:14px;color:#0a1628}
+.task-card input{width:180px;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;
+  font-family:ui-monospace,monospace;color:#0f1e33}
+.task-card input:focus{outline:none;border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.12)}
+.task-fb{border-radius:12px;padding:12px 16px;font-size:13px;margin-top:12px;line-height:1.6;display:none}
+.task-fb.show{display:block}
+.task-fb.good{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.task-fb.bad{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.action-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.act-btn{border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;background:#fff;cursor:pointer;
+  font-family:inherit;font-size:13px;font-weight:600;color:#334155;transition:all .2s;text-align:left}
+.act-btn:hover{border-color:#0e9f8a;transform:translateY(-1px)}
+.act-btn.sel{border-color:#0e9f8a;background:#f0fdfa;box-shadow:0 0 0 3px rgba(14,159,138,.15);color:#0f2743}
+.btn-grade{background:linear-gradient(135deg,#0e9f8a,#0b7d6d);color:#fff;border:none;border-radius:12px;
+  padding:13px 28px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;
+  box-shadow:0 4px 14px rgba(14,159,138,.3);transition:all .2s}
+.btn-grade:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(14,159,138,.4)}
+.btn-grade:disabled{opacity:.5;cursor:default;transform:none}
+.score-banner{border-radius:16px;padding:24px;text-align:center;margin-bottom:18px;display:none;
+  background:linear-gradient(135deg,#0f2743,#143a5e);color:#fff;border:1px solid rgba(52,211,189,.25);
+  box-shadow:0 8px 28px rgba(15,39,67,.25)}
+.score-banner.show{display:block}
+.score-banner .ring{font-size:42px;font-weight:800;color:#5eead4}
+.score-banner .perf{font-size:18px;font-weight:800;margin:6px 0;color:#5eead4}
+/* FDCPA reference */
+.fdcpa{background:#fffdf5;border:1.5px solid #fde68a;border-radius:14px;padding:18px;margin-top:18px}
+.fdcpa h3{margin:0 0 12px;font-size:15px;color:#92400e}
+.fdcpa table{width:100%;border-collapse:collapse;font-size:12.5px}
+.fdcpa th{text-align:left;padding:8px;color:#92400e;border-bottom:2px solid #fde68a;font-size:11px;text-transform:uppercase}
+.fdcpa td{padding:8px;border-bottom:1px solid #fef3c7;vertical-align:top}
+.fdcpa .ok{color:#166534}.fdcpa .bad{color:#991b1b}
+@media(max-width:900px){.stmt-grid{grid-template-columns:1fr}.action-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="sidebar"></div>
+<main class="main">
+  <div class="lab-hero lab-anim">
+    <div class="eyebrow2">Advanced Lab · Patient Billing</div>
+    <h1>🧾 Patient Statements & Collections</h1>
+    <p class="psub">Generate statements, calculate patient responsibility, set up payment plans, and learn when to escalate to collections. Real-world patient billing — the revenue cycle's last mile.</p>
+  </div>
+
+  <div class="score-banner" id="scoreBanner"></div>
+
+  <div class="stmt-grid">
+    <div class="lab-anim" style="animation-delay:.1s">
+      <div id="scList"></div>
+    </div>
+    <div class="lab-anim" style="animation-delay:.2s" id="scDetail"></div>
+  </div>
+
+  <div class="fdcpa lab-anim" style="animation-delay:.3s" id="fdcpaBox" style="display:none"></div>
+</main>
+<script src="/js/app.js"></script>
+<script>
+let SC = [], ACTIONS = [], cur = null, selAction = null;
+
+async function load() {
+  try {
+    const d = await api('/api/labs/statements');
+    SC = d.scenarios; ACTIONS = d.actions;
+    renderList();
+    if (SC.length) select(SC[0].id);
+    renderFdcpa(d.fdcpa);
+  } catch (e) { document.getElementById('scDetail').innerHTML = '<p>Failed to load: ' + esc(e.message) + '</p>'; }
+}
+
+function renderList() {
+  document.getElementById('scList').innerHTML = SC.map((s, i) =>
+    `<div class="scard ${cur && cur.id === s.id ? 'on' : ''}" onclick="select('${s.id}')">
+      <span class="cno">${i + 1}</span><b>${esc(s.title)}</b><br>
+      <span class="diff ${s.difficulty}">${s.difficulty}</span>
+      <div class="meta">${esc(s.patient.split('·')[0].trim())} · ${esc(s.dos)}</div>
+    </div>`).join('');
+}
+
+function select(id) {
+  cur = SC.find(s => s.id === id); selAction = null;
+  renderList(); renderDetail();
+  document.getElementById('scoreBanner').classList.remove('show');
+}
+
+function renderDetail() {
+  const eob = cur.eob;
+  const st = cur.statement;
+  const el = document.getElementById('scDetail');
+  el.innerHTML = `
+    <div class="stmt-doc">
+      <div class="sh"><b>📄 Patient Statement ${esc(st.stmtNo)}</b>
+        <div class="sub">${esc(cur.patient)} · DOS ${esc(cur.dos)} · ${esc(cur.cpt)}</div></div>
+      <div class="sbody">
+        ${eob ? `<b>EOB Summary</b>
+        <table><tr><th>Billed</th><th>Allowed</th><th>Paid</th><th>Adj Code</th><th>Patient Resp</th></tr>
+        <tr><td class="money">$${eob.billed.toFixed(2)}</td><td class="money">$${eob.allowed.toFixed(2)}</td>
+        <td class="money">$${eob.paid.toFixed(2)}</td><td>${esc(eob.carc || '—')}</td>
+        <td class="money">${eob.prCode ? esc(eob.prCode) + ' $' + eob.prAmt.toFixed(2) : '—'}</td></tr></table>
+        ${eob.note ? `<div style="font-size:12px;color:#64748b;margin-bottom:8px">${esc(eob.note)}</div>` : ''}` :
+        `<b>Self-pay account</b><div style="font-size:12.5px;color:#64748b;margin:6px 0">${esc(st.note || '')}</div>`}
+        <b>Statement Detail</b>
+        <table>
+          <tr><td>Statement date</td><td>${esc(st.stmtDate)}</td></tr>
+          <tr><td>Previous balance</td><td class="money">$${st.prevBal.toFixed(2)}</td></tr>
+          <tr><td>New charges</td><td class="money">$${st.newCharges.toFixed(2)}</td></tr>
+          <tr class="total"><td>Amount due</td><td class="money">$${(st.prevBal + st.newCharges).toFixed(2)}</td></tr>
+        </table>
+        <div class="due">⏰ <b>Due date: ${esc(st.dueDate)}</b> — pay online, by phone, or by mail</div>
+      </div>
+    </div>
+
+    <h3 style="font-size:15px;color:#0f2743;margin:18px 0 10px">📅 Account Timeline</h3>
+    <div class="tl">${cur.cycle.map(c =>
+      `<div class="tl-ev"><span class="day">Day ${c.day}</span><b>${esc(c.event)}</b><span class="det">${esc(c.detail)}</span></div>`).join('')}</div>
+
+    <h3 style="font-size:15px;color:#0f2743;margin:18px 0 10px">✏️ Your Tasks</h3>
+    ${cur.tasks.map((t, i) => `
+      <div class="task-card"><h4>Task ${i + 1}: ${esc(t.q)}</h4>
+        <input type="number" step="0.01" id="ans${i}" placeholder="0.00">
+        <div class="task-fb" id="fb${i}"></div>
+      </div>`).join('')}
+
+    <h3 style="font-size:15px;color:#0f2743;margin:18px 0 10px">🎯 Correct Next Action</h3>
+    <div class="action-row">${ACTIONS.map(a =>
+      `<button class="act-btn" data-v="${a.v}" onclick="pickAction('${a.v}')">${esc(a.t)}</button>`).join('')}</div>
+
+    <button class="btn-grade" onclick="grade()">Grade Scenario</button>
+    <div id="gradeFb" style="margin-top:14px"></div>`;
+}
+
+function pickAction(v) {
+  selAction = v;
+  document.querySelectorAll('.act-btn').forEach(b => b.classList.toggle('sel', b.dataset.v === v));
+}
+
+async function grade() {
+  if (!selAction) { alert('Please select the correct next action first.'); return; }
+  const answers = cur.tasks.map((_, i) => document.getElementById('ans' + i).value);
+  try {
+    const r = await api('/api/labs/statements/grade', { method: 'POST',
+      body: { scenarioId: cur.id, answers, action: selAction } });
+    r.perTask.forEach((t, i) => {
+      const fb = document.getElementById('fb' + i);
+      fb.className = 'task-fb show ' + (t.ok ? 'good' : 'bad');
+      fb.innerHTML = (t.ok ? '✅ Correct!' : `❌ Correct answer: <span class="amt">$${t.correct.toFixed(2)}</span>`) +
+        `<br><span style="opacity:.85">${esc(t.why)}</span>`;
+    });
+    const gf = document.getElementById('gradeFb');
+    gf.innerHTML = `<div class="task-fb show ${r.actOk ? 'good' : 'bad'}">
+      ${r.actOk ? '✅' : '❌'} <b>Action: ${r.actOk ? 'Correct!' : 'Correct action was: ' + esc(ACTIONS.find(a => a.v === r.correctAction).t)}</b>
+      <br><span style="opacity:.85">${esc(r.why)}</span></div>`;
+    const sb = document.getElementById('scoreBanner');
+    sb.classList.add('show');
+    sb.innerHTML = `<div class="ring">${r.score}%</div>
+      <div class="perf">${r.score >= 80 ? 'Excellent!' : r.score >= 60 ? 'Good work!' : 'Keep practicing!'}</div>
+      <div style="font-size:13px;color:#b9d4e8">Scenario complete — try the next one!</div>`;
+    sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+function renderFdcpa(rules) {
+  if (!rules) return;
+  document.getElementById('fdcpaBox').style.display = 'block';
+  document.getElementById('fdcpaBox').innerHTML = `
+    <h3>⚖️ FDCPA Quick Reference — What Collectors Can / Can't Do</h3>
+    <table><tr><th>Topic</th><th>✅ Allowed</th><th>❌ Prohibited</th></tr>
+    ${rules.map(r => `<tr><td><b>${esc(r.rule)}</b></td><td class="ok">${esc(r.ok)}</td><td class="bad">${esc(r.bad)}</td></tr>`).join('')}
+    </table>
+    <div style="font-size:12px;color:#92400e;margin-top:10px">📜 <b>No Surprises Act:</b> self-pay patients must receive a Good Faith Estimate. They can dispute bills exceeding the GFE by $400+.</div>`;
+}
+
+buildShell('statements').then(load);
+</script>
+</body>
+</html>

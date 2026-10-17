@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UB-04 Institutional Claims — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+<style>
+.lab-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:26px 30px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.lab-hero::before{content:"";position:absolute;top:-60px;right:8%;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.lab-hero h1{margin:0 0 8px;font-size:24px;position:relative;z-index:1}
+.lab-hero .psub{color:#b9d4e8;margin:0;font-size:14px;position:relative;z-index:1;max-width:680px;line-height:1.6}
+.lab-hero .act-row{position:relative;z-index:1;margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 16px;font-size:13px;backdrop-filter:blur(6px);color:#dbeafe}
+.hstat b{font-size:16px;color:#5eead4}
+.eyebrow2{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#34d3bd;margin-bottom:8px;position:relative;z-index:1}
+@keyframes labIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.lab-anim{animation:labIn .45s cubic-bezier(.2,.8,.2,1) backwards}
+.ub-grid{display:grid;grid-template-columns:280px 1fr;gap:16px}
+.scard{border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:12px;cursor:pointer;background:#fff;transition:all .2s}
+.scard:hover{border-color:#0e9f8a;transform:translateX(4px);box-shadow:0 4px 14px rgba(14,159,138,.12)}
+.scard.on{border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.18)}
+.scard b{font-size:13.5px;color:#0a1628}
+.scard .meta{font-size:11.5px;color:#64748b;margin-top:5px}
+.scard .cno{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9px;
+  background:linear-gradient(135deg,#0f2743,#1a3a5c);color:#5eead4;font-weight:800;font-size:12px;margin-right:8px}
+.scard .diff{font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px;letter-spacing:.5px}
+.diff.Beginner{background:#dcfce7;color:#166534}.diff.Intermediate{background:#fef3c7;color:#92400e}.diff.Advanced{background:#fee2e2;color:#991b1b}
+.vs-box{background:#f0fdfa;border:1.5px solid #99f6e4;border-radius:14px;padding:16px 18px;margin-bottom:18px;font-size:13.5px;line-height:1.7;color:#0f2f2a}
+.vs-box b{color:#0e7490}
+.vs-box table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+.vs-box th{background:#0f2743;color:#5eead4;padding:8px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.vs-box td{padding:8px;border-bottom:1px solid #ccfbf1;color:#134e4a}
+.scenario{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:18px;margin-bottom:14px}
+.scenario .setting{background:#f8fafc;border-left:4px solid #0e9f8a;border-radius:0 10px 10px 0;padding:12px 16px;font-size:13.5px;color:#334155;margin-bottom:16px;line-height:1.6}
+.fld{margin-bottom:14px;padding:14px;border:1px solid #eef2f7;border-radius:12px;background:#fafbfc}
+.fld .fl-tag{display:inline-block;background:#0f2743;color:#5eead4;font-weight:800;font-size:11px;padding:3px 10px;border-radius:7px;margin-bottom:8px;font-family:ui-monospace,monospace}
+.fld label{display:block;font-size:13.5px;font-weight:700;color:#0a1628;margin-bottom:4px}
+.fld .hint{font-size:12px;color:#64748b;margin-bottom:10px}
+.fld .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.fld .opt{border:1.5px solid #e2e8f0;border-radius:10px;padding:10px;text-align:center;cursor:pointer;font-family:ui-monospace,monospace;
+  font-weight:700;font-size:14px;color:#334155;transition:all .15s;background:#fff}
+.fld .opt:hover{border-color:#0e9f8a}
+.fld .opt.sel{border-color:#0e9f8a;background:#f0fdfa;color:#0f766e;box-shadow:0 0 0 2px rgba(14,159,138,.15)}
+.fld .opt.right{border-color:#16a34a;background:#f0fdf4;color:#166534}
+.fld .opt.wrong{border-color:#dc2626;background:#fef2f2;color:#991b1b}
+.fld .fb{font-size:12.5px;margin-top:10px;line-height:1.6;display:none;border-radius:8px;padding:10px 12px}
+.fld .fb.show{display:block}
+.fld .fb.good{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.fld .fb.bad{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.btn-grade{background:linear-gradient(135deg,#0e9f8a,#0b7d6d);color:#fff;border:none;border-radius:12px;
+  padding:13px 28px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;
+  box-shadow:0 4px 14px rgba(14,159,138,.3);transition:all .2s}
+.btn-grade:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(14,159,138,.4)}
+.btn-grade:disabled{opacity:.5;cursor:default;transform:none}
+.score-banner{border-radius:16px;padding:24px;text-align:center;margin-bottom:18px;display:none;
+  background:linear-gradient(135deg,#0f2743,#143a5e);color:#fff;border:1px solid rgba(52,211,189,.25)}
+.score-banner.show{display:block}
+.score-banner .ring{font-size:42px;font-weight:800;color:#5eead4}
+.score-banner .perf{font-size:18px;font-weight:800;margin:6px 0;color:#5eead4}
+.score-banner .why{font-size:13.5px;color:#b9d4e8;line-height:1.7;max-width:640px;margin:10px auto 0;text-align:left}
+@media(max-width:900px){.ub-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside id="sidebar"></aside>
+  <main>
+    <div class="lab-hero lab-anim">
+      <div class="eyebrow2">Advanced Labs · Institutional Billing</div>
+      <h1>🏥 UB-04 Institutional Claims</h1>
+      <p class="psub">Build hospital &amp; facility claims on the UB-04 (CMS-1450). Pick the right <b style="color:#5eead4">Type of Bill</b>, <b style="color:#5eead4">revenue codes</b>, and <b style="color:#5eead4">diagnoses</b> for each encounter — the institutional side of billing that the CMS-1500 never touches.</p>
+      <div class="act-row">
+        <span class="hstat">Scenarios <b id="st-total">–</b></span>
+        <span class="hstat">Best score <b id="st-best">–</b></span>
+        <span class="hstat">Completed <b id="st-done">–</b></span>
+      </div>
+    </div>
+
+    <div class="vs-box lab-anim" style="animation-delay:.05s">
+      <b>🏥 UB-04 vs 📋 CMS-1500 — when to use which?</b>
+      <table>
+        <tr><th></th><th>UB-04 (CMS-1450)</th><th>CMS-1500 (CMS-1500)</th></tr>
+        <tr><td><b>Who bills</b></td><td>Hospitals, SNFs, home health, hospice, FQHCs</td><td>Physicians, NPPs, suppliers, ambulances</td></tr>
+        <tr><td><b>Claim type</b></td><td>Institutional (837I)</td><td>Professional (837P)</td></tr>
+        <tr><td><b>Key fields</b></td><td>Type of Bill, revenue codes, occurrence codes</td><td>Place of service, CPT with modifiers, rendering NPI</td></tr>
+        <tr><td><b>Payment basis</b></td><td>DRG / APC / per-diem</td><td>Fee schedule (RVU-based)</td></tr>
+      </table>
+    </div>
+
+    <div class="ub-grid">
+      <div id="scen-list" class="lab-anim" style="animation-delay:.1s"></div>
+      <div id="work" class="lab-anim" style="animation-delay:.15s"></div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+let SCEN = [], cur = null, sel = {};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function init() {
+  shell('ub04');
+  try {
+    const d = await api('/api/labs/ub04');
+    SCEN = d.scenarios || [];
+    $('st-total').textContent = SCEN.length;
+    renderList();
+    if (SCEN.length) select(SCEN[0].id);
+    loadBest();
+  } catch (e) { $('work').innerHTML = '<div class="scenario">Failed to load: ' + esc(e.message) + '</div>'; }
+}
+async function loadBest() {
+  try {
+    const b = await api('/api/labs/bests');
+    const rows = (b.bests || []).filter(x => x.lab_key === 'ub04');
+    if (rows.length) { $('st-best').textContent = Math.max(...rows.map(x => x.score)) + '%'; $('st-done').textContent = rows.length; }
+    else { $('st-best').textContent = '—'; $('st-done').textContent = '0'; }
+  } catch (e) {}
+}
+function renderList() {
+  $('scen-list').innerHTML = SCEN.map((s, i) =>
+    `<div class="scard ${cur && cur.id === s.id ? 'on' : ''}" data-id="${s.id}">
+      <div><span class="cno">${i + 1}</span><b>${esc(s.title)}</b></div>
+      <div class="meta"><span class="diff ${esc(s.difficulty)}">${esc(s.difficulty)}</span> · ${s.fields.length} fields</div>
+    </div>`).join('');
+  document.querySelectorAll('.scard').forEach(c => c.onclick = () => select(c.dataset.id));
+}
+function select(id) {
+  cur = SCEN.find(s => s.id === id); sel = {};
+  renderList(); renderWork();
+}
+function renderWork() {
+  $('work').innerHTML = `
+    <div class="score-banner" id="sbanner"></div>
+    <div class="scenario">
+      <h3 style="margin:0 0 10px;color:#0a1628">🏥 ${esc(cur.title)}</h3>
+      <div class="setting">${esc(cur.setting)}</div>
+      <div id="flds">${cur.fields.map((f, i) => `
+        <div class="fld" data-i="${i}">
+          <span class="fl-tag">FL-${esc(f.fl)}</span>
+          <label>${esc(f.label)}</label>
+          <div class="hint">${esc(f.hint)}</div>
+          <div class="opts">${f.options.map(o =>
+            `<div class="opt" data-v="${esc(o)}">${esc(o)}</div>`).join('')}</div>
+          <div class="fb" id="fb-${i}"></div>
+        </div>`).join('')}</div>
+      <button class="btn-grade" id="gradeBtn">Validate UB-04 →</button>
+    </div>`;
+  document.querySelectorAll('.fld .opt').forEach(o => o.onclick = () => {
+    const fld = o.closest('.fld'); const i = fld.dataset.i;
+    fld.querySelectorAll('.opt').forEach(x => x.classList.remove('sel'));
+    o.classList.add('sel'); sel[i] = o.dataset.v;
+  });
+  $('gradeBtn').onclick = grade;
+}
+async function grade() {
+  const btn = $('gradeBtn'); btn.disabled = true; btn.textContent = 'Validating…';
+  try {
+    const r = await api('/api/labs/ub04/grade', { method: 'POST', body: { scenarioId: cur.id, answers: sel } });
+    r.perField.forEach((pf, i) => {
+      const fld = document.querySelector(`.fld[data-i="${i}"]`);
+      const fb = $('fb-' + i);
+      fld.querySelectorAll('.opt').forEach(o => {
+        o.style.pointerEvents = 'none';
+        if (o.dataset.v === pf.correct) o.classList.add('right');
+        else if (o.classList.contains('sel') && !pf.ok) o.classList.add('wrong');
+      });
+      fb.className = 'fb show ' + (pf.ok ? 'good' : 'bad');
+      fb.innerHTML = pf.ok ? '✅ Correct — ' + esc(pf.why) : '❌ Correct answer: <b>' + esc(pf.correct) + '</b> — ' + esc(pf.why);
+    });
+    const sb = $('sbanner');
+    sb.className = 'score-banner show';
+    const perf = r.score >= 90 ? 'Outstanding! 🌟' : r.score >= 70 ? 'Solid work! 💪' : 'Keep practicing 📚';
+    sb.innerHTML = `<div class="ring">${r.score}%</div><div class="perf">${perf}</div>
+      <div style="color:#b9d4e8;font-size:13px">${r.correct}/${r.total} fields correct</div>
+      <div class="why"><b style="color:#5eead4">💡 Key takeaway:</b> ${esc(cur.explain)}</div>`;
+    sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    loadBest();
+  } catch (e) { alert('Grading failed: ' + e.message); }
+  btn.disabled = false; btn.textContent = 'Validate UB-04 →';
+}
+init();
+</script>
+</body>
+</html>

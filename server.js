@@ -156,6 +156,12 @@ const MENU_ITEMS = [
   ['sprints', 'Coding Sprints', 'labs', 'zap'],
   ['quiz', 'Quiz Arena', 'labs', 'help'],
   ['era', 'ERA Posting Sim', 'labs', 'doc'],
+  ['statements', 'Patient Statements', 'labs', 'receipt'],
+  ['ub04', 'UB-04 Institutional', 'labs', 'building'],
+  ['ncci', 'NCCI Checker', 'labs', 'link'],
+  ['priorauth', 'Prior Auth Lab', 'labs', 'clip'],
+  ['clearinghouse', 'Clearinghouse Sim', 'labs', 'send'],
+  ['cred', 'Credentialing Tracker', 'labs', 'clip'],
 ];
 const MENU_ITEM_KEYS = MENU_ITEMS.map(m => m[0]);
 // per-function catalog: [fnKey, label] — actions inside pages, toggleable per student
@@ -222,6 +228,12 @@ function menuItemForPath(p) {
   if (p.startsWith('/api/labs/sprints')) return 'sprints';
   if (p.startsWith('/api/labs/quiz')) return 'quiz';
   if (p.startsWith('/api/labs/era')) return 'era';
+  if (p.startsWith('/api/labs/priorauth')) return 'priorauth';
+  if (p.startsWith('/api/labs/clearinghouse')) return 'clearinghouse';
+  if (p.startsWith('/api/labs/statements')) return 'statements';
+  if (p.startsWith('/api/labs/ub04')) return 'ub04';
+  if (p.startsWith('/api/labs/ncci')) return 'ncci';
+  if (p.startsWith('/api/labs/cred')) return 'cred';
   return null;
 }
 async function requireAdmin(req, res, next) {
@@ -310,6 +322,12 @@ app.get('/labs/denials', send('labs/denials.html'));
 app.get('/labs/sprints', send('labs/sprints.html'));
 app.get('/labs/quiz', send('labs/quiz.html'));
 app.get('/labs/era', send('labs/era-posting.html'));
+app.get('/labs/priorauth', send('labs/priorauth.html'));
+app.get('/labs/clearinghouse', send('labs/clearinghouse.html'));
+app.get('/labs/ub04', send('labs/ub04.html'));
+app.get('/labs/ncci', send('labs/ncci.html'));
+app.get('/labs/statements', send('labs/statements.html'));
+app.get('/labs/credentialing', send('labs/credentialing.html'));
 app.get('/work-queue', send('work-queue.html'));
 app.get('/patients', send('patients.html'));
 app.get('/insurance', send('insurance.html'));
@@ -926,6 +944,167 @@ app.post('/api/labs/era/grade', requireAuth, requireFn('lab-run'), ah(async (req
   const score = Math.round(100 * pts / max);
   await logLab(req.session.userId, 'era', score, 100, { scenario: e.id, lines: e.lines.length });
   res.json({ score, max: 100, perLine });
+}));
+
+// ---------- Prior Auth workflow lab ----------
+const stripPA = (x) => ({
+  id: x.id, title: x.title, difficulty: x.difficulty, payer: x.payer,
+  snapshot: x.snapshot, clinical: x.clinical,
+  steps: x.steps.map(st => ({ q: st.q, options: st.options, hint: st.hint })),
+});
+app.get('/api/labs/priorauth', requireAuth, ah(async (req, res) => {
+  res.json({ fictional: true, scenarios: labData.PRIOR_AUTH.map(stripPA) });
+}));
+app.post('/api/labs/priorauth/grade', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
+  const x = labData.PRIOR_AUTH.find(v => v.id === req.body.scenarioId);
+  if (!x) return res.status(404).json({ error: 'Scenario not found.' });
+  const answers = req.body.answers || [];
+  const perStep = x.steps.map((st, i) => {
+    const ok = Number(answers[i]) === st.answer;
+    return { i, ok, correct: st.answer, explanation: st.explanation };
+  });
+  const pts = perStep.reduce((t, r, i) => t + (r.ok ? x.steps[i].points : 0), 0);
+  const max = x.steps.reduce((t, st) => t + st.points, 0);
+  const score = Math.round(100 * pts / max);
+  await logLab(req.session.userId, 'priorauth', score, 100, { scenario: x.id });
+  res.json({ score, max: 100, perStep });
+}));
+
+// ---------- Clearinghouse simulator ----------
+const stripCH = (x) => ({
+  id: x.id, title: x.title, difficulty: x.difficulty, payer: x.payer,
+  claim: x.claim, ack277: x.ack277,
+  steps: x.steps.map(st => ({ q: st.q, options: st.options, hint: st.hint })),
+});
+app.get('/api/labs/clearinghouse', requireAuth, ah(async (req, res) => {
+  res.json({ fictional: true, scenarios: labData.CLEARINGHOUSE.map(stripCH) });
+}));
+app.post('/api/labs/clearinghouse/grade', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
+  const x = labData.CLEARINGHOUSE.find(v => v.id === req.body.scenarioId);
+  if (!x) return res.status(404).json({ error: 'Scenario not found.' });
+  const answers = req.body.answers || [];
+  const perStep = x.steps.map((st, i) => {
+    const ok = Number(answers[i]) === st.answer;
+    return { i, ok, correct: st.answer, explanation: st.explanation };
+  });
+  const pts = perStep.reduce((t, r, i) => t + (r.ok ? x.steps[i].points : 0), 0);
+  const max = x.steps.reduce((t, st) => t + st.points, 0);
+  const score = Math.round(100 * pts / max);
+  await logLab(req.session.userId, 'clearinghouse', score, 100, { scenario: x.id });
+  res.json({ score, max: 100, perStep });
+}));
+
+// ================= UB-04 INSTITUTIONAL LAB =================
+const stripUb04 = (u) => ({
+  id: u.id, title: u.title, difficulty: u.difficulty, setting: u.setting, explain: u.explain,
+  fields: u.fields.map(f => ({ fl: f.fl, label: f.label, hint: f.hint, options: f.options })),
+});
+app.get('/api/labs/ub04', requireAuth, ah(async (req, res) => {
+  res.json({ scenarios: labData.UB04.map(stripUb04) });
+}));
+app.post('/api/labs/ub04/grade', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
+  const u = labData.UB04.find(x => x.id === req.body.scenarioId);
+  if (!u) return res.status(404).json({ error: 'Scenario not found.' });
+  const answers = req.body.answers || {};
+  const perField = u.fields.map((f, i) => {
+    const ok = String(answers[i] || '') === f.answer;
+    return { i, ok, correct: f.answer, why: ok ? 'Field locators match the encounter.' : `FL-${f.fl} hint: ${f.hint}` };
+  });
+  const correct = perField.filter(x => x.ok).length;
+  const score = Math.round(100 * correct / u.fields.length);
+  await logLab(req.session.userId, 'ub04', score, 100, { scenario: u.id, fields: u.fields.length });
+  res.json({ score, correct, total: u.fields.length, perField });
+}));
+
+// ================= NCCI CHECKER LAB =================
+const stripNcci = (p) => ({ c1: p.c1, c2: p.c2, ind: p.ind });
+const normNcciCode = (c) => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+app.get('/api/labs/ncci', requireAuth, ah(async (req, res) => {
+  res.json({ pairs: labData.NCCI_PAIRS.map(stripNcci) });
+}));
+app.post('/api/labs/ncci/check', requireAuth, ah(async (req, res) => {
+  const a = normNcciCode(req.body.c1), b = normNcciCode(req.body.c2);
+  const p = labData.NCCI_PAIRS.find(x =>
+    (normNcciCode(x.c1) === a && normNcciCode(x.c2) === b) ||
+    (normNcciCode(x.c1) === b && normNcciCode(x.c2) === a));
+  if (!p) return res.json({ found: false });
+  res.json({ found: true, pair: { c1: p.c1, c2: p.c2, ind: p.ind, modifier: p.modifier, why: p.why } });
+}));
+app.post('/api/labs/ncci/quiz/grade', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
+  const answers = req.body.answers || [];
+  const perQ = answers.map(a => {
+    const p = labData.NCCI_PAIRS.find(x =>
+      (normNcciCode(x.c1) === normNcciCode(a.c1) && normNcciCode(x.c2) === normNcciCode(a.c2)) ||
+      (normNcciCode(x.c1) === normNcciCode(a.c2) && normNcciCode(x.c2) === normNcciCode(a.c1)));
+    if (!p) return { ok: false, correctV: null, why: 'Pair not in training set.', modifier: '—' };
+    const correctV = p.ind === 0 ? 'never' : p.ind === 1 ? 'modifier' : 'fine';
+    return { ok: a.v === correctV, correctV, why: p.why, modifier: p.modifier };
+  });
+  const correct = perQ.filter(x => x.ok).length;
+  const score = perQ.length ? Math.round(100 * correct / perQ.length) : 0;
+  await logLab(req.session.userId, 'ncci', score, 100, { questions: perQ.length });
+  res.json({ score, correct, total: perQ.length, perQ });
+}));
+
+
+// ================= CREDENTIALING TRACKER LAB =================
+const stripCred = (e) => ({
+  id: e.id, title: e.title, difficulty: e.difficulty,
+  provider: e.provider, specialty: e.specialty, situation: e.situation,
+  steps: e.steps.map(t => ({ step: t.step, timeframe: t.timeframe, status: t.status, docs: t.docs })),
+  decisions: e.decisions.map(d => ({ q: d.q, options: d.options, points: d.points, hint: d.hint || '' })),
+});
+app.get('/api/labs/cred', requireAuth, ah(async (req, res) => {
+  res.json({ fictional: true, stepsInfo: labData.CRED_STEPS_INFO,
+    scenarios: labData.CRED.map(stripCred) });
+}));
+app.post('/api/labs/cred/grade', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
+  const e = labData.CRED.find(x => x.id === req.body.scenarioId);
+  if (!e) return res.status(404).json({ error: 'Scenario not found.' });
+  const answers = req.body.answers || [];
+  let earned = 0, max = 0;
+  const perDec = e.decisions.map((d, i) => {
+    max += d.points;
+    const ok = answers[i] === d.answer;
+    if (ok) earned += d.points;
+    return { i, ok, points: ok ? d.points : 0, explanation: d.explanation };
+  });
+  const score = max ? Math.round(100 * earned / max) : 0;
+  await logLab(req.session.userId, 'cred', score, 100,
+    { scenario: e.id, earned, max });
+  res.json({ score, max: 100, perDec });
+}));
+
+// ================= PATIENT STATEMENTS + COLLECTIONS LAB =================
+const stripStmt = (e) => ({
+  id: e.id, title: e.title, difficulty: e.difficulty, patient: e.patient,
+  dos: e.dos, cpt: e.cpt,
+  eob: e.eob, statement: e.statement, cycle: e.cycle,
+  tasks: e.tasks.map(t => ({ q: t.q })),
+});
+app.get('/api/labs/statements', requireAuth, ah(async (req, res) => {
+  res.json({ fictional: true, actions: labData.STATEMENT_ACTIONS,
+    fdcpa: labData.FDCPA_RULES,
+    scenarios: labData.STATEMENTS.map(stripStmt) });
+}));
+app.post('/api/labs/statements/grade', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
+  const e = labData.STATEMENTS.find(x => x.id === req.body.scenarioId);
+  if (!e) return res.status(404).json({ error: 'Scenario not found.' });
+  const answers = req.body.answers || [];
+  const perTask = e.tasks.map((t, i) => {
+    const a = answers[i];
+    const num = parseFloat(a);
+    const ok = !isNaN(num) && Math.abs(num - t.answer) < 0.01;
+    return { i, ok, correct: t.answer, why: t.why };
+  });
+  const actOk = req.body.action === e.correctAction;
+  const taskPts = perTask.reduce((t, r) => t + (r.ok ? 1 : 0), 0);
+  const max = e.tasks.length + 1;
+  const score = Math.round(100 * (taskPts + (actOk ? 1 : 0)) / max);
+  await logLab(req.session.userId, 'statements', score, 100,
+    { scenario: e.id, action: req.body.action, actionOk: actOk });
+  res.json({ score, max: 100, perTask, actOk,
+    correctAction: e.correctAction, why: e.why });
 }));
 
 const QUIZ_MODES = ['timed', 'weakest', 'missed', 'mix', 'sprint', 'cpc'];
