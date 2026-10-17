@@ -198,7 +198,6 @@ function shell(active, user) {
         <span class="uavatar">${esc((user.name || 'U')[0].toUpperCase())}<span class="udot"></span></span>
         <div class="umeta"><b>${esc(user.name)}</b><span class="urole">${esc(user.role)}</span></div>
       </div>
-    </div>
     </div>`;
   // fixed top-right logout (in body, so drawer transforms don't affect it)
   if (!document.querySelector('.logout-fixed')) {
