@@ -15,11 +15,15 @@
 .pt-hero .hstat b{font-size:16px}
 .pav{width:40px;height:40px;border-radius:12px;color:#fff;display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:14px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-.pfilters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.pf{padding:8px 15px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;font-size:12.5px;font-weight:600;
-  color:#64748b;cursor:pointer;transition:all .16s}
-.pf:hover{border-color:#0e9f8a;color:#0f2743}
-.pf.on{background:#0f2743;color:#fff;border-color:#0f2743}
+.pfilters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.pf{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:24px;border:1.5px solid #e2e8f0;
+  background:#fff;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;transition:all .2s;
+  box-shadow:0 1px 3px rgba(10,22,40,.04);font-family:inherit}
+.pf:hover{border-color:#0e9f8a;color:#0f2743;transform:translateY(-1px);box-shadow:0 3px 10px rgba(14,159,138,.12)}
+.pf.on{background:linear-gradient(135deg,#0f2743,#1a3a5c);color:#fff;border-color:#0f2743;
+  box-shadow:0 4px 14px rgba(15,39,67,.25)}
+.pf .cnt{background:#f1f5f9;color:#475569;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;min-width:24px;text-align:center}
+.pf.on .cnt{background:rgba(255,255,255,.2);color:#fff}
 .ptabs{display:flex;gap:4px;border-bottom:2px solid #eef2f7;margin-bottom:16px}
 .ptab{padding:10px 16px;font-size:13.5px;font-weight:600;color:#64748b;cursor:pointer;border:none;background:none;
   border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .16s}
@@ -64,17 +68,17 @@
     <div class="prow"><h3 style="margin:0">Patient Records</h3>
       <input class="search" id="q" placeholder="Search name, ID, phone, DOB…"></div>
     <div class="pfilters" id="pfilters">
-      <button class="pf on" data-f="all">All</button>
-      <button class="pf" data-f="active">Active</button>
-      <button class="pf" data-f="coverage">With coverage</button>
-      <button class="pf" data-f="nocov">No coverage</button>
-      <button class="pf" data-f="dups">⚠ Duplicates</button>
+      <button class="pf on" data-f="all">📋 All <span class="cnt" id="cAll">0</span></button>
+      <button class="pf" data-f="active">✅ Active <span class="cnt" id="cAct">0</span></button>
+      <button class="pf" data-f="coverage">🛡️ With coverage <span class="cnt" id="cCov">0</span></button>
+      <button class="pf" data-f="nocov">⚪ No coverage <span class="cnt" id="cNoCov">0</span></button>
+      <button class="pf" data-f="dups">⚠ Duplicates <span class="cnt" id="cDup">0</span></button>
     </div>
     <div id="tblSk"><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div></div>
     <div class="twrap" id="twrap" style="display:none"><table class="wq-table"><thead><tr>
       <th>Patient</th><th>DOB · Age</th><th>Contact</th><th>Status</th><th>Coverage</th><th style="text-align:right">Actions</th>
     </tr></thead><tbody id="rows"></tbody></table></div>
-    <div class="empty" id="empty" style="display:none"><div class="empty-ic">🔍</div><h4>No patients found</h4><p>Try a different search or filter.</p></div>
+    <div class="empty" id="empty" style="display:none"><div class="empty-ic">👥</div><h4>No patients yet</h4><p>Start your practice by adding your first patient —<br>or complete the <b>Patient Registration</b> case in the Case Center.</p><div style="margin-top:14px"><button class="btn btn-teal" onclick="document.getElementById('addBtn').click()">+ Add Your First Patient</button></div></div>
   </div>
 </div></main></div>
 <script src="/js/app.js"></script>
@@ -125,6 +129,15 @@ function filtered() {
   });
 }
 function render() {
+  // update filter pill counts
+  const all = window._pts || [];
+  const dups = window._dups || new Set();
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  set('cAll', all.length);
+  set('cAct', all.filter(x => (x.status || 'Active') === 'Active').length);
+  set('cCov', all.filter(x => (covBy[x.code] || []).length).length);
+  set('cNoCov', all.filter(x => !(covBy[x.code] || []).length).length);
+  set('cDup', dups.size);
   const rows = filtered();
   document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
   document.getElementById('twrap').style.display = rows.length ? 'block' : 'none';
