@@ -36,7 +36,7 @@ function shell(active, user) {
     ]],
   ];
   if (user.role === 'admin' || user.role === 'instructor') {
-    nav.push(['Manage', [['admin', 'Admin Panel', '/admin', '⚙️']]]);
+    nav.push(['Manage', [['owner', '👑 Owner Panel', '/owner', '👑']]]);
   }
   document.getElementById('sidebar').innerHTML = `
     <div class="brand"><div class="mark">⚕</div><div>MbiInventra<small>bill.mbiinventra.com</small></div></div>

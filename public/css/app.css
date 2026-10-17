@@ -1,4 +1,5 @@
 /* MbiInventra RCM Academy — design system */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 :root{
   --navy:#0a1628; --navy2:#0e1d33; --navy3:#13263f;
   --teal:#14b8a6; --teal-d:#0e9f8a; --cyan:#22d3ee;
@@ -184,4 +185,76 @@ tr:last-child td{border-bottom:0}
   .side{display:none}.main{margin-left:0}
   .auth-side{display:none}.auth-form{width:100%}
   .lnav nav{display:none}
+}
+
+/* ---------- MedCerts-style home sections ---------- */
+.trust-strip{background:#fff;border-bottom:1px solid var(--line)}
+.trust-strip .wrap{display:flex;justify-content:center;gap:44px;padding:20px 24px;flex-wrap:wrap;text-align:center}
+.trust-strip b{font-size:22px;display:block;color:var(--navy)}
+.trust-strip span{font-size:12.5px;color:var(--mut)}
+.outcome{display:grid;grid-template-columns:1fr 1fr;gap:54px;align-items:center}
+.check-list{list-style:none;margin-top:18px}
+.check-list li{padding:11px 0;border-bottom:1px solid var(--line);font-size:15px;display:flex;gap:12px;align-items:flex-start}
+.check-list li::before{content:'✓';color:var(--teal-d);font-weight:800;flex-shrink:0}
+.learn-list{max-width:780px;margin:0 auto;counter-reset:learn}
+.learn-list li{list-style:none;display:flex;gap:18px;padding:15px 0;border-bottom:1px solid var(--line);font-size:15.5px}
+.learn-list li::before{counter-increment:learn;content:counter(learn,decimal-leading-zero);font-weight:800;color:var(--teal-d);font-size:15px;flex-shrink:0}
+.curr-wrap{background:#fff;border-radius:18px;box-shadow:var(--sh);overflow:hidden;border:1px solid var(--line)}
+.curr-wrap table th{background:var(--navy);color:#fff;padding:14px 16px}
+.big-stat{text-align:center;margin-bottom:26px}
+.big-stat b{font-size:54px;font-weight:800;background:linear-gradient(90deg,var(--teal),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;display:block}
+.big-stat span{color:var(--mut)}
+.jobs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:8px}
+.job-card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:28px;text-align:center;box-shadow:var(--sh)}
+.job-card b{font-size:24px;display:block;margin:8px 0 4px}
+.job-card span{font-size:13.5px;color:var(--mut)}
+.job-card .sal{font-size:20px;color:var(--teal-d);font-weight:800}
+.faq{max-width:780px;margin:0 auto}
+.faq-item{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;background:#fff;overflow:hidden}
+.faq-q{width:100%;text-align:left;background:none;border:0;padding:18px 20px;font-size:16px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--ink)}
+.faq-q .pm{color:var(--teal-d);font-size:20px;flex-shrink:0}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease;font-size:14.5px;color:var(--mut)}
+.faq-a p{padding:0 20px 20px}
+.faq-item.open .faq-a{max-height:400px}
+.sticky-cta{display:none;position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--navy);padding:12px 16px;border-top:1px solid rgba(255,255,255,.12);text-align:center}
+.sticky-cta .btn{width:100%;justify-content:center}
+/* owner panel */
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;font-size:13.5px}
+.bar-row .bl{width:170px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-row .bt{flex:1;height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar-row .bt i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--cyan));border-radius:99px}
+.bar-row .bv{width:44px;text-align:right;font-weight:700}
+@media(max-width:960px){
+  .outcome{grid-template-columns:1fr}
+  .jobs-grid{grid-template-columns:1fr}
+  .sticky-cta{display:block}
+  body{padding-bottom:70px}
+}
+
+/* ---------- modern polish ---------- */
+body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.hero{position:relative;overflow:hidden}
+.hero::before,.hero::after{content:'';position:absolute;border-radius:50%;pointer-events:none;z-index:0}
+.hero::before{width:640px;height:640px;top:-240px;right:-120px;
+  background:radial-gradient(circle,rgba(20,184,166,.20),transparent 65%);
+  animation:drift 9s ease-in-out infinite}
+.hero::after{width:480px;height:480px;bottom:-220px;left:-140px;
+  background:radial-gradient(circle,rgba(34,211,238,.12),transparent 65%);
+  animation:drift 12s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-36px) scale(1.05)}}
+.hero .wrap{position:relative;z-index:1}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.reveal.in{opacity:1;transform:none}
+.btn{transition:transform .12s ease,box-shadow .2s ease,background .2s ease}
+.btn:active{transform:scale(.97)}
+.feat,.job-card,.card{transition:transform .25s ease,box-shadow .25s ease}
+.feat:hover,.job-card:hover{transform:translateY(-6px);box-shadow:0 18px 44px rgba(10,22,40,.12)}
+.card:hover{transform:translateY(-3px)}
+.dm-card{transition:transform .25s ease}
+.lnav{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(10,22,40,.82)}
+.faq-q{transition:color .15s ease}
+.faq-q:hover{color:var(--teal-d)}
+@media(prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  .hero::before,.hero::after{animation:none}
 }

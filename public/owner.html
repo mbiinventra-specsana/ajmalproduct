@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Owner Panel — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="sidebar"></aside>
+  <main class="main">
+    <div class="topbar">
+      <div><h1>👑 Owner Panel</h1><p>Your academy's performance at a glance.</p></div>
+      <span class="badge-fict">TRAINING MODE · fictional data</span>
+    </div>
+    <div class="cards" id="stats"></div>
+    <div class="grid2">
+      <div class="panel"><h3>📊 Completions per case</h3><div id="chart"></div></div>
+      <div class="panel"><h3>🕘 Recent attempts (all students)</h3><div id="attempts"></div></div>
+    </div>
+    <div class="panel"><h3>📚 Cases</h3><div id="cases"></div></div>
+    <div class="grid2">
+      <div class="panel">
+        <h3>➕ Create account</h3>
+        <div class="alert err" id="err"></div>
+        <div class="field"><label>Full name</label><input class="input" id="nName"></div>
+        <div class="field"><label>Email</label><input class="input" id="nEmail" type="email"></div>
+        <div class="field"><label>Password (6+ chars)</label><input class="input" id="nPass" type="password"></div>
+        <div class="field"><label>Role</label><select class="input" id="nRole">
+          <option value="student">Student</option><option value="instructor">Instructor</option><option value="admin">Admin</option>
+        </select></div>
+        <button class="btn btn-teal" id="create">Create account</button>
+        <p style="font-size:12.5px;color:#8a97ad;margin-top:12px">No public registration exists — every account is created here.</p>
+      </div>
+      <div class="panel"><h3>👥 Accounts</h3><div id="users"></div></div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+async function loadUsers() {
+  const { users } = await api('/api/admin/users');
+  document.getElementById('users').innerHTML = `
+    <table><tr><th>Name</th><th>Role</th><th></th></tr>
+    ${users.map(x => `<tr><td>${esc(x.name)}<br><span style="font-size:12px;color:#8a97ad">${esc(x.email)}</span></td>
+      <td><span class="pill ${x.role === 'admin' ? 'p-advanced' : 'p-beginner'}">${esc(x.role)}</span></td>
+      <td><button class="btn btn-line btn-sm" onclick="del(${x.id})">Delete</button></td></tr>`).join('')}
+    </table>`;
+}
+async function del(id) {
+  if (!confirm('Delete this account and all its attempts?')) return;
+  try { await api('/api/admin/users/' + id, { method: 'DELETE' }); boot(); }
+  catch (e) { alert(e.message); }
+}
+async function boot() {
+  try {
+    const o = await api('/api/admin/overview');
+    const avg = o.attempts ? '' : '';
+    document.getElementById('stats').innerHTML = `
+      <div class="card stat"><span>Total accounts</span><b>${o.users}</b></div>
+      <div class="card stat"><span>Students</span><b>${o.students}</b></div>
+      <div class="card stat"><span>Training cases</span><b>${o.cases}</b><div class="sub">${o.questions} questions</div></div>
+      <div class="card stat"><span>Total attempts</span><b>${o.attempts}</b></div>`;
+    const { cases } = await api('/api/admin/cases');
+    const mx = Math.max(1, ...cases.map(c => c.done));
+    document.getElementById('chart').innerHTML = cases.map(c => `
+      <div class="bar-row"><div class="bl">${esc(c.code)}</div>
+        <div class="bt"><i style="width:${Math.round(100 * c.done / mx)}%"></i></div>
+        <div class="bv">${c.done}</div></div>`).join('');
+    document.getElementById('cases').innerHTML = `
+      <table><tr><th>Case</th><th>Level</th><th>Questions</th><th>Completions</th></tr>
+      ${cases.map(c => `<tr><td><b>${esc(c.code)}</b> · ${esc(c.title)}</td>
+        <td><span class="pill p-${c.difficulty.toLowerCase()}">${esc(c.difficulty)}</span></td>
+        <td>${c.qcount}</td><td><b>${c.done}</b></td></tr>`).join('')}</table>`;
+    const { attempts } = await api('/api/admin/attempts');
+    document.getElementById('attempts').innerHTML = attempts.length ? `
+      <table><tr><th>Student</th><th>Case</th><th>Score</th><th>Date</th></tr>
+      ${attempts.map(a => `<tr><td>${esc(a.student)}</td><td>${esc(a.code)}</td>
+        <td><b>${a.score}/${a.max_score}</b> ${a.status === 'completed' ? '' : '<span class="pill p-prog">' + esc(a.status) + '</span>'}</td>
+        <td>${esc((a.completed_at || a.started_at || '').slice(0, 10))}</td></tr>`).join('')}</table>`
+      : `<div class="empty">No attempts yet.</div>`;
+    await loadUsers();
+  } catch (e) {
+    document.querySelector('.main').innerHTML = `<div class="empty" style="margin-top:80px">
+      <h2>403 — Owner access required</h2><p>${esc(e.message)}</p><p><a href="/login" style="color:#0e9f8a">← Login</a></p></div>`;
+  }
+}
+(async () => {
+  const u = await currentUser();
+  if (!u) { location.href = '/login'; return; }
+  shell('owner', u);
+  document.getElementById('create').onclick = async () => {
+    const err = document.getElementById('err');
+    err.classList.remove('err'); err.textContent = '';
+    try {
+      await api('/api/admin/users', { method: 'POST', body: {
+        name: document.getElementById('nName').value,
+        email: document.getElementById('nEmail').value,
+        password: document.getElementById('nPass').value,
+        role: document.getElementById('nRole').value } });
+      ['nName', 'nEmail', 'nPass'].forEach(id => document.getElementById(id).value = '');
+      boot();
+    } catch (e) { err.textContent = e.message; err.classList.add('err'); }
+  };
+  boot();
+})();
+</script>
+</body>
+</html>

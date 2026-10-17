@@ -80,11 +80,17 @@ const ah = (fn) => (req, res, next) => fn(req, res, next).catch(next); // async 
 const send = (f) => (req, res) => res.sendFile(path.join(__dirname, 'public', f));
 app.get('/', send('index.html'));
 app.get('/login', send('login.html'));
+// student portal: /stu is the student side entry (dashboard)
+app.get('/stu', send('dashboard.html'));
+app.get('/stu/', send('dashboard.html'));
 app.get('/dashboard', send('dashboard.html'));
 app.get('/training', send('training.html'));
 app.get('/play', send('play.html'));
 app.get('/progress', send('progress.html'));
 app.get('/lab', send('lab.html'));
+// owner panel: /owner is the owner side entry
+app.get('/owner', send('owner.html'));
+app.get('/owner/', send('owner.html'));
 app.get(ADMIN_PATH, send('admin.html'));
 app.get(ADMIN_PATH + '/', send('admin.html'));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
@@ -218,6 +224,20 @@ app.get('/api/admin/overview', requireAdmin, ah(async (req, res) => {
 }));
 app.get('/api/admin/users', requireAdmin, ah(async (req, res) => {
   res.json({ users: await db.all('SELECT id,name,email,role,created_at,last_login FROM users ORDER BY id') });
+}));
+app.get('/api/admin/attempts', requireAdmin, ah(async (req, res) => {
+  res.json({ attempts: await db.all(
+    `SELECT a.id, a.score, a.max_score, a.status, a.started_at, a.completed_at,
+            u.name AS student, c.code, c.title
+     FROM attempts a JOIN users u ON u.id = a.user_id JOIN cases c ON c.id = a.case_id
+     ORDER BY a.started_at DESC LIMIT 25`) });
+}));
+app.get('/api/admin/cases', requireAdmin, ah(async (req, res) => {
+  res.json({ cases: await db.all(
+    `SELECT c.id, c.code, c.title, c.difficulty, c.category, c.points,
+            (SELECT COUNT(*) FROM questions q WHERE q.case_id = c.id) AS qcount,
+            (SELECT COUNT(*) FROM attempts a WHERE a.case_id = c.id AND a.status='completed') AS done
+     FROM cases c ORDER BY c.sort`) });
 }));
 app.post('/api/admin/users', requireAdmin, ah(async (req, res) => {
   const { name, email, password, role } = req.body || {};
