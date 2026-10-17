@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claim Scrubber Sandbox — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+<style>
+.scr-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:16px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fld label{display:block;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.fld input,.fld select{width:100%;padding:9px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13.5px;background:#fff;color:#0f1e33}
+.line-card{border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:10px;background:#f8fafc}
+.line-card .lhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:700;font-size:13px;color:#0a1628}
+.lgrid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:8px}
+.verdict{border-radius:12px;padding:16px;margin-bottom:14px;text-align:center}
+.verdict.clean{background:#dcfce7;color:#166534}
+.verdict.warn{background:#fef3c7;color:#92400e}
+.verdict.rej{background:#fee2e2;color:#991b1b}
+.verdict b{font-size:22px;display:block}
+.issue{border-left:4px solid #e2e8f0;padding:8px 12px;margin-bottom:8px;background:#f8fafc;border-radius:0 8px 8px 0;font-size:13px}
+.issue.err{border-color:#ef4444}
+.issue.wrn{border-color:#f59e0b}
+.issue .icode{font-weight:800;font-size:11px;color:#64748b}
+@media(max-width:1000px){.scr-grid{grid-template-columns:1fr}.lgrid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="sidebar"></aside>
+  <main class="main cc">
+    <div class="cc-head">
+      <div><h1>🧹 Claim Scrubber Sandbox</h1><p>Build a CMS-1500-style claim, run it through the scrubber, and chase a 100% first-pass yield. Fictional data only.</p></div>
+      <span class="badge-fict" id="best"></span>
+    </div>
+    <div class="scr-grid">
+      <div class="panel-light">
+        <h3>📝 Claim builder</h3>
+        <div class="frow">
+          <div class="fld"><label>Patient</label><select id="patient"></select></div>
+          <div class="fld"><label>Payer</label><select id="payer"></select></div>
+        </div>
+        <div class="frow">
+          <div class="fld"><label>Date of service</label><input type="date" id="dos"></div>
+          <div class="fld"><label>Place of service</label><select id="pos">
+            <option value="11">11 — Office</option><option value="21">21 — Inpatient Hospital</option>
+            <option value="22">22 — Outpatient Hospital</option><option value="20">20 — Urgent Care</option>
+          </select></div>
+        </div>
+        <div class="frow">
+          <div class="fld"><label>Rendering NPI</label><input id="npiR" maxlength="10" placeholder="10 digits"></div>
+          <div class="fld"><label>Billing NPI</label><input id="npiB" maxlength="10" placeholder="10 digits"></div>
+        </div>
+        <div class="fld" style="margin-bottom:10px"><label>Diagnosis codes (ICD-10, up to 4)</label>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <input class="icd" placeholder="e.g. M54.5"><input class="icd"><input class="icd"><input class="icd">
+          </div>
+        </div>
+        <label style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em">Service lines</label>
+        <div id="lines" style="margin-top:6px"></div>
+        <button class="btn btn-line btn-sm" id="addLine" type="button">＋ Add line</button>
+        <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-teal" id="scrubBtn" type="button">⚙️ Scrub claim</button>
+          <button class="btn btn-line" id="resetBtn" type="button">↺ Reset</button>
+        </div>
+      </div>
+      <div>
+        <div class="panel-light" style="margin-bottom:16px"><h3>🏦 Payer rules</h3><div id="payerInfo" style="font-size:13.5px;color:#475569"></div></div>
+        <div class="panel-light"><h3>📋 Scrubber report</h3><div id="report"><div class="empty">Build a claim and hit <b>Scrub claim</b> — errors block submission, warnings risk denial.</div></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+let PAYERS = {};
+function lineCard(n) {
+  const d = document.createElement('div');
+  d.className = 'line-card';
+  d.innerHTML = `<div class="lhead"><span>Line ${n}</span><button type="button" class="btn btn-line btn-sm" onclick="this.closest('.line-card').remove()">✕</button></div>
+  <div class="lgrid">
+    <div class="fld"><label>CPT</label><input class="lc-cpt" maxlength="5" placeholder="99213"></div>
+    <div class="fld"><label>Modifier</label><input class="lc-mod" maxlength="4" placeholder="25"></div>
+    <div class="fld"><label>Dx ptr</label><input class="lc-dx" maxlength="1" placeholder="1"></div>
+    <div class="fld"><label>Charge $</label><input class="lc-chg" placeholder="150"></div>
+    <div class="fld"><label>Units</label><input class="lc-un" placeholder="1"></div>
+  </div>`;
+  return d;
+}
+(async () => {
+  const u = await currentUser();
+  if (!u) { location.href = '/login'; return; }
+  if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
+  shell('scrubber', u);
+  const [meta, pats, bests] = await Promise.all([api('/api/labs/scrub/meta'), api('/api/patients'), api('/api/labs/bests')]);
+  PAYERS = meta.payers;
+  document.getElementById('best').textContent = bests.bests.scrubber != null ? `BEST ${bests.bests.scrubber}%` : 'NO RUNS YET';
+  document.getElementById('patient').innerHTML = pats.patients.map(p => `<option value="${p.code}">${esc(p.code)} — ${esc(p.name)}</option>`).join('');
+  const ps = document.getElementById('payer');
+  ps.innerHTML = Object.entries(PAYERS).map(([k, v]) => `<option value="${k}">${esc(v.name)}</option>`).join('');
+  const updPayer = () => { const v = PAYERS[ps.value]; document.getElementById('payerInfo').innerHTML = `<b>${esc(v.name)}</b><br>${esc(v.note)}`; };
+  ps.onchange = updPayer; updPayer();
+  document.getElementById('dos').value = new Date().toISOString().slice(0, 10);
+  const box = document.getElementById('lines');
+  box.appendChild(lineCard(1));
+  document.getElementById('addLine').onclick = () => { if (box.children.length < 6) box.appendChild(lineCard(box.children.length + 1)); };
+  document.getElementById('resetBtn').onclick = () => location.reload();
+  document.getElementById('scrubBtn').onclick = async () => {
+    const claim = {
+      patientId: document.getElementById('patient').value,
+      payer: ps.value, dos: document.getElementById('dos').value, pos: document.getElementById('pos').value,
+      npiR: document.getElementById('npiR').value.trim(), npiB: document.getElementById('npiB').value.trim(),
+      icds: [...document.querySelectorAll('.icd')].map(i => i.value.trim()).filter(Boolean),
+      lines: [...box.querySelectorAll('.line-card')].map(l => ({
+        cpt: l.querySelector('.lc-cpt').value.trim(), mod: l.querySelector('.lc-mod').value.trim(),
+        dx: l.querySelector('.lc-dx').value.trim(), charge: l.querySelector('.lc-chg').value.trim(),
+        units: l.querySelector('.lc-un').value.trim() || '1',
+      })),
+    };
+    const rep = document.getElementById('report');
+    rep.innerHTML = '<div class="empty">Scrubbing…</div>';
+    try {
+      const r = await api('/api/labs/scrub', { method: 'POST', body: JSON.stringify(claim) });
+      const cls = r.verdict === 'CLEAN' ? 'clean' : r.verdict === 'ACCEPTED WITH WARNINGS' ? 'warn' : 'rej';
+      const icon = r.verdict === 'CLEAN' ? '✅' : r.verdict === 'ACCEPTED WITH WARNINGS' ? '⚠️' : '🛑';
+      rep.innerHTML = `
+        <div class="verdict ${cls}"><b>${icon} ${r.verdict}</b>First-pass yield: <b>${r.score}%</b></div>
+        ${r.errors.map(e => `<div class="issue err"><span class="icode">${esc(e.code)}</span> — ${esc(e.msg)}</div>`).join('')}
+        ${r.warnings.map(e => `<div class="issue wrn"><span class="icode">${esc(e.code)}</span> — ${esc(e.msg)}</div>`).join('')}
+        ${!r.errors.length && !r.warnings.length ? '<div class="empty">No edits triggered. This claim would go out clean — the habit that pays.</div>' : ''}
+        <div style="font-size:12.5px;color:#64748b;margin-top:8px">Run logged. Fix the issues and scrub again to beat your best.</div>`;
+      const b = await api('/api/labs/bests');
+      if (b.bests.scrubber != null) document.getElementById('best').textContent = `BEST ${b.bests.scrubber}%`;
+    } catch (e) { rep.innerHTML = `<div class="empty">Error: ${esc(e.message)}</div>`; }
+  };
+})();
+</script>
+</body>
+</html>

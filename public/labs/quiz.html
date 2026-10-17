@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Arena — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+<style>
+.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:8px}
+.mode{border:1px solid #e2e8f0;border-radius:12px;padding:18px;background:#fff;cursor:pointer;transition:.15s}
+.mode:hover{border-color:#14b8a6;transform:translateY(-2px)}
+.mode b{font-size:15px;color:#0a1628}
+.mode p{font-size:13px;color:#64748b;margin:6px 0 10px}
+.qq{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px;margin-bottom:12px}
+.qq .stem{font-size:14.5px;color:#0f1e33;margin-bottom:4px}
+.qq .meta{font-size:11.5px;color:#64748b;margin-bottom:10px}
+.qq label{display:block;font-size:13.5px;padding:8px 10px;border-radius:8px;cursor:pointer;color:#1e293b}
+.qq label:hover{background:#f8fafc}
+.qq .fb{font-size:13px;margin-top:8px;padding:8px 12px;border-radius:8px;display:none}
+.qq .fb.ok{display:block;background:#dcfce7;color:#166534}
+.qq .fb.no{display:block;background:#fee2e2;color:#991b1b}
+.timerbar{position:sticky;top:0;z-index:5;background:#0a1628;color:#fff;border-radius:12px;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.timerbar .t{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+@media(max-width:800px){.mode-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="sidebar"></aside>
+  <main class="main cc">
+    <div class="cc-head">
+      <div><h1>🎲 Quiz Arena</h1><p>Adaptive drill modes. Train your weakest links like the pros do. Fictional question bank.</p></div>
+      <span class="badge-fict">TRAINING MODE</span>
+    </div>
+    <div id="stage"></div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+const LET = ['A', 'B', 'C', 'D'];
+let QS = [], MODE = '', timer = null, left = 0;
+const MODES = [
+  ['timed', '⏱️ Timed Quiz', '20 questions · 15 minutes. Exam-day pressure, real pacing.', 20, 900],
+  ['weakest', '🎯 Weakest Subject', 'Auto-targets your two lowest-scoring cases. 15 questions.', 15, 0],
+  ['missed', '🔁 Missed Questions', 'Only questions you got wrong before. Kill your blind spots.', 20, 0],
+  ['mix', '🎲 Random Mix', '15 questions from the full bank. Warm-up or cool-down.', 15, 0],
+];
+async function bests() { try { return (await api('/api/labs/bests')).bests; } catch (e) { return {}; } }
+async function menu() {
+  const b = await bests();
+  document.getElementById('stage').innerHTML = `
+    <div class="mode-grid">${MODES.map(([k, t, d]) => `
+      <div class="mode" onclick="start('${k}')">
+        <b>${t}</b>${b['quiz-' + k] != null ? ` <span class="st st-done">best ${b['quiz-' + k]}%</span>` : ''}
+        <p>${d}</p><span style="font-size:13px;color:#0e9f8a;font-weight:700">Enter →</span>
+      </div>`).join('')}</div>
+    <div class="empty">Modes unlock from your own history — attempt cases first for Weakest Subject and Missed Questions to light up.</div>`;
+}
+async function start(mode) {
+  MODE = mode;
+  const cfg = MODES.find(m => m[0] === mode);
+  const d = await api(`/api/labs/quiz?mode=${mode}&n=${cfg[3]}`);
+  if (!d.questions.length) {
+    document.getElementById('stage').innerHTML = `<div class="panel-light"><div class="empty">${esc(d.note || 'No questions available yet — complete some cases first, then come back.')}</div>
+      <button class="btn btn-line" onclick="menu()" style="margin-top:12px">← Back to modes</button></div>`;
+    return;
+  }
+  QS = d.questions; left = cfg[4];
+  let html = '';
+  if (left) {
+    html += `<div class="timerbar"><span>⏱️ ${esc(cfg[1])}</span><span class="t" id="clock"></span></div>`;
+    timer = setInterval(() => {
+      left--;
+      const el = document.getElementById('clock');
+      if (el) el.textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`;
+      if (left <= 0) submit();
+    }, 1000);
+  }
+  html += `<div class="panel-light" style="margin-bottom:14px"><h3>${esc(cfg[1])}</h3>
+    <div style="font-size:13px;color:#64748b">${QS.length} questions · answer everything, then submit.</div></div>`;
+  html += QS.map((q, qi) => `
+    <div class="qq" data-q="${q.id}">
+      <div class="meta">${esc(q.caseCode)} · Q${q.qnum} · ${qi + 1}/${QS.length}</div>
+      <div class="stem">${esc(q.prompt)}</div>
+      ${q.options.map((o, i) => `<label><input type="radio" name="q${q.id}" value="${i}"> <b>${LET[i]}.</b> ${esc(o)}</label>`).join('')}
+      ${q.hint ? `<div style="font-size:12px;color:#64748b;margin-top:6px">💡 ${esc(q.hint)}</div>` : ''}
+      <div class="fb" id="fb${q.id}"></div>
+    </div>`).join('');
+  html += `<button class="btn btn-teal" id="subBtn" onclick="submit()" style="font-size:16px;padding:12px 34px">Submit answers</button>
+    <button class="btn btn-line" onclick="menu()" style="margin-left:10px">← Modes</button>`;
+  document.getElementById('stage').innerHTML = html;
+  window.scrollTo({ top: 0 });
+}
+let done = false;
+async function submit() {
+  if (done) return; done = true;
+  clearInterval(timer);
+  const btn = document.getElementById('subBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Grading…'; }
+  const answers = QS.map(q => {
+    const r = document.querySelector(`input[name="q${q.id}"]:checked`);
+    return { questionId: q.id, chosen: r ? +r.value : -1 };
+  });
+  const r = await api('/api/labs/quiz/submit', { method: 'POST', body: JSON.stringify({ mode: MODE, answers }) });
+  const fbById = Object.fromEntries(r.feedback.map(f => [f.questionId, f]));
+  QS.forEach(q => {
+    const fb = fbById[q.id], box = document.getElementById('fb' + q.id);
+    if (!fb || !box) return;
+    box.className = 'fb ' + (fb.correct ? 'ok' : 'no');
+    box.textContent = (fb.correct ? '✅ Correct. ' : '❌ Not quite. ') + (fb.explanation || '');
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const top = document.createElement('div');
+  top.className = 'panel-light';
+  top.style.cssText = 'margin-bottom:16px;text-align:center';
+  top.innerHTML = `<b style="font-size:28px;color:#0a1628">${r.pct}%</b><div style="color:#64748b">${r.score}/${r.max} points · ${esc(MODE)} mode · run logged</div>
+    <button class="btn btn-teal" onclick="menu()" style="margin-top:10px">← Back to modes</button>
+    <button class="btn btn-line" onclick="start('${MODE}')" style="margin-top:10px;margin-left:8px">↺ Retry</button>`;
+  document.getElementById('stage').prepend(top);
+}
+(async () => {
+  const u = await currentUser();
+  if (!u) { location.href = '/login'; return; }
+  if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
+  shell('quiz', u);
+  menu();
+})();
+</script>
+</body>
+</html>

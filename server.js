@@ -7,6 +7,7 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const db = require('./lib/db');
+const labData = require('./lib/lab-data');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -94,6 +95,11 @@ app.get('/training', send('training.html'));
 app.get('/play', send('play.html'));
 app.get('/progress', send('progress.html'));
 app.get('/lab', send('lab.html'));
+// advanced labs (real-software replica training)
+app.get('/labs/scrubber', send('labs/scrubber.html'));
+app.get('/labs/denials', send('labs/denials.html'));
+app.get('/labs/sprints', send('labs/sprints.html'));
+app.get('/labs/quiz', send('labs/quiz.html'));
 // owner panel: fully separate + hidden — only a logged-in admin can open it,
 // everyone else gets the branded 404 (no mention of it anywhere user-side).
 async function ownerPage(req, res, next) {
@@ -225,6 +231,123 @@ app.get('/api/patients', requireAuth, ah(async (req, res) => {
     patients: await db.all('SELECT code,name,dob,gender,phone,status FROM patients ORDER BY code') });
 }));
 
+// ---------- labs API (student training: scrubber, denial lab, sprints, quiz) ----------
+async function logLab(userId, labKey, score, maxScore, detail) {
+  await db.run('INSERT INTO lab_runs (user_id, lab_key, score, max_score, detail) VALUES (?,?,?,?,?)',
+    [userId, labKey, score, maxScore, JSON.stringify(detail || {})]);
+}
+
+app.get('/api/labs/scrub/meta', requireAuth, ah(async (req, res) => {
+  const payers = Object.fromEntries(Object.entries(labData.PAYERS)
+    .map(([k, v]) => [k, { name: v.name, note: v.note, timelyFilingDays: v.timelyFilingDays }]));
+  res.json({ payers });
+}));
+
+app.post('/api/labs/scrub', requireAuth, ah(async (req, res) => {
+  const r = labData.scrubClaim(req.body || {});
+  await logLab(req.session.userId, 'scrubber', r.score, 100,
+    { errors: r.errors.length, warnings: r.warnings.length, payer: req.body.payer });
+  res.json(r);
+}));
+
+const stripDenial = (d) => ({
+  id: d.id, title: d.title, difficulty: d.difficulty, payer: d.payer,
+  carc: d.carc, carcLabel: d.carcLabel, rarc: d.rarc, rarcLabel: d.rarcLabel,
+  billed: d.billed, paid: d.paid, snapshot: d.snapshot,
+  diagnosisOptions: d.diagnosisOptions.map(o => o.t),
+  fixOptions: d.fixOptions.map(o => o.t),
+  decisionOptions: d.decisionOptions.map(o => o.t),
+});
+
+app.get('/api/labs/denials', requireAuth, ah(async (req, res) => {
+  res.json({ fictional: true, scenarios: labData.DENIALS.map(stripDenial) });
+}));
+
+app.post('/api/labs/denials/grade', requireAuth, ah(async (req, res) => {
+  const d = labData.DENIALS.find(x => x.id === req.body.scenarioId);
+  if (!d) return res.status(404).json({ error: 'Scenario not found.' });
+  const ci = (arr) => arr.findIndex(o => o.correct);
+  const ok = {
+    diagnosis: req.body.di === ci(d.diagnosisOptions),
+    fix: req.body.fi === ci(d.fixOptions),
+    decision: req.body.ci === ci(d.decisionOptions),
+  };
+  const score = (ok.diagnosis ? 40 : 0) + (ok.fix ? 35 : 0) + (ok.decision ? 25 : 0);
+  await logLab(req.session.userId, 'denial', score, 100, { scenario: d.id });
+  res.json({ score, max: 100, ok, explain: d.explain,
+    correct: { di: ci(d.diagnosisOptions), fi: ci(d.fixOptions), ci: ci(d.decisionOptions) } });
+}));
+
+const QUIZ_MODES = ['timed', 'weakest', 'missed', 'mix', 'sprint'];
+app.get('/api/labs/quiz', requireAuth, ah(async (req, res) => {
+  const mode = QUIZ_MODES.includes(req.query.mode) ? req.query.mode : 'mix';
+  const n = Math.min(30, Math.max(5, parseInt(req.query.n, 10) || 15));
+  const uid = req.session.userId;
+  const RF = db.IS_MYSQL ? 'RAND()' : 'RANDOM()';
+  let qs;
+  if (mode === 'missed') {
+    const runs = await db.all(`SELECT detail FROM lab_runs WHERE user_id = ? AND lab_key LIKE 'quiz-%' ORDER BY id DESC LIMIT 60`, [uid]);
+    const seen = new Set();
+    for (const r of runs) {
+      try { (JSON.parse(r.detail || '{}').missed || []).forEach(id => seen.add(id)); } catch (e) {}
+      if (seen.size >= n) break;
+    }
+    // also include wrong answers from the case player
+    const caseWrong = await db.all(`SELECT DISTINCT q.id FROM answers a
+      JOIN attempts at ON at.id = a.attempt_id JOIN questions q ON q.id = a.question_id
+      WHERE at.user_id = ? AND a.correct = 0`, [uid]);
+    caseWrong.forEach(r => seen.add(r.id));
+    const ids = [...seen].slice(0, n);
+    qs = ids.length ? await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, c.code AS caseCode
+      FROM questions q JOIN cases c ON c.id = q.case_id WHERE q.id IN (${ids.map(() => '?').join(',')})`, ids) : [];
+  } else if (mode === 'weakest') {
+    const prog = await db.all(`SELECT c.id, c.points,
+        COALESCE(MAX(CASE WHEN at.status='completed' THEN at.score END), 0) AS best
+      FROM cases c LEFT JOIN attempts at ON at.case_id = c.id AND at.user_id = ?
+      WHERE c.active = 1 GROUP BY c.id`, [uid]);
+    prog.sort((a, b) => (a.best / a.points) - (b.best / b.points));
+    const ids = prog.slice(0, 2).map(p => p.id);
+    qs = ids.length ? await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, c.code AS caseCode
+      FROM questions q JOIN cases c ON c.id = q.case_id WHERE q.case_id IN (${ids.map(() => '?').join(',')})
+      ORDER BY ${RF} LIMIT ${n}`, ids) : [];
+  } else {
+    qs = await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, c.code AS caseCode
+      FROM questions q JOIN cases c ON c.id = q.case_id WHERE c.active = 1
+      ORDER BY ${RF} LIMIT ${n}`);
+  }
+  if (!qs.length) return res.json({ mode, questions: [], note: 'No questions available for this mode yet.' });
+  res.json({ mode, questions: qs.map(q => ({ id: q.id, caseCode: q.caseCode, qnum: q.qnum,
+    prompt: q.prompt, options: JSON.parse(q.options), hint: q.hint })) });
+}));
+
+app.post('/api/labs/quiz/submit', requireAuth, ah(async (req, res) => {
+  const mode = QUIZ_MODES.includes(req.body.mode) ? req.body.mode : 'mix';
+  const answers = Array.isArray(req.body.answers) ? req.body.answers.slice(0, 30) : [];
+  if (!answers.length) return res.status(400).json({ error: 'No answers submitted.' });
+  const ids = answers.map(a => parseInt(a.questionId, 10)).filter(Number.isInteger);
+  const rows = await db.all(`SELECT id, answer_idx, points, explanation FROM questions WHERE id IN (${ids.map(() => '?').join(',')})`, ids);
+  const byId = Object.fromEntries(rows.map(r => [r.id, r]));
+  let score = 0, max = 0;
+  const feedback = answers.map(a => {
+    const q = byId[a.questionId];
+    if (!q) return null;
+    const correct = parseInt(a.chosen, 10) === q.answer_idx;
+    if (correct) score += q.points;
+    max += q.points;
+    return { questionId: q.id, correct, explanation: q.explanation };
+  }).filter(Boolean);
+  if (!req.body.quiet) {
+    const missedIds = feedback.filter(f => !f.correct).map(f => f.questionId);
+    await logLab(req.session.userId, 'quiz-' + mode, score, max, { n: feedback.length, missed: missedIds });
+  }
+  res.json({ score, max, pct: max ? Math.round(100 * score / max) : 0, feedback });}));
+
+app.get('/api/labs/bests', requireAuth, ah(async (req, res) => {
+  const rows = await db.all(`SELECT lab_key, MAX(CAST(score AS FLOAT) / NULLIF(max_score, 0)) AS best
+    FROM lab_runs WHERE user_id = ? GROUP BY lab_key`, [req.session.userId]);
+  res.json({ bests: Object.fromEntries(rows.map(r => [r.lab_key, Math.round(100 * (r.best || 0))])) });
+}));
+
 // ---------- admin API ----------
 app.get('/api/admin/overview', requireAdmin, ah(async (req, res) => {
   res.json({
@@ -252,6 +375,12 @@ app.get('/api/admin/cases', requireAdmin, ah(async (req, res) => {
             (SELECT COUNT(*) FROM questions q WHERE q.case_id = c.id) AS qcount,
             (SELECT COUNT(*) FROM attempts a WHERE a.case_id = c.id AND a.status='completed') AS done
      FROM cases c ORDER BY c.sort`) });
+}));
+app.get('/api/admin/lab-runs', requireAdmin, ah(async (req, res) => {
+  res.json({ runs: await db.all(
+    `SELECT l.id, l.lab_key, l.score, l.max_score, l.created_at, u.name AS uname
+     FROM lab_runs l JOIN users u ON u.id = l.user_id
+     ORDER BY l.id DESC LIMIT 40`) });
 }));
 app.post('/api/admin/users', requireAdmin, ah(async (req, res) => {
   const { name, email, password, role } = req.body || {};

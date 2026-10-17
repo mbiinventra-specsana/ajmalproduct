@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Denial Crime-Scene Lab — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+<style>
+.den-grid{display:grid;grid-template-columns:280px 1fr;gap:16px}
+.scard{border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;background:#fff;transition:.15s}
+.scard:hover{border-color:#14b8a6}
+.scard.on{border-color:#14b8a6;box-shadow:0 0 0 2px rgba(20,184,166,.25)}
+.scard b{font-size:13.5px;color:#0a1628}
+.scard .meta{font-size:11.5px;color:#64748b;margin-top:4px}
+.eob{background:#0a1628;color:#e2e8f0;border-radius:12px;padding:18px;font-family:ui-monospace,monospace;font-size:13px;margin-bottom:16px}
+.eob .carc{color:#fbbf24;font-weight:800}
+.eob table{width:100%;margin-top:10px;border-collapse:collapse}
+.eob td{padding:5px 8px;border-bottom:1px solid #1e293b;color:#cbd5e1}
+.eob td:first-child{color:#7c8ea8;width:170px}
+.step{margin-bottom:18px}
+.step h4{font-size:14px;color:#0a1628;margin-bottom:10px}
+.opt{display:block;width:100%;text-align:left;border:1px solid #e2e8f0;background:#fff;border-radius:10px;padding:11px 14px;margin-bottom:8px;font-size:13.5px;color:#0f1e33;cursor:pointer;transition:.15s}
+.opt:hover:not(:disabled){border-color:#14b8a6}
+.opt.sel{border-color:#14b8a6;background:#f0fdfa;box-shadow:0 0 0 2px rgba(20,184,166,.2)}
+.opt.right{border-color:#16a34a;background:#dcfce7}
+.opt.wrong{border-color:#ef4444;background:#fee2e2}
+.opt:disabled{cursor:default}
+.expl{background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;padding:10px 14px;font-size:13px;color:#0f766e;margin:6px 0 14px}
+.score-banner{border-radius:12px;padding:18px;text-align:center;margin-bottom:16px;background:#eef2ff;color:#1e3a8a}
+.score-banner b{font-size:30px;display:block}
+@media(max-width:900px){.den-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="sidebar"></aside>
+  <main class="main cc">
+    <div class="cc-head">
+      <div><h1>🔍 Denial Crime-Scene Lab</h1><p>Read the denial like an 835, diagnose the root cause, fix the claim, decide the next move. Fictional data only.</p></div>
+      <span class="badge-fict" id="best"></span>
+    </div>
+    <div class="den-grid">
+      <div class="panel-light"><h3>📁 Case files</h3><div id="files"></div></div>
+      <div class="panel-light"><div id="stage"><div class="empty">Pick a case file to open the crime scene.</div></div></div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+let SCEN = [], cur = null, picks = {};
+const LET = ['A', 'B', 'C', 'D'];
+async function refreshBest() {
+  const b = await api('/api/labs/bests');
+  if (b.bests.denial != null) document.getElementById('best').textContent = `BEST ${b.bests.denial}%`;
+}
+function renderFiles() {
+  document.getElementById('files').innerHTML = SCEN.map(s => `
+    <div class="scard ${cur && cur.id === s.id ? 'on' : ''}" onclick="openCase('${s.id}')">
+      <b>${esc(s.id)} — ${esc(s.title)}</b>
+      <div class="meta"><span class="pill p-${s.difficulty.toLowerCase()}">${esc(s.difficulty)}</span>
+      <span class="st st-prog" style="margin-left:6px">${esc(s.carc)}</span></div>
+      <div class="meta">${esc(s.payer)}</div>
+    </div>`).join('');
+}
+function openCase(id) {
+  cur = SCEN.find(s => s.id === id); picks = {};
+  renderFiles();
+  const s = cur;
+  const step = (key, title, opts) => `
+    <div class="step"><h4>${title}</h4>
+      ${opts.map((o, i) => `<button class="opt" data-k="${key}" data-i="${i}" onclick="pick('${key}',${i},this)"><b>${LET[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`;
+  document.getElementById('stage').innerHTML = `
+    <h3 style="margin-bottom:12px">${esc(s.id)} — ${esc(s.title)} <span class="pill p-${s.difficulty.toLowerCase()}">${esc(s.difficulty)}</span></h3>
+    <div class="eob">
+      <div>─── <b>835 REMITTANCE SNIPPET</b> ───</div>
+      <div style="margin-top:8px">Payer: ${esc(s.payer)}</div>
+      <div>Adjustment: <span class="carc">${esc(s.carc)}</span> — ${esc(s.carcLabel)}</div>
+      ${s.rarc ? `<div>Remark: <span class="carc">${esc(s.rarc)}</span> — ${esc(s.rarcLabel)}</div>` : ''}
+      <div>Billed: $${s.billed.toFixed(2)} &nbsp;·&nbsp; Paid: $${s.paid.toFixed(2)}</div>
+      <table>${s.snapshot.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</table>
+    </div>
+    ${step('di', '① Diagnose — what is the root cause?', s.diagnosisOptions)}
+    ${step('fi', '② Fix — what corrects the claim?', s.fixOptions)}
+    ${step('ci', '③ Decide — what is the next move?', s.decisionOptions)}
+    <button class="btn btn-teal" id="verdictBtn" onclick="submitVerdict()">⚖️ Submit verdict</button>
+    <div id="result"></div>`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function pick(k, i, el) {
+  picks[k] = i;
+  el.parentElement.querySelectorAll('.opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+async function submitVerdict() {
+  if (picks.di == null || picks.fi == null || picks.ci == null) { alert('Answer all three steps first.'); return; }
+  const btn = document.getElementById('verdictBtn');
+  btn.disabled = true; btn.textContent = 'Grading…';
+  const r = await api('/api/labs/denials/grade', { method: 'POST',
+    body: JSON.stringify({ scenarioId: cur.id, di: picks.di, fi: picks.fi, ci: picks.ci }) });
+  const mark = (key, ci, expl) => {
+    document.querySelectorAll(`.opt[data-k="${key}"]`).forEach(o => {
+      o.disabled = true;
+      const i = +o.dataset.i;
+      if (i === ci) o.classList.add('right');
+      else if (i === picks[key]) o.classList.add('wrong');
+    });
+    return `<div class="expl"><b>Why:</b> ${esc(expl)}</div>`;
+  };
+  document.getElementById('result').innerHTML = `
+    <div class="score-banner"><b>${r.score}/100</b>
+      Diagnose ${r.ok.diagnosis ? '✅ 40' : '❌ 0'} · Fix ${r.ok.fix ? '✅ 35' : '❌ 0'} · Decide ${r.ok.decision ? '✅ 25' : '❌ 0'}</div>
+    ${mark('di', r.correct.di, r.explain.diagnosis)}
+    ${mark('fi', r.correct.fi, r.explain.fix)}
+    ${mark('ci', r.correct.ci, r.explain.decision)}
+    <button class="btn btn-line" onclick="openCase('${cur.id}')">↺ Retry this case</button>`;
+  btn.style.display = 'none';
+  refreshBest();
+}
+(async () => {
+  const u = await currentUser();
+  if (!u) { location.href = '/login'; return; }
+  if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
+  shell('denials', u);
+  const d = await api('/api/labs/denials');
+  SCEN = d.scenarios;
+  document.getElementById('best').textContent = '6 CASE FILES';
+  renderFiles(); refreshBest();
+})();
+</script>
+</body>
+</html>

@@ -34,6 +34,12 @@ function shell(active, user) {
       ['training', 'Case Center', '/training', '🎯'],
       ['lab', 'Practice Lab', '/lab', '🧪'],
     ]],
+    ['Advanced Labs', [
+      ['scrubber', 'Claim Scrubber', '/labs/scrubber', '🧹'],
+      ['denials', 'Denial Crime-Scene', '/labs/denials', '🔍'],
+      ['sprints', 'Coding Sprints', '/labs/sprints', '⚡'],
+      ['quiz', 'Quiz Arena', '/labs/quiz', '🎲'],
+    ]],
   ];
   if (user.role === 'admin' || user.role === 'instructor') {
     nav.push(['Manage', [['owner', '👑 Owner Panel', '/owner', '👑']]]);

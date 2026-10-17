@@ -18,6 +18,7 @@
       <div class="panel"><h3>📊 Completions per case</h3><div id="chart"></div></div>
       <div class="panel"><h3>🕘 Recent attempts (all students)</h3><div id="attempts"></div></div>
     </div>
+    <div class="panel"><h3>🧬 Lab activity (all students)</h3><div id="labruns"></div></div>
     <div class="panel"><h3>📚 Cases</h3><div id="cases"></div></div>
     <div class="grid2">
       <div class="panel">
@@ -79,6 +80,15 @@ async function boot() {
         <td><b>${a.score}/${a.max_score}</b> ${a.status === 'completed' ? '' : '<span class="pill p-prog">' + esc(a.status) + '</span>'}</td>
         <td>${esc((a.completed_at || a.started_at || '').slice(0, 10))}</td></tr>`).join('')}</table>`
       : `<div class="empty">No attempts yet.</div>`;
+    const { runs } = await api('/api/admin/lab-runs');
+    const labName = { scrubber: '🧹 Scrubber', denial: '🔍 Denial Lab', 'quiz-timed': '⏱️ Timed Quiz',
+      'quiz-weakest': '🎯 Weakest', 'quiz-missed': '🔁 Missed Qs', 'quiz-mix': '🎲 Mix Quiz', 'quiz-sprint': '⚡ Sprint' };
+    document.getElementById('labruns').innerHTML = runs.length ? `
+      <table><tr><th>Student</th><th>Lab</th><th>Score</th><th>Date</th></tr>
+      ${runs.map(r => `<tr><td>${esc(r.uname)}</td><td>${esc(labName[r.lab_key] || r.lab_key)}</td>
+        <td><b>${r.score}/${r.max_score}</b></td>
+        <td>${esc((r.created_at || '').slice(0, 16).replace('T', ' '))}</td></tr>`).join('')}</table>`
+      : `<div class="empty">No lab runs yet.</div>`;
     await loadUsers();
   } catch (e) {
     document.querySelector('.main').innerHTML = `<div class="empty" style="margin-top:80px">
