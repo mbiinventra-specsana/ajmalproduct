@@ -14,6 +14,7 @@
       <span class="badge-fict">TRAINING MODE · fictional data</span>
     </div>
     <div class="cards" id="stats"></div>
+    <div class="panel" id="syshealth"></div>
     <div class="grid2">
       <div class="panel"><h3>📊 Completions per case</h3><div id="chart"></div></div>
       <div class="panel"><h3>🕘 Recent attempts (all students)</h3><div id="attempts"></div></div>
@@ -62,6 +63,27 @@ async function boot() {
       <div class="card stat"><span>Students</span><b>${o.students}</b></div>
       <div class="card stat"><span>Training cases</span><b>${o.cases}</b><div class="sub">${o.questions} questions</div></div>
       <div class="card stat"><span>Total attempts</span><b>${o.attempts}</b></div>`;
+    // ---- system health: DB engine, data location, config safety ----
+    try {
+      const d = await api('/api/admin/diagnostics');
+      const envRow = (k, v) => `<span class="pill ${v ? 'p-beginner' : 'p-advanced'}">${k}: ${v ? 'set' : 'MISSING'}</span>`;
+      const warnHtml = d.warnings.length
+        ? `<div class="alert err" style="margin:10px 0">${d.warnings.map(w => esc(w)).join('<br>')}</div>` : '';
+      const srcHtml = d.migrationSources.length
+        ? `<div style="margin-top:8px;font-size:13px;color:#8a97ad">Other SQLite files found: ${d.migrationSources.map(s => `<b>${esc(s.file)}</b> (${s.students} students)`).join(', ')}</div>` : '';
+      const sqliteLine = d.sqlite.active
+        ? `<div style="margin-top:8px;font-size:13.5px">📁 <b>${esc(d.sqlite.file)}</b> ${d.sqlite.exists ? `· ${d.sqlite.sizeKB} KB · ${d.sqlite.students} students` : '<b style="color:#d33">· FILE NOT FOUND</b>'}</div>`
+        : `<div style="margin-top:8px;font-size:13.5px">📁 SQLite not active (running on MySQL)</div>`;
+      document.getElementById('syshealth').innerHTML = `
+        <h3>🖥️ System health</h3>
+        <div style="font-size:14px;margin:6px 0">Database engine: <b>${esc(d.engine.toUpperCase())}</b> · Accounts in DB: <b>${d.dbUsers}</b> (${d.dbStudents} students)</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">
+          ${envRow('DATA_DIR', d.env.DATA_DIR)}${envRow('DB_ENGINE', d.env.DB_ENGINE)}${envRow('DB_HOST', d.env.DB_HOST)}
+          ${envRow('DB_USER', d.env.DB_USER)}${envRow('DB_PASS', d.env.DB_PASS)}${envRow('DB_NAME', d.env.DB_NAME)}
+          ${envRow('SESSION_SECRET', d.env.SESSION_SECRET)}${envRow('ADMIN_PASS', d.env.ADMIN_PASS)}
+        </div>
+        ${warnHtml}${sqliteLine}${srcHtml}`;
+    } catch (e) { document.getElementById('syshealth').innerHTML = `<h3>🖥️ System health</h3><div class="empty">${esc(e.message)}</div>`; }
     const { cases } = await api('/api/admin/cases');
     const mx = Math.max(1, ...cases.map(c => c.done));
     document.getElementById('chart').innerHTML = cases.map(c => `

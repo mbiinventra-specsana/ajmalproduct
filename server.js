@@ -674,6 +674,46 @@ app.get('/api/admin/overview', requireAdmin, ah(async (req, res) => {
     recentUsers: await db.all('SELECT id,name,email,role,created_at,last_login FROM users ORDER BY id DESC LIMIT 8'),
   });
 }));
+// System health: which DB is active, where the data lives, is the config safe?
+// Returns presence flags only — never secret values.
+app.get('/api/admin/diagnostics', requireAdmin, ah(async (req, res) => {
+  const fs = require('fs');
+  const { sqliteCandidates, sqliteStudentCount } = require('./lib/migrate');
+  const users = (await db.get('SELECT COUNT(*) AS n FROM users')).n;
+  const students = (await db.get("SELECT COUNT(*) AS n FROM users WHERE role='student'")).n;
+  const out = {
+    engine: db.ENGINE,
+    dbUsers: users, dbStudents: students,
+    env: {
+      DATA_DIR: !!process.env.DATA_DIR,
+      DB_ENGINE: !!process.env.DB_ENGINE,
+      DB_HOST: !!process.env.DB_HOST,
+      DB_USER: !!process.env.DB_USER,
+      DB_PASS: !!process.env.DB_PASS,
+      DB_NAME: !!process.env.DB_NAME,
+      SESSION_SECRET: !!process.env.SESSION_SECRET,
+      ADMIN_PASS: !!process.env.ADMIN_PASS,
+    },
+    sqlite: { active: !db.IS_MYSQL, file: db.SQLITE_FILE, insideProject: false, exists: false, sizeKB: 0, students: 0 },
+    migrationSources: [],
+    warnings: [],
+  };
+  if (!db.IS_MYSQL) {
+    out.sqlite.exists = fs.existsSync(db.SQLITE_FILE);
+    if (out.sqlite.exists) {
+      out.sqlite.sizeKB = Math.round(fs.statSync(db.SQLITE_FILE).size / 1024);
+      out.sqlite.students = sqliteStudentCount(db.SQLITE_FILE);
+    }
+    out.sqlite.insideProject = db.SQLITE_FILE.startsWith(path.resolve(__dirname) + path.sep);
+    if (out.sqlite.insideProject)
+      out.warnings.push('DATABASE IS INSIDE THE PROJECT DIR — redeploys will DELETE all users/data. Set DATA_DIR outside the project.');
+  }
+  for (const f of sqliteCandidates()) {
+    if (f === db.SQLITE_FILE || !fs.existsSync(f)) continue;
+    out.migrationSources.push({ file: f, students: sqliteStudentCount(f) });
+  }
+  res.json(out);
+}));
 app.get('/api/admin/users', requireAdmin, ah(async (req, res) => {
   res.json({ users: await db.all('SELECT id,name,email,role,created_at,last_login FROM users ORDER BY id') });
 }));
@@ -732,6 +772,17 @@ async function main() {
   // one-time SQLite -> MySQL data migration (only when MySQL is fresh)
   try { await require('./lib/migrate').maybeAutoMigrate(db); }
   catch (e) { console.error('[migrate] skipped:', e.message); }
+  // ---- boot diagnostics: where does the data live, and is it safe? ----
+  try {
+    const uc = await db.get('SELECT COUNT(*) AS n FROM users');
+    console.log(`[db] engine=${db.ENGINE} users=${uc.n}`);
+    if (!db.IS_MYSQL) {
+      console.log(`[db] sqlite file: ${db.SQLITE_FILE}`);
+      const proj = path.resolve(__dirname);
+      if (db.SQLITE_FILE.startsWith(proj + path.sep))
+        console.log('[warn] DATABASE IS INSIDE THE PROJECT DIR — GitHub redeploys WILL DELETE all users/data! Set DATA_DIR to a folder OUTSIDE the project (e.g. /home/<site>/rcm-data).');
+    }
+  } catch (e) { console.error('[db] diagnostics failed:', e.message); }
   app.listen(PORT, () => {
     console.log(`RCM Academy listening on :${PORT} (engine=${db.ENGINE})`);
     if (!process.env.SESSION_SECRET) console.log('[warn] SESSION_SECRET not set — using dev default');
