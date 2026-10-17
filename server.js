@@ -947,6 +947,179 @@ app.get('/api/leaderboard', requireAuth, ah(async (req, res) => {
      WHERE u.role = 'student' GROUP BY u.id ORDER BY points DESC LIMIT 10`);
   res.json({ top });
 }));
+// ---- ULTRA analytics: at-risk, funnel, question difficulty, time heatmap, AI insights ----
+app.get('/api/admin/insights', requireAdmin, ah(async (req, res) => {
+  const days = Math.min(365, Math.max(7, parseInt(req.query.days, 10) || 30));
+  const since = db.IS_MYSQL
+    ? `DATE_SUB(NOW(), INTERVAL ${days} DAY)`
+    : `datetime('now', '-${days} days')`;
+  const dayFn = db.IS_MYSQL ? 'DAYOFWEEK(started_at)' : `CAST(strftime('%w', started_at) AS INTEGER)`;
+  const hrFn = db.IS_MYSQL ? 'HOUR(started_at)' : `CAST(strftime('%H', started_at) AS INTEGER)`;
+
+  // ---- at-risk students ----
+  const students = await db.all("SELECT id, name, email FROM users WHERE role='student' ORDER BY name");
+  const lastAct = await db.all(
+    `SELECT user_id, MAX(ts) AS last_ts FROM (
+       SELECT user_id, started_at AS ts FROM attempts
+       UNION ALL SELECT user_id, created_at AS ts FROM lab_runs
+     ) t GROUP BY user_id`);
+  const lastMap = Object.fromEntries(lastAct.map(r => [r.user_id, r.last_ts]));
+  const recentScores = await db.all(
+    `SELECT user_id, score * 100.0 / NULLIF(max_score, 0) AS pct, completed_at
+     FROM attempts WHERE status='completed' AND completed_at >= ${since} ORDER BY completed_at`);
+  const scoreMap = {};
+  for (const r of recentScores) (scoreMap[r.user_id] ||= []).push(r.pct);
+  const stuckCases = await db.all(
+    `SELECT user_id, case_id, COUNT(*) AS n FROM attempts
+     WHERE status != 'completed' AND started_at >= ${since} GROUP BY user_id, case_id HAVING n >= 2`);
+  const stuckMap = {};
+  for (const r of stuckCases) (stuckMap[r.user_id] ||= []).push(r.case_id);
+  const caseCodes = Object.fromEntries((await db.all('SELECT id, code FROM cases')).map(c => [c.id, c.code]));
+  const atRisk = [];
+  const nowMs = Date.now();
+  for (const st of students) {
+    const reasons = [];
+    const lt = lastMap[st.id];
+    const inactiveDays = lt ? Math.floor((nowMs - new Date(lt.replace(' ', 'T') + 'Z').getTime()) / 864e5) : 999;
+    if (inactiveDays >= 7) reasons.push({ kind: 'inactive', label: `Inactive ${inactiveDays >= 999 ? '— never active' : inactiveDays + 'd'}` });
+    const sc = scoreMap[st.id] || [];
+    if (sc.length >= 4) {
+      const first = sc.slice(0, Math.ceil(sc.length / 2)), last = sc.slice(Math.ceil(sc.length / 2));
+      const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+      if (avg(first) - avg(last) >= 15) reasons.push({ kind: 'declining', label: `Scores dropping (${Math.round(avg(first))}% → ${Math.round(avg(last))}%)` });
+    }
+    if (stuckMap[st.id]) reasons.push({ kind: 'stuck', label: `Stuck on ${(stuckMap[st.id] || []).map(id => caseCodes[id]).filter(Boolean).join(', ')}` });
+    if (reasons.length) atRisk.push({ id: st.id, name: st.name, email: st.email, reasons });
+  }
+
+  // ---- funnel: started vs completed per case ----
+  const funnel = await db.all(
+    `SELECT c.code, c.title,
+       COUNT(DISTINCT CASE WHEN a.started_at >= ${since} THEN a.user_id END) AS started,
+       COUNT(DISTINCT CASE WHEN a.status='completed' AND a.completed_at >= ${since} THEN a.user_id END) AS completed
+     FROM cases c LEFT JOIN attempts a ON a.case_id = c.id
+     WHERE c.active = 1 GROUP BY c.id ORDER BY c.sort`);
+
+  // ---- hardest questions ----
+  const hardQ = await db.all(
+    `SELECT c.code AS case_code, q.qnum, SUBSTR(q.prompt, 1, 80) AS prompt,
+       COUNT(*) AS tries, SUM(CASE WHEN an.correct = 0 THEN 1 ELSE 0 END) AS fails
+     FROM answers an JOIN questions q ON q.id = an.question_id
+     JOIN cases c ON c.id = q.case_id
+     WHERE an.answered_at >= ${since}
+     GROUP BY an.question_id HAVING tries >= 2
+     ORDER BY 1.0 * fails / tries DESC, tries DESC LIMIT 10`);
+
+  // ---- study-time heatmap (day of week x hour) ----
+  const acts = await db.all(`SELECT ${dayFn} AS d, ${hrFn} AS h, COUNT(*) AS n FROM attempts WHERE started_at >= ${since} GROUP BY d, h`);
+  const matrix = Array.from({ length: 7 }, () => Array(24).fill(0));
+  for (const r of acts) {
+    const di = db.IS_MYSQL ? (Number(r.d) + 6) % 7 : Number(r.d); // normalize to Mon=0
+    if (di >= 0 && di < 7 && r.h >= 0 && r.h < 24) matrix[di][Number(r.h)] = Number(r.n);
+  }
+
+  // ---- AI insight lines ----
+  const insights = [];
+  if (atRisk.length) insights.push({ icon: '⚠️', text: `${atRisk.length} student${atRisk.length > 1 ? 's' : ''} need${atRisk.length > 1 ? '' : 's'} attention right now — ${atRisk.slice(0, 2).map(r => r.name.split(' ')[0]).join(', ')}${atRisk.length > 2 ? ` +${atRisk.length - 2} more` : ''}` });
+  const worstFunnel = funnel.filter(f => f.started > 0).sort((a, b) => (a.completed / a.started) - (b.completed / b.started))[0];
+  if (worstFunnel && worstFunnel.started >= 2) {
+    const drop = Math.round(100 * (1 - worstFunnel.completed / worstFunnel.started));
+    if (drop > 0) insights.push({ icon: '📉', text: `Biggest drop-off: ${worstFunnel.code} — ${drop}% started but didn't finish` });
+  }
+  if (hardQ.length) {
+    const q = hardQ[0], fr = Math.round(100 * q.fails / q.tries);
+    insights.push({ icon: '🎯', text: `${q.case_code} Q${q.qnum} fails ${fr}% of the time (${q.tries} tries) — review this question` });
+  }
+  let peakD = 0, peakH = 0, peakN = 0;
+  matrix.forEach((row, d) => row.forEach((n, h) => { if (n > peakN) { peakN = n; peakD = d; peakH = h; } }));
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  if (peakN > 0) insights.push({ icon: '🕐', text: `Peak study time: ${dayNames[peakD]}s around ${peakH}:00 — schedule announcements then` });
+  const totalStarted = funnel.reduce((x, f) => x + Number(f.started), 0);
+  const totalDone = funnel.reduce((x, f) => x + Number(f.completed), 0);
+  if (totalStarted > 0) insights.push({ icon: '📊', text: `Completion rate: ${Math.round(100 * totalDone / totalStarted)}% across ${funnel.length} cases in the last ${days} days` });
+  if (!insights.length) insights.push({ icon: '✨', text: 'Not enough activity yet — insights appear once students start training' });
+
+  res.json({ days, atRisk, funnel, hardQuestions: hardQ, timeHeatmap: matrix, insights });
+}));
+
+// ---- student sync: you-vs-class, rank, streak, nudges, weekly digest ----
+app.get('/api/student-insights', requireAuth, ah(async (req, res) => {
+  const uid = req.session.userId;
+  const since7 = db.IS_MYSQL ? 'DATE_SUB(NOW(), INTERVAL 7 DAY)' : `datetime('now', '-7 days')`;
+
+  // rank by total points
+  const board = await db.all(
+    `SELECT u.id, COALESCE(SUM(a.score), 0) AS points FROM users u
+     LEFT JOIN attempts a ON a.user_id = u.id
+     WHERE u.role = 'student' GROUP BY u.id ORDER BY points DESC`);
+  const rank = board.findIndex(r => r.id === uid) + 1;
+  const myPoints = (board.find(r => r.id === uid) || {}).points || 0;
+
+  // streak: consecutive days with any activity
+  const dayRows = await db.all(
+    `SELECT DISTINCT DATE(ts) AS d FROM (
+       SELECT started_at AS ts FROM attempts WHERE user_id = ?
+       UNION ALL SELECT created_at FROM lab_runs WHERE user_id = ?
+     ) t ORDER BY d DESC`, [uid, uid]);
+  let streak = 0;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  let cursor = new Date(todayStr + 'T12:00:00Z');
+  const daySet = new Set(dayRows.map(r => String(r.d).slice(0, 10)));
+  if (!daySet.has(todayStr)) cursor.setUTCDate(cursor.getUTCDate() - 1); // allow today missing
+  while (daySet.has(cursor.toISOString().slice(0, 10))) { streak++; cursor.setUTCDate(cursor.getUTCDate() - 1); }
+
+  // you vs class
+  const mine = await db.get(
+    `SELECT COUNT(DISTINCT CASE WHEN status='completed' THEN case_id END) AS cases_done,
+       AVG(CASE WHEN status='completed' THEN score * 100.0 / NULLIF(max_score, 0) END) AS acc
+     FROM attempts WHERE user_id = ?`, [uid]);
+  const cls = await db.get(
+    `SELECT AVG(cases_done) AS avg_cases, AVG(acc) AS avg_acc FROM (
+       SELECT user_id, COUNT(DISTINCT CASE WHEN status='completed' THEN case_id END) AS cases_done,
+         AVG(CASE WHEN status='completed' THEN score * 100.0 / NULLIF(max_score, 0) END) AS acc
+       FROM attempts GROUP BY user_id) t`);
+
+  // weakest category
+  const weak = await db.all(
+    `SELECT c.category, AVG(a.score * 100.0 / NULLIF(a.max_score, 0)) AS acc
+     FROM attempts a JOIN cases c ON c.id = a.case_id
+     WHERE a.user_id = ? AND a.status = 'completed' GROUP BY c.category ORDER BY acc ASC LIMIT 1`, [uid]);
+
+  // nudges
+  const nudges = [];
+  const myAcc = Math.round(mine.acc || 0), classAcc = Math.round(cls.avg_acc || 0);
+  if (myAcc < classAcc - 5) nudges.push({ icon: '📈', text: `Your accuracy (${myAcc}%) trails the class (${classAcc}%) — hit the Practice Lab` });
+  if (weak.length && weak[0].acc != null) nudges.push({ icon: '🎯', text: `Weakest area: ${weak[0].category} (${Math.round(weak[0].acc)}%) — focus here this week` });
+  if (streak >= 3) nudges.push({ icon: '🔥', text: `${streak}-day streak! Keep it alive` });
+  else if (streak === 0) nudges.push({ icon: '💪', text: 'Start a streak today — even one case counts' });
+  if (rank > 0 && rank <= 3) nudges.push({ icon: '🏆', text: `You're #${rank} on the leaderboard — defend it!` });
+
+  // weekly digest
+  const wk = await db.get(
+    `SELECT COUNT(*) AS attempts, COALESCE(SUM(score), 0) AS points,
+       AVG(CASE WHEN status='completed' THEN score * 100.0 / NULLIF(max_score, 0) END) AS acc
+     FROM attempts WHERE user_id = ? AND started_at >= ${since7}`, [uid]);
+  const bestWk = await db.all(
+    `SELECT c.code, MAX(a.score * 100.0 / NULLIF(a.max_score, 0)) AS pct
+     FROM attempts a JOIN cases c ON c.id = a.case_id
+     WHERE a.user_id = ? AND a.status = 'completed' AND a.completed_at >= ${since7}
+     GROUP BY a.case_id ORDER BY pct DESC LIMIT 1`, [uid]);
+
+  res.json({
+    rank, totalStudents: board.length, streak, points: myPoints, level: db.levelFor(myPoints),
+    vsClass: [
+      { label: 'Accuracy', you: myAcc, avg: classAcc, suffix: '%' },
+      { label: 'Cases done', you: mine.cases_done || 0, avg: Math.round((cls.avg_cases || 0) * 10) / 10, suffix: '' },
+      { label: 'Points', you: myPoints, avg: Math.round(board.reduce((x, r) => x + Number(r.points), 0) / Math.max(1, board.length)), suffix: '' },
+    ],
+    nudges,
+    weekly: {
+      attempts: wk.attempts || 0, points: wk.points || 0, accuracy: Math.round(wk.acc || 0),
+      bestCase: bestWk.length ? `${bestWk[0].code} (${Math.round(bestWk[0].pct)}%)` : '—',
+    },
+  });
+}));
+
 // ---- analytics: skill-gap heatmap + exam readiness ----
 app.get('/api/admin/heatmap', requireAdmin, ah(async (req, res) => {
   const students = await db.all("SELECT id, name FROM users WHERE role = 'student' ORDER BY name");

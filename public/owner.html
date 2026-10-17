@@ -52,17 +52,27 @@
     <section data-sec="dashboard">
     <div class="topbar">
       <div><h1>👑 Owner Panel</h1><p>Your academy's performance at a glance.</p></div>
+      <div class="datepills" id="datepills">
+        <button data-days="7">7d</button><button data-days="30" class="on">30d</button><button data-days="90">90d</button>
+      </div>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="btn btn-line btn-sm" onclick="location.href='/api/admin/export/attempts'">📥 Attempts CSV</button>
         <button class="btn btn-line btn-sm" onclick="location.href='/api/admin/export/users'">📥 Users CSV</button>
         <span class="badge-fict">TRAINING MODE · fictional data</span>
       </div>
     </div>
+    <div id="aiInsights"><div class="panel"><div class="skel skel-line w80"></div><div class="skel skel-line w60"></div></div></div>
     <div class="cards" id="stats"><div class="skel-cards"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div></div></div>
     <div class="grid2">
       <div class="panel"><h3>📊 Completions per case</h3><div id="chart"><div class="skel-bar-row"><div class="skel skel-bl"></div><div class="skel skel-bt"></div><div class="skel skel-bv"></div></div><div class="skel-bar-row"><div class="skel skel-bl"></div><div class="skel skel-bt"></div><div class="skel skel-bv"></div></div><div class="skel-bar-row"><div class="skel skel-bl"></div><div class="skel skel-bt"></div><div class="skel skel-bv"></div></div><div class="skel-bar-row"><div class="skel skel-bl"></div><div class="skel skel-bt"></div><div class="skel skel-bv"></div></div></div></div>
       <div class="panel"><h3>🕘 Recent attempts (all students)</h3><div id="attempts"><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div></div></div>
     </div>
+    <div class="panel"><h3>⚠️ At-risk students</h3><div id="atRisk"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line w60"></div></div></div>
+    <div class="grid2">
+      <div class="panel"><h3>🔻 Completion funnel</h3><div id="funnel"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div></div></div>
+      <div class="panel"><h3>🕐 Study-time heatmap</h3><div id="timeHeat"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div><div style="font-size:12px;color:#8a97ad;margin-top:8px">Rows: Mon–Sun · Columns: hour of day · darker = more active</div></div>
+    </div>
+    <div class="panel"><h3>🎯 Hardest questions</h3><div id="hardQ"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
     </section>
     <!-- ANALYTICS -->
     <section data-sec="analytics" style="display:none">
@@ -338,6 +348,45 @@ async function loadDashboard() {
 
   } catch (e) { document.querySelector('.main').innerHTML = `<div class="empty" style="margin-top:80px"><h2>Error</h2><p>${esc(e.message)}</p></div>`; }
 }
+let INSIGHT_DAYS = 30;
+async function loadInsights() {
+  const d = await api('/api/admin/insights?days=' + INSIGHT_DAYS);
+  // AI banner
+  document.getElementById('aiInsights').innerHTML = `<div class="ai-banner"><h3>✨ Smart insights</h3>${
+    d.insights.map(i => `<div class="ai-line"><span class="ai-ic">${i.icon}</span><span>${esc(i.text)}</span></div>`).join('')
+  }</div>`;
+  // at-risk
+  document.getElementById('atRisk').innerHTML = d.atRisk.length ? `<div class="risk-grid">${
+    d.atRisk.map(r => `<div class="risk-card"><b>${esc(r.name)}</b><br><span style="font-size:12px;color:#8a97ad">${esc(r.email)}</span><div style="margin-top:6px">${
+      r.reasons.map(x => `<span class="rr">${esc(x.label)}</span>`).join('')
+    }</div></div>`).join('')
+  }</div>` : `<div class="empty">🎉 No at-risk students — everyone is on track!</div>`;
+  // funnel
+  document.getElementById('funnel').innerHTML = d.funnel.map(f => {
+    const st = Number(f.started) || 0, co = Number(f.completed) || 0;
+    const pct = st ? Math.round(100 * co / st) : 0;
+    return `<div class="funnel-row"><div class="fl">${esc(f.code)}</div>
+      <div class="funnel-bar${pct < 50 && st > 0 ? ' drop' : ''}"><i style="width:${pct}%"></i></div>
+      <div class="fv">${co}/${st} · ${pct}%</div></div>`;
+  }).join('') || `<div class="empty">No activity in range.</div>`;
+  // hardest questions
+  document.getElementById('hardQ').innerHTML = d.hardQuestions.length ? `<table>
+    <tr><th>Question</th><th>Tries</th><th>Fail rate</th></tr>${
+    d.hardQuestions.map(q => { const fr = Math.round(100 * q.fails / q.tries);
+      return `<tr><td><b>${esc(q.case_code)} Q${q.qnum}</b><br><span style="font-size:12px;color:#64748b">${esc(q.prompt)}…</span></td>
+      <td>${q.tries}</td><td><b style="color:${fr >= 50 ? '#dc2626' : '#d97706'}">${fr}%</b></td></tr>`; }).join('')
+  }</table>` : `<div class="empty">Not enough data yet.</div>`;
+  // time heatmap
+  const mx = Math.max(1, ...d.timeHeatmap.flat());
+  const dayN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  document.getElementById('timeHeat').innerHTML = `<div class="heat">` + d.timeHeatmap.map((row, di) =>
+    `<div class="hd">${dayN[di]}</div>` + row.map(n => {
+      const a = n / mx;
+      const bg = a === 0 ? '#eef2f7' : `rgba(14,159,138,${(0.15 + 0.85 * a).toFixed(2)})`;
+      return `<div class="hc" style="background:${bg}" title="${dayN[di]} ${di}:00 — ${n} sessions"></div>`;
+    }).join('')
+  ).join('') + `</div>`;
+}
 async function loadSystem() {
   try {
     const [{ cases }, { runs }] = await Promise.all([
@@ -390,7 +439,7 @@ const _loadedSec = {};
 async function loadOwnerSection(sec) {
   if (_loadedSec[sec]) return; // instant on revisit — no refetch
   _loadedSec[sec] = true;
-  if (sec === 'dashboard') await loadDashboard();
+  if (sec === 'dashboard') { await Promise.all([loadDashboard(), loadInsights()]); }
   else if (sec === 'analytics') await loadAnalytics();
   else if (sec === 'accounts') await loadUsers();
   else if (sec === 'announce') await loadAnnouncements();
@@ -428,6 +477,13 @@ async function boot() {
 }
 
 (async () => {
+  document.getElementById('datepills').addEventListener('click', async (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    document.querySelectorAll('#datepills button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    INSIGHT_DAYS = parseInt(b.dataset.days, 10);
+    await loadInsights();
+  });
   // boot() handles auth, sidebar, section routing and data loading
   document.getElementById('create').onclick = async () => {
     const err = document.getElementById('err');

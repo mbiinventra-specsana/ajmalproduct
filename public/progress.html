@@ -9,7 +9,13 @@
 <div class="shell">
   <aside class="side" id="sidebar"></aside>
   <main class="main">
-    <div class="topbar"><div><h1>📊 My Progress</h1><p>Every attempt, every score, every case mastered.</p></div></div>
+    <div class="topbar"><div><h1>📊 My Progress</h1><p>Every attempt, every score, every case mastered.</p></div>
+      <div style="display:flex;gap:10px;align-items:center" id="badges"></div></div>
+    <div id="nudgeBox"></div>
+    <div class="grid2">
+      <div class="panel"><h3>⚔️ You vs Class</h3><div id="vsClass"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
+      <div class="panel"><h3>📅 This week</h3><div id="digest"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
+    </div>
     <div class="cards" id="stats"></div>
     <div class="grid2">
       <div class="panel"><h3>Per-case mastery</h3><div id="perCase"></div></div>
@@ -25,8 +31,34 @@
   const u = await requireLogin(); if (!u) return;
   shell('progress', u);
   if (!guardFeature(u, 'training', 'My Progress')) return;
-  const p = await api('/api/progress');
+  const [p, si] = await Promise.all([api('/api/progress'), api('/api/student-insights').catch(() => null)]);
   const s = p.stats;
+  if (si) {
+    // rank + streak badges
+    document.getElementById('badges').innerHTML =
+      (si.rank > 0 ? `<span class="rank-badge">🏆 #${si.rank} of ${si.totalStudents}</span>` : '') +
+      (si.streak > 0 ? `<span class="streak-badge">🔥 ${si.streak}-day streak</span>` : '');
+    // nudges
+    if (si.nudges.length) document.getElementById('nudgeBox').innerHTML =
+      si.nudges.map(n => `<div class="nudge"><span class="ni">${n.icon}</span><span>${esc(n.text)}</span></div>`).join('');
+    // you vs class
+    document.getElementById('vsClass').innerHTML =
+      `<div class="vs-legend"><span><b class="dot" style="background:#0e9f8a"></b>You</span><span><b class="dot" style="background:#cbd5e1"></b>Class avg</span></div>` +
+      si.vsClass.map(v => {
+        const mx = Math.max(v.you, v.avg, 1);
+        return `<div class="vs-row"><div class="vl">${esc(v.label)}</div><div class="vs-bars">
+          <div class="vs-bar you"><i style="width:${Math.round(100 * v.you / mx)}%"></i></div>
+          <div class="vs-bar avg"><i style="width:${Math.round(100 * v.avg / mx)}%"></i></div></div>
+          <div style="font-size:12.5px;min-width:90px;text-align:right"><b>${v.you}${v.suffix}</b> <span style="color:#8a97ad">/ ${v.avg}${v.suffix}</span></div></div>`;
+      }).join('');
+    // weekly digest
+    const w = si.weekly;
+    document.getElementById('digest').innerHTML = `<div class="digest-grid">
+      <div class="card stat"><span>Attempts</span><b>${w.attempts}</b></div>
+      <div class="card stat"><span>Points</span><b>${w.points}</b></div>
+      <div class="card stat"><span>Accuracy</span><b>${w.accuracy}%</b></div>
+      <div class="card stat"><span>Best case</span><b style="font-size:14px">${esc(w.bestCase)}</b></div></div>`;
+  }
   const LABN = { scrubber: '🧹 Claim Scrubber', denials: '🔍 Denial Crime-Scene', sprints: '⚡ Coding Sprints', quiz: '🎲 Quiz Arena' };
   try {
     const lb = await api('/api/labs/bests');

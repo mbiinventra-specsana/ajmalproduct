@@ -372,3 +372,49 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-w
 /* sidebar skeleton */
 .snav .skel-nav { height: 38px; margin: 4px 0; border-radius: 10px; }
 .side .skel-brand { height: 40px; margin: 24px 20px 18px; border-radius: 12px; }
+
+/* ---- ultra dashboard widgets ---- */
+.datepills { display: flex; gap: 6px; background: rgba(255,255,255,.08); border-radius: 12px; padding: 4px; }
+.datepills button { border: 0; background: transparent; color: #c7d5e8; font-size: 13px; font-weight: 600;
+  padding: 7px 14px; border-radius: 9px; cursor: pointer; transition: all .15s; }
+.datepills button:hover { color: #fff; }
+.datepills button.on { background: linear-gradient(135deg, #0e9f8a, #34d3bd); color: #fff; box-shadow: 0 2px 8px rgba(14,159,138,.4); }
+.ai-banner { background: linear-gradient(135deg, #0f2743 0%, #143a5e 100%); border: 1px solid rgba(52,211,189,.25);
+  border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; }
+.ai-banner h3 { color: #fff; margin: 0 0 10px; font-size: 15px; }
+.ai-line { display: flex; gap: 10px; align-items: flex-start; color: #dbe6f5; font-size: 13.5px; padding: 6px 0; }
+.ai-line .ai-ic { font-size: 16px; flex: none; }
+.risk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.risk-card { background: #fff8f0; border: 1px solid #f3d9b8; border-left: 4px solid #f59e0b; border-radius: 12px; padding: 12px 14px; }
+.risk-card b { font-size: 14px; }
+.risk-card .rr { display: inline-block; font-size: 12px; background: #fef3e2; color: #b45309; border-radius: 20px;
+  padding: 3px 10px; margin: 4px 6px 0 0; font-weight: 600; }
+.funnel-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+.funnel-row .fl { width: 110px; font-size: 13px; font-weight: 700; flex: none; }
+.funnel-bar { flex: 1; height: 22px; background: #eef2f7; border-radius: 8px; position: relative; overflow: hidden; }
+.funnel-bar i { display: block; height: 100%; background: linear-gradient(90deg, #0e9f8a, #34d3bd); border-radius: 8px; transition: width .5s; }
+.funnel-bar.drop i { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.funnel-row .fv { width: 90px; font-size: 12.5px; color: #64748b; flex: none; text-align: right; }
+.heat { display: grid; grid-template-columns: 44px repeat(24, 1fr); gap: 2px; align-items: center; font-size: 10px; }
+.heat .hd { color: #8a97ad; font-weight: 600; }
+.heat .hc { aspect-ratio: 1; border-radius: 3px; background: #eef2f7; min-width: 0; }
+/* vs-class + nudge cards (student) */
+.vs-row { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.vs-row .vl { width: 110px; font-size: 13px; font-weight: 600; flex: none; }
+.vs-bars { flex: 1; }
+.vs-bar { height: 10px; border-radius: 6px; background: #eef2f7; margin: 3px 0; position: relative; }
+.vs-bar i { display: block; height: 100%; border-radius: 6px; }
+.vs-bar.you i { background: linear-gradient(90deg, #0e9f8a, #34d3bd); }
+.vs-bar.avg i { background: #cbd5e1; }
+.vs-legend { display: flex; gap: 16px; font-size: 12px; color: #64748b; margin-bottom: 6px; }
+.vs-legend b.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+.nudge { display: flex; gap: 12px; align-items: flex-start; background: linear-gradient(135deg, #f0fdfa, #ecfdf5);
+  border: 1px solid #a7f3d0; border-radius: 12px; padding: 12px 14px; margin: 8px 0; font-size: 13.5px; }
+.nudge .ni { font-size: 20px; flex: none; }
+.rank-badge { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #0e9f8a, #34d3bd);
+  color: #fff; font-weight: 800; border-radius: 14px; padding: 10px 18px; font-size: 15px; box-shadow: 0 4px 14px rgba(14,159,138,.35); }
+.streak-badge { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  color: #fff; font-weight: 800; border-radius: 14px; padding: 10px 16px; font-size: 15px; }
+.digest-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.digest-grid .card { text-align: center; }
+@media(max-width: 700px) { .digest-grid { grid-template-columns: 1fr 1fr; } }
