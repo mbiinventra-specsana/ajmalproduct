@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Lab — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="sidebar"></aside>
+  <main class="main">
+    <div class="topbar">
+      <div><h1>🧪 Practice Lab</h1><p>Hands-on drills with fictional data. No scores — just skill.</p></div>
+      <span class="badge-fict">TRAINING MODE · fictional data</span>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <h3>💳 Drill 1 — Post a payment</h3>
+        <p style="font-size:14px;color:#5b6b85;margin-bottom:14px">Fictional EOB for claim <b>CLM-2026-10482</b> (CPT 90837). Billed <b>$200</b>, allowed <b>$140</b>, patient coinsurance <b>$28</b>. Enter the posting:</p>
+        <div class="field"><label>Insurance paid ($)</label><input class="input" id="pPaid" type="number" placeholder="0"></div>
+        <div class="field"><label>Contractual adjustment ($)</label><input class="input" id="pAdj" type="number" placeholder="0"></div>
+        <div class="field"><label>Patient responsibility ($)</label><input class="input" id="pPat" type="number" placeholder="0"></div>
+        <button class="btn btn-teal btn-sm" id="pCheck">Check posting</button>
+        <div class="feedback" id="pFb"></div>
+      </div>
+      <div class="panel">
+        <h3>🛡 Drill 2 — Resolve the denial</h3>
+        <p style="font-size:14px;color:#5b6b85;margin-bottom:14px">Fictional claim <b>CLM-2026-10483</b> denied: <b>CO-97</b> — "payment included in another service" (bundling). The two CPT codes were billed without a modifier. What is the correct next step?</p>
+        <div id="dOpts">
+          <button class="opt" data-ok="0">Write it off — bundling denials can't be fixed</button>
+          <button class="opt" data-ok="0">Bill the patient for the denied amount</button>
+          <button class="opt" data-ok="1">Check NCCI edits; if distinct, rebill with XE/XS/XP/XU (or -59) modifier</button>
+          <button class="opt" data-ok="0">Wait 90 days and resubmit unchanged</button>
+        </div>
+        <div class="feedback" id="dFb"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>👥 Fictional patient registry</h3>
+      <p style="font-size:13px;color:#5b6b85;margin-bottom:12px">Practice demographic review. All records are fictional training data.</p>
+      <div id="pts"></div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+(async () => {
+  const u = await requireLogin(); if (!u) return;
+  shell('lab', u);
+
+  // Drill 1: payment posting math — 200 billed, 140 allowed, 28 patient → payer 112, adj 60
+  document.getElementById('pCheck').onclick = () => {
+    const paid = +document.getElementById('pPaid').value;
+    const adj = +document.getElementById('pAdj').value;
+    const pat = +document.getElementById('pPat').value;
+    const fb = document.getElementById('pFb');
+    const ok = paid === 112 && adj === 60 && pat === 28;
+    fb.className = 'feedback ' + (ok ? 'ok' : 'no');
+    fb.innerHTML = ok
+      ? `<b>✓ Perfect posting</b>Allowed $140 − patient $28 = payer pays <b>$112</b>; billed $200 − allowed $140 = <b>$60</b> contractual adjustment (CO-45). 60 + 28 + 112 = 200 ✓`
+      : `<b>✗ Check the math</b>Allowed amount is $140 and patient owes $28, so the payer pays $140 − $28. The adjustment is billed minus allowed. The three parts must total the billed $200.`;
+  };
+
+  // Drill 2: denial resolution
+  document.querySelectorAll('#dOpts .opt').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#dOpts .opt').forEach(x => { x.disabled = true; x.classList.add('dim'); });
+    const fb = document.getElementById('dFb');
+    if (b.dataset.ok === '1') {
+      b.classList.remove('dim'); b.classList.add('right');
+      fb.className = 'feedback ok';
+      fb.innerHTML = `<b>✓ Correct</b>CO-97 means the payer bundled the codes. If the services were truly distinct, append the right modifier (XE/XS/XP/XU preferred over -59) and rebill — or file a corrected claim. Never bill the patient for a CO denial, and never write off without checking.`;
+    } else {
+      b.classList.remove('dim'); b.classList.add('wrong');
+      fb.className = 'feedback no';
+      fb.innerHTML = `<b>✗ Not quite</b>CO-97 is a bundling denial — the fix is clinical: check NCCI edits and rebill with the correct distinct-procedure modifier. CO denials can never be billed to the patient.`;
+    }
+  });
+
+  // Patient registry
+  const { patients } = await api('/api/patients');
+  document.getElementById('pts').innerHTML = `
+    <table><tr><th>ID</th><th>Name</th><th>DOB</th><th>Gender</th><th>Phone</th><th>Status</th></tr>
+    ${patients.map(p => `<tr><td>${esc(p.code)}</td><td>${esc(p.name)}</td><td>${esc(p.dob)}</td>
+      <td>${esc(p.gender)}</td><td>${esc(p.phone)}</td><td><span class="pill p-done">${esc(p.status)}</span></td></tr>`).join('')}
+    </table>`;
+})();
+</script>
+</body>
+</html>

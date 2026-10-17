@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Training Case — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="sidebar"></aside>
+  <main class="main">
+    <div class="player">
+      <p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Case Center</a></p>
+      <div id="stage"></div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+let S = null; // {attemptId, questions, idx, score, max, caseTitle, caseCode}
+const stage = document.getElementById('stage');
+
+function renderQ() {
+  const q = S.questions[S.idx];
+  const pct = Math.round(100 * S.idx / S.questions.length);
+  stage.innerHTML = `
+    <div class="pbar"><i style="width:${pct}%"></i></div>
+    <div class="qcard">
+      <div class="qmeta"><span>${esc(S.caseCode)} · Question ${S.idx + 1} of ${S.questions.length}</span><span>Score: <b>${S.score}</b></span></div>
+      <h2>${esc(q.prompt)}</h2>
+      <div class="pts">${q.points} points</div>
+      <div class="hintbox" id="hint">💡 ${esc(q.hint || 'Think about what the payer needs to see.')}</div>
+      <div id="opts">${q.options.map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}</div>
+      <div style="margin-top:6px"><button class="btn btn-line btn-sm" id="hintBtn">Show hint 💡</button></div>
+      <div class="feedback" id="fb"></div>
+      <div id="nextRow" style="margin-top:16px;display:none;text-align:right">
+        <button class="btn btn-teal" id="nextBtn">${S.idx + 1 < S.questions.length ? 'Next question →' : 'See results →'}</button>
+      </div>
+    </div>`;
+  document.getElementById('hintBtn').onclick = () => document.getElementById('hint').classList.add('show');
+  stage.querySelectorAll('.opt').forEach(b => b.onclick = () => answer(q, +b.dataset.i));
+}
+
+async function answer(q, chosen) {
+  stage.querySelectorAll('.opt').forEach(b => b.disabled = true);
+  try {
+    const r = await api(`/api/attempts/${S.attemptId}/answer`,
+      { method: 'POST', body: { questionId: q.id, chosen } });
+    S.score += r.pointsEarned;
+    stage.querySelectorAll('.opt').forEach(b => {
+      const i = +b.dataset.i;
+      if (i === r.correctIdx) b.classList.add('right');
+      else if (i === chosen) b.classList.add('wrong');
+      else b.classList.add('dim');
+    });
+    const fb = document.getElementById('fb');
+    fb.className = 'feedback ' + (r.correct ? 'ok' : 'no');
+    fb.innerHTML = `<b>${r.correct ? '✓ Correct' : '✗ Not quite'}${r.pointsEarned ? ` · +${r.pointsEarned} pts` : ''}</b>${esc(r.explanation)}`;
+    document.getElementById('nextRow').style.display = 'block';
+    document.getElementById('nextBtn').onclick = () => {
+      S.idx++;
+      if (S.idx < S.questions.length) renderQ(); else finish();
+    };
+  } catch (e) {
+    stage.querySelectorAll('.opt').forEach(b => b.disabled = false);
+    alert(e.message);
+  }
+}
+
+async function finish() {
+  const r = await api(`/api/attempts/${S.attemptId}/finish`, { method: 'POST' });
+  const pct = r.maxScore ? Math.round(100 * r.score / r.maxScore) : 0;
+  stage.innerHTML = `
+    <div class="qcard score-hero">
+      <div class="ring" style="--p:${pct}%">${pct}%</div>
+      <h2>Case complete!</h2>
+      <p style="color:#5b6b85;margin:8px 0 4px"><b>${r.score} / ${r.maxScore}</b> points · accuracy ${r.accuracy}%</p>
+      <p style="color:#5b6b85">Total points: <b>${r.points}</b> · Level: <b>${esc(r.level)}</b></p>
+      <div style="margin-top:22px;display:flex;gap:12px;justify-content:center">
+        <a class="btn btn-line" href="/training">Case Center</a>
+        <button class="btn btn-teal" onclick="location.reload()">Retry case ↻</button>
+      </div>
+    </div>`;
+}
+
+(async () => {
+  const u = await requireLogin(); if (!u) return;
+  shell('training', u);
+  const caseId = new URLSearchParams(location.search).get('case');
+  if (!caseId) { location.href = '/training'; return; }
+  stage.innerHTML = `<div class="empty">Loading case…</div>`;
+  try {
+    const meta = await api('/api/cases/' + caseId);
+    const a = await api('/api/attempts', { method: 'POST', body: { caseId: +caseId } });
+    S = { attemptId: a.attemptId, questions: a.questions, idx: 0, score: 0,
+          caseCode: meta.code, caseTitle: meta.title };
+    renderQ();
+  } catch (e) {
+    stage.innerHTML = `<div class="empty">Could not load case: ${esc(e.message)}<br><a href="/training" style="color:#0e9f8a">← back</a></div>`;
+  }
+})();
+</script>
+</body>
+</html>

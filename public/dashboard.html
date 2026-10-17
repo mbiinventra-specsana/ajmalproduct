@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="sidebar"></aside>
+  <main class="main">
+    <div class="topbar">
+      <div><h1 id="hello">Dashboard</h1><p>Your training at a glance.</p></div>
+      <a class="btn btn-teal" href="/training">Continue training →</a>
+    </div>
+    <div class="cards" id="stats"></div>
+    <div class="grid2">
+      <div class="panel"><h3>📈 Training journey</h3><div class="jmap" id="jmap"></div>
+        <p style="font-size:13px;color:#5b6b85;margin-top:8px">Stages unlock in your mind as you complete cases across categories.</p></div>
+      <div class="panel"><h3>🕘 Recent attempts</h3><div id="recent"></div></div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+(async () => {
+  const u = await requireLogin(); if (!u) return;
+  shell('dashboard', u);
+  const d = await api('/api/dashboard');
+  document.getElementById('hello').textContent = `Good day, ${d.user.name.split(' ')[0]} 👋`;
+  const s = d.stats;
+  document.getElementById('stats').innerHTML = `
+    <div class="card stat"><span>Current level</span><b>${esc(s.level)}</b><div class="sub">Keep earning points</div></div>
+    <div class="card stat"><span>Overall accuracy</span><b>${s.accuracy}%</b><div class="sub">${s.attempts} attempts</div></div>
+    <div class="card stat"><span>Cases completed</span><b>${s.casesCompleted} / ${s.totalCases}</b><div class="sub">${s.totalCases ? Math.round(100*s.casesCompleted/s.totalCases) : 0}% of curriculum</div></div>
+    <div class="card stat"><span>Training points</span><b>${s.points}</b><div class="sub">Across all cases</div></div>`;
+  const stages = ['Patient & Insurance','Charge & Claims','Claim Processing','Payments & A/R','Denial Management'];
+  const hit = Math.min(stages.length, Math.ceil(s.casesCompleted / 2));
+  document.getElementById('jmap').innerHTML = stages.map((t, i) =>
+    `<div class="jstage ${i < hit ? 'hit' : ''}">${t}</div>`).join('');
+  document.getElementById('recent').innerHTML = d.recent.length ? `
+    <table><tr><th>Case</th><th>Score</th><th>Date</th></tr>
+    ${d.recent.map(r => `<tr><td>${esc(r.code)} · ${esc(r.title)}</td>
+      <td><b>${r.score}/${r.max_score}</b></td><td>${esc((r.completed_at||'').slice(0,10))}</td></tr>`).join('')}
+    </table>` : `<div class="empty">No attempts yet — <a href="/training" style="color:#0e9f8a;font-weight:600">start your first case →</a></div>`;
+})();
+</script>
+</body>
+</html>

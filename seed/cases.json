@@ -1,0 +1,623 @@
+[
+  {
+    "code": "CASE-001",
+    "title": "Eligibility Verification",
+    "description": "Master 270/271 inquiries, active coverage, cost-share math, COB, and prior-auth flags.",
+    "difficulty": "Beginner",
+    "category": "ELIGIBILITY",
+    "points": 50,
+    "sort": 1,
+    "questions": [
+      {
+        "q": "What is the 270/271 transaction used for?",
+        "options": [
+          "Sending a claim to the payer",
+          "Checking a patient's eligibility and benefits",
+          "Posting a payment from the payer",
+          "Filing an appeal on a denied claim"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "The 270 is the eligibility inquiry and the 271 is the payer's response. They are used before the visit to confirm coverage and benefits. Claims travel on the 837, payments come back on the 835, and appeals follow a separate process.",
+        "hint": "Which transaction happens BEFORE the visit?"
+      },
+      {
+        "q": "A patient's coverage shows as active. What does that actually guarantee?",
+        "options": [
+          "The payer will pay for today's visit",
+          "Coverage is active, but payment is not guaranteed",
+          "No copay or deductible is owed",
+          "No prior authorization will ever be needed"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "Active coverage only means the plan is in force on that date. Payment still depends on medical necessity, covered services, correct coding, and benefits like deductibles. Active coverage is necessary but never sufficient on its own.",
+        "hint": "Active coverage answers 'is the plan on?' — not 'will they pay?'"
+      },
+      {
+        "q": "The 271 response shows: copay $30, deductible $1,000 (met $200), coinsurance 20%. What is the patient's cost share?",
+        "options": [
+          "Only the $30 copay matters",
+          "$30 copay, $800 remaining deductible, then 20% coinsurance",
+          "The deductible is already fully met",
+          "Coinsurance applies before the deductible"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "Cost share stacks in order: the copay is collected at the visit, then the remaining deductible ($1,000 minus $200 met = $800) must be satisfied, and only then does the 20% coinsurance apply to the allowed amount. Getting this order right prevents surprise patient bills.",
+        "hint": "Deductible comes before coinsurance — do the subtraction."
+      },
+      {
+        "q": "What is COB, and why must it be checked?",
+        "options": [
+          "Coordination of Benefits — it determines which payer is primary when a patient has two plans",
+          "Cost of Billing — the fee the clearinghouse charges per claim",
+          "Change of Beneficiary — updating the patient's mailing address",
+          "Claim Override Batch — a method for resubmitting denied claims"
+        ],
+        "answer": 0,
+        "points": 10,
+        "explanation": "COB (Coordination of Benefits) establishes the primary payer when a patient carries more than one plan. Billing the wrong payer first causes denials and rework, because the secondary payer only processes a claim after the primary has adjudicated it.",
+        "hint": "Two insurance cards in the wallet — which one goes first?"
+      },
+      {
+        "q": "The 271 response flags 'prior authorization required' for an MRI. What should happen next?",
+        "options": [
+          "Ignore the flag and bill the MRI normally",
+          "Obtain authorization from the payer before performing the MRI",
+          "Bill the patient for the full MRI cost",
+          "Skip the MRI and code a different service instead"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "When the payer requires prior authorization, approval must be secured before the service happens, or the claim will deny as non-covered. Billing the patient to dodge it or swapping in different codes is wrong and can cross into fraud.",
+        "hint": "The word 'prior' tells you the timing."
+      }
+    ]
+  },
+  {
+    "code": "CASE-002",
+    "title": "Medical Coding Basics",
+    "description": "Learn ICD-10-CM, CPT, and HCPCS-II roles, diagnosis pointers, and mismatch denials.",
+    "difficulty": "Beginner",
+    "category": "CODING",
+    "points": 50,
+    "sort": 2,
+    "questions": [
+      {
+        "q": "Which statement correctly describes the three coding systems?",
+        "options": [
+          "ICD-10-CM codes what was done; CPT codes why it was done",
+          "ICD-10-CM codes why (diagnosis), CPT codes what was done (procedure), HCPCS-II codes supplies and drugs",
+          "All three code the same thing and are interchangeable",
+          "HCPCS-II codes diagnoses; ICD-10-CM codes procedures"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "ICD-10-CM captures the diagnosis (the reason for care), CPT captures the procedure or service performed, and HCPCS Level II covers supplies, DME, and drugs. They work together on a claim and none replaces another.",
+        "hint": "Match each system to 'why,' 'what,' or 'with what.'"
+      },
+      {
+        "q": "A patient is seen for chest pain. Which ICD-10-CM code fits?",
+        "options": [
+          "I20.9 (chest pain, unspecified)",
+          "S82.41XA (fracture, initial encounter)",
+          "C50.111 (malignant neoplasm of breast)",
+          "Z00.00 (general exam without abnormal findings)"
+        ],
+        "answer": 0,
+        "points": 10,
+        "explanation": "I20.9 is the unspecified chest-pain code. The fracture and neoplasm codes describe entirely different conditions, and Z00.00 is for a routine exam — using it for a symptomatic visit would misrepresent the encounter.",
+        "hint": "Pick the code that names the symptom the patient reported."
+      },
+      {
+        "q": "The visit is a moderate-complexity established-patient office visit. Which CPT code is most likely?",
+        "options": [
+          "99213",
+          "90837 (60-minute psychotherapy)",
+          "A4232 (syringe supply code)",
+          "99281 (low-level emergency department visit)"
+        ],
+        "answer": 0,
+        "points": 10,
+        "explanation": "99213 is the standard code for a moderate established-patient office visit. 90837 is a timed psychotherapy code, A4232 is a supply code, and 99281 belongs to the emergency department — the setting and service must match the code.",
+        "hint": "Office visit, established patient, moderate complexity."
+      },
+      {
+        "q": "What is a diagnosis pointer, and why does it matter?",
+        "options": [
+          "A note from the doctor about follow-up steps",
+          "The link on the claim connecting each procedure (CPT) to the diagnosis (ICD-10-CM) that justifies it",
+          "A modifier that increases the payment amount",
+          "The patient's signature authorizing the claim"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "Diagnosis pointers tell the payer which diagnosis supports each billed service. Without a valid pointer linking a covered diagnosis to the procedure, the payer cannot establish medical necessity and will deny the line.",
+        "hint": "It 'points' from the procedure to its reason."
+      },
+      {
+        "q": "A claim denies with CO-50 (medical necessity). The CPT was for a knee MRI, but the linked ICD-10-CM was for a routine physical. What went wrong?",
+        "options": [
+          "The codes do not support each other — the diagnosis does not justify the procedure",
+          "The claim was filed too late",
+          "The payer's system was down that day",
+          "The patient's copay was not collected"
+        ],
+        "answer": 0,
+        "points": 10,
+        "explanation": "CO-50 means the payer found no medical necessity: a routine-physical diagnosis does not justify a knee MRI. The fix is accurate coding that reflects the true clinical reason — never changing codes just to chase payment.",
+        "hint": "Read the denial literally: not medically necessary."
+      }
+    ]
+  },
+  {
+    "code": "CASE-003",
+    "title": "Charge Entry & Claim Creation",
+    "description": "Professional vs institutional claims, key claim fields, and charge-to-claim linking.",
+    "difficulty": "Intermediate",
+    "category": "CHARGE_ENTRY",
+    "points": 60,
+    "sort": 3,
+    "questions": [
+      {
+        "q": "A physician sees a patient in the office and also interprets the patient's X-ray at the hospital the same day. How many claims result, and on which forms?",
+        "options": [
+          "One claim on the CMS-1500 covering everything",
+          "Two claims: the office visit on CMS-1500/837P (professional) and the X-ray interpretation on UB-04/837I (institutional)",
+          "One claim on the UB-04",
+          "Two claims, both on the CMS-1500"
+        ],
+        "answer": 1,
+        "points": 12,
+        "explanation": "The form follows the biller, not the service. The physician's professional services go on the CMS-1500 (837P electronic), while the hospital's facility services go on the UB-04 (837I). One visit can legitimately produce two claims from two billers.",
+        "hint": "Ask who is billing — the doctor or the facility?"
+      },
+      {
+        "q": "Which set of fields is required and high-impact when creating a claim?",
+        "options": [
+          "The patient's preferred pharmacy and emergency contact hobbies",
+          "Correct patient demographics, NPI, diagnosis codes with pointers, procedure codes, dates of service, and charges",
+          "Only the total dollar amount",
+          "The physician's personal mobile number"
+        ],
+        "answer": 1,
+        "points": 12,
+        "explanation": "Claims are adjudicated by machines first. Missing or wrong demographics, NPI, diagnosis pointers, CPT codes, dates of service, or charges cause rejections or denials. Every one of these fields must be accurate.",
+        "hint": "Think about what a payer's computer needs to decide payment."
+      },
+      {
+        "q": "What does 'charge-to-claim linking' mean in practice?",
+        "options": [
+          "Connecting each entered charge (CPT + ICD + amount + date) to the correct claim so nothing is unbilled or double-billed",
+          "Linking the patient's chart to their email address",
+          "Connecting the clearinghouse directly to the bank",
+          "Merging two different patients' records"
+        ],
+        "answer": 0,
+        "points": 12,
+        "explanation": "Every charge entered must land on exactly one claim. Poor linking causes lost revenue (charges never billed) or compliance risk (charges billed twice). Charge entry and claim creation must reconcile with each other.",
+        "hint": "One charge, one claim — no orphans, no duplicates."
+      },
+      {
+        "q": "A charge is entered for CPT 99214 with a date of service after the patient's discharge date. What is the most likely outcome?",
+        "options": [
+          "It will be paid normally",
+          "It will be rejected or denied — the date of service does not make sense",
+          "The payer will double the payment as a courtesy",
+          "Nothing — dates of service do not matter"
+        ],
+        "answer": 1,
+        "points": 12,
+        "explanation": "Dates of service must be logical and fall within the encounter. A service dated after discharge (or before admission) fails basic validity checks at the clearinghouse or payer and will be rejected.",
+        "hint": "Would a payer believe a visit happened after the patient left?"
+      },
+      {
+        "q": "Why is it risky to copy last month's charge entry as a template for this month's visit?",
+        "options": [
+          "There is no risk — it is faster and always accurate",
+          "The diagnosis, procedures, and payer rules may have changed — copying creates coding errors and denials",
+          "Using templates is illegal in all states",
+          "The system deletes templates automatically each month"
+        ],
+        "answer": 1,
+        "points": 12,
+        "explanation": "Each encounter is unique. Copying charges forward (cloning) carries over codes that may not match today's documentation, producing mismatches, medical-necessity denials, and potential upcoding exposure. Enter charges from today's documentation.",
+        "hint": "Same patient, different day, different story."
+      }
+    ]
+  },
+  {
+    "code": "CASE-004",
+    "title": "Claim Scrubbing & Submission",
+    "description": "Clearinghouse scrubbing, rejection vs denial, NCCI edits, and timely filing limits.",
+    "difficulty": "Intermediate",
+    "category": "CLAIMS",
+    "points": 60,
+    "sort": 4,
+    "questions": [
+      {
+        "q": "What does a clearinghouse do during claim scrubbing?",
+        "options": [
+          "Deletes old claims from the system",
+          "Checks the 837 claim file for errors (missing fields, invalid codes, format issues), translates it, and forwards it to the payer",
+          "Pays the provider directly",
+          "Decides the allowed amount for each service"
+        ],
+        "answer": 1,
+        "points": 12,
+        "explanation": "The clearinghouse scrubs the electronic 837 claim for format and data errors, translates it into the payer's required format, and forwards it. It does not set payment amounts — that is the payer's adjudication step.",
+        "hint": "'Scrub' means clean the claim before the payer sees it."
+      },
+      {
+        "q": "A claim comes back as 'rejected.' How is that different from 'denied'?",
+        "options": [
+          "They are the same thing",
+          "Rejected means the claim never entered the payer's system (bad data or format), usually caught by the clearinghouse; denied means the payer processed it and refused payment",
+          "Rejected is always worse than denied",
+          "Denied claims can never be fixed or resubmitted"
+        ],
+        "answer": 1,
+        "points": 12,
+        "explanation": "This is the classic trainee confusion. A rejection means the claim bounced before adjudication — fix the data and resubmit. A denial means the payer adjudicated it and said no — it needs a correction, an appeal, or a write-off. The workflows are completely different.",
+        "hint": "Rejection happens before the payer decides; denial IS the payer's decision."
+      },
+      {
+        "q": "What are NCCI edits?",
+        "options": [
+          "A type of insurance identification card",
+          "National Correct Coding Initiative rules that block improper code combinations (unbundling) on a claim",
+          "A method for paying providers electronically",
+          "A patient satisfaction survey"
+        ],
+        "answer": 1,
+        "points": 12,
+        "explanation": "NCCI edits are CMS rules that prevent providers from billing separately for services that should be bundled together (unbundling). Scrubbers check claims against these edits before submission.",
+        "hint": "'Correct Coding' is in the name — they enforce coding correctness."
+      },
+      {
+        "q": "A commercial payer requires claims within 90 days of service. A claim is submitted on day 120. What happens?",
+        "options": [
+          "It will be paid with a small late penalty",
+          "It will be denied for timely filing (CO-29), and the provider usually cannot bill the patient",
+          "The payer extends the deadline automatically",
+          "The balance is transferred to the patient as a courtesy bill"
+        ],
+        "answer": 1,
+        "points": 12,
+        "explanation": "CO-29 timely-filing denials are generally final: the deadline passed and the loss falls on the provider, not the patient. Medicare allows about 12 months; commercial plans are often 90 to 180 days. Calendar control is an RCM essential.",
+        "hint": "Deadlines in billing are hard walls, not suggestions."
+      },
+      {
+        "q": "Before submitting, the scrubber flags 'missing diagnosis pointer on line 2.' What should the biller do?",
+        "options": [
+          "Submit anyway — the payer will figure it out",
+          "Fix the pointer so line 2 links to a valid diagnosis, then resubmit",
+          "Delete line 2 to make the error go away",
+          "Change the diagnosis to one the payer prefers"
+        ],
+        "answer": 1,
+        "points": 12,
+        "explanation": "A missing diagnosis pointer means the payer cannot establish medical necessity for that line, so it will deny. The correct action is to link the proper diagnosis from the documentation. Deleting the line loses revenue; changing the diagnosis to please the payer is falsification.",
+        "hint": "Fix the data — don't hide it and don't fake it."
+      }
+    ]
+  },
+  {
+    "code": "CASE-005",
+    "title": "Payment Posting",
+    "description": "ERA vs EOB, allowed amounts, contractual adjustments, and underpayment detection.",
+    "difficulty": "Intermediate",
+    "category": "PAYMENTS",
+    "points": 70,
+    "sort": 5,
+    "questions": [
+      {
+        "q": "Worked example: CPT 90837 billed $200, allowed $140. What is the contractual adjustment, and why?",
+        "options": [
+          "$60 — the difference between billed and allowed, written off per the payer contract (CO-45)",
+          "$28 — the patient's coinsurance amount",
+          "$112 — the payer's payment amount",
+          "$200 — the full billed amount is written off"
+        ],
+        "answer": 0,
+        "points": 14,
+        "explanation": "The contractual adjustment is billed minus allowed: $200 minus $140 = $60, coded CO-45. The provider agreed to this rate in the payer contract, so it can never be billed to the patient. The $28 is patient coinsurance and the $112 is the payer's check.",
+        "hint": "The contract says 'we pay $140 for this code' — the rest is the adjustment."
+      },
+      {
+        "q": "Same example (billed $200, allowed $140, coinsurance $28). How much does the payer actually pay, and what is patient responsibility?",
+        "options": [
+          "Payer pays $140; patient owes $0",
+          "Payer pays $112; patient owes $28 coinsurance",
+          "Payer pays $200; patient owes $28",
+          "Payer pays $60; patient owes $140"
+        ],
+        "answer": 1,
+        "points": 14,
+        "explanation": "The allowed $140 splits into patient coinsurance ($28, PR-2) and the payer's share ($140 minus $28 = $112). The payer never pays the full billed amount under a contract, and the write-off is never the patient's bill. Check: $60 + $28 + $112 = $200.",
+        "hint": "Allowed equals payer share plus patient share: $140 = $112 + $28."
+      },
+      {
+        "q": "What is the difference between an ERA and an EOB?",
+        "options": [
+          "They are identical documents",
+          "The ERA (835) is the electronic remittance file used for posting payments; the EOB is the patient-facing explanation of benefits, not used for posting",
+          "The EOB is electronic and the ERA is paper",
+          "The ERA is sent to the patient and the EOB to the provider"
+        ],
+        "answer": 1,
+        "points": 14,
+        "explanation": "The ERA (835 transaction) is the machine-readable file the billing system auto-posts from. The EOB is the human-readable statement, often sent to the patient. Posting from an EOB by hand is slow and error-prone; the ERA is the posting source of truth.",
+        "hint": "'Electronic' is in the name — which one would a computer read?"
+      },
+      {
+        "q": "A claim shows $0 payment but no denial code. What is the most likely explanation?",
+        "options": [
+          "It must be a denial",
+          "Zero pay does not always mean denial — the payment may have applied entirely to the deductible, or the remit has not fully processed",
+          "The payer lost the claim",
+          "The patient already paid everything"
+        ],
+        "answer": 1,
+        "points": 14,
+        "explanation": "Zero pay does not equal denial — this is a core poster skill. If the allowed amount went entirely to the patient's unmet deductible, the payer correctly pays $0 and the balance is patient responsibility. Always read the remark codes before assuming a denial.",
+        "hint": "Who pays first when a deductible is unmet? The patient — so the payer's check can be $0."
+      },
+      {
+        "q": "The payer's remit shows an allowed amount LOWER than the contracted rate for that CPT. What should the poster do?",
+        "options": [
+          "Accept it and move on",
+          "Flag it as a potential underpayment and route it for contract-based follow-up",
+          "Bill the patient for the difference",
+          "Delete the payment and repost it at the higher amount"
+        ],
+        "answer": 1,
+        "points": 14,
+        "explanation": "Underpayment detection is a core payment-posting skill: compare the allowed amount against the contracted fee schedule. If the payer shorted the contracted rate, that is the payer's error to pursue — never shift it to the patient or falsify the posting.",
+        "hint": "The contract is the referee — check the payer's number against it."
+      }
+    ]
+  },
+  {
+    "code": "CASE-006",
+    "title": "Denial Management",
+    "description": "Group codes, CARCs, bundling, corrected claims vs appeals, and the denial workflow.",
+    "difficulty": "Advanced",
+    "category": "DENIALS",
+    "points": 80,
+    "sort": 6,
+    "questions": [
+      {
+        "q": "A denial carries group code CO. A second carries PR. What is the practical difference?",
+        "options": [
+          "There is no practical difference",
+          "CO (Contractual Obligation) means the provider absorbs it and cannot bill the patient; PR (Patient Responsibility) means it can be billed to the patient",
+          "CO means the patient pays; PR means the provider pays",
+          "CO denials are always appealable; PR denials never are"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "Group codes decide who owns the balance. CO means the provider is contractually obligated to absorb it — billing the patient would violate the payer contract. PR means the balance legitimately belongs to the patient (deductible, coinsurance, or properly-noticed non-covered services).",
+        "hint": "C is contractual (the provider's problem); P is the patient's."
+      },
+      {
+        "q": "Two denials arrive: one CO-96, one PR-96. What is the difference, and when is PR-96 appropriate?",
+        "options": [
+          "They are identical denials",
+          "CO-96 is a non-covered charge absorbed by the provider; PR-96 is a non-covered charge billable to the patient, typically when the patient signed advance notice (ABN) or a GY modifier shows the service is statutorily excluded",
+          "PR-96 means the provider must absorb the charge",
+          "CO-96 is always a payer mistake"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "Both are 'non-covered,' but the group code changes everything. PR-96 is only valid when the patient was properly notified in advance (for example an ABN) or the service is statutorily excluded (GY modifier). Without that, it stays CO-96 and the provider absorbs it.",
+        "hint": "Same CARC, different owner — what paperwork lets you bill the patient?"
+      },
+      {
+        "q": "A claim denies CO-97 (bundling). The biller used modifier -59. The NCCI modifier indicator for this edit is '1'. What is the best next step?",
+        "options": [
+          "Resubmit with -59 again and hope it passes",
+          "Check whether a more specific modifier (XE, XS, XP, or XU) accurately describes distinct services, and only rebill if documentation supports it; otherwise accept the bundling",
+          "Bill the patient for the bundled service",
+          "Delete the second procedure line from the claim"
+        ],
+        "answer": 1,
+        "points": 15,
+        "explanation": "CO-97 means the payer bundled the services per NCCI. Modifier -59 is the vague 'distinct service' flag; payers prefer the specific X{EPSU} modifiers — but only when documentation truly supports distinct services. Appending modifiers to force payment is upcoding risk.",
+        "hint": "Specific beats vague — but the documentation must earn the modifier."
+      },
+      {
+        "q": "A denial needs fixing. When do you send a corrected claim (frequency 7) versus filing a formal appeal?",
+        "options": [
+          "They are the same process",
+          "A corrected claim (bill type frequency 7) fixes data or coding errors and replaces the claim; an appeal disputes the payer's decision with documentation and is used when the claim was correct but the payer's judgment is challenged",
+          "Always file an appeal first",
+          "Corrected claims are only used for Medicare"
+        ],
+        "answer": 1,
+        "points": 15,
+        "explanation": "Frequency 7 replaces a claim that had fixable errors (wrong code, missing modifier). An appeal argues the payer decided wrongly on a correct claim and needs medical records plus a letter. Choosing wrong wastes weeks: appealing a data error, or 'correcting' a judgment call.",
+        "hint": "Fix your mistake with a corrected claim; fight their mistake with an appeal."
+      },
+      {
+        "q": "A denial letter arrives 60 days after the remit date. The payer's appeal window is 90 days from the remit date. What must happen?",
+        "options": [
+          "Nothing — there is still plenty of time",
+          "The appeal must be filed within the 90-day window (30 days remain) — track deadlines per payer, because missing them forfeits the money",
+          "Appeal windows reset whenever you call the payer",
+          "Appeal windows only apply to Medicare"
+        ],
+        "answer": 1,
+        "points": 15,
+        "explanation": "Appeal windows (typically 30 to 90 days, payer-specific) are hard deadlines measured from the remit date, not from when you noticed the denial. Strong teams overturn most well-built appeals — but only when filed on time. Calendar every denial.",
+        "hint": "The clock started at the remit, not at your desk."
+      },
+      {
+        "q": "What is the correct denial-management workflow?",
+        "options": [
+          "Write off every denial immediately to keep A/R clean",
+          "Classify the denial (code and group), gather documentation, correct or appeal, track the outcome, then fix the root cause upstream so it stops recurring",
+          "Resubmit the identical claim every week until it pays",
+          "Call the payer and argue until they reverse it"
+        ],
+        "answer": 1,
+        "points": 15,
+        "explanation": "Denial management is a loop, not a single action: classify to learn the real reason, resolve the individual claim correctly, then fix the upstream cause (registration, coding, authorization) so the whole denial class shrinks. Writing everything off or blindly resubmitting burns money.",
+        "hint": "Treat the disease (root cause), not just the symptom (one claim)."
+      }
+    ]
+  },
+  {
+    "code": "CASE-007",
+    "title": "A/R Follow-up & KPIs",
+    "description": "Aging buckets, days in A/R, benchmark KPIs, and claim prioritization.",
+    "difficulty": "Advanced",
+    "category": "AR",
+    "points": 80,
+    "sort": 7,
+    "questions": [
+      {
+        "q": "Claims sit in aging buckets: 0-30, 31-60, 61-90, 91+ days. A claim is 75 days old with no payer response. What does that tell you?",
+        "options": [
+          "It is fine — payers routinely take 75 days",
+          "It sits in the 61-90 bucket and needs active follow-up now, before it slides into 91+ where collectability drops",
+          "It should be written off immediately",
+          "Aging buckets are only for management reports"
+        ],
+        "answer": 1,
+        "points": 16,
+        "explanation": "Aging buckets prioritize work because older balances are harder and less likely to collect. A 75-day claim with no response is stuck and needs a status call or appeal now. Waiting turns a follow-up task into a write-off.",
+        "hint": "Money gets colder with age — work the warmest old claims first."
+      },
+      {
+        "q": "How is 'days in A/R' calculated?",
+        "options": [
+          "Total accounts receivable divided by average daily charges",
+          "Total charges divided by the number of patients",
+          "Denied claims divided by total claims",
+          "Cash collected divided by days in the month"
+        ],
+        "answer": 0,
+        "points": 16,
+        "explanation": "Days in A/R equals total accounts receivable divided by average daily charges. It answers: how many days of revenue are sitting uncollected? Lower is better — best-in-class is under 40 days, with top performers under 35.",
+        "hint": "It is a 'how long until we are paid' number."
+      },
+      {
+        "q": "Your practice shows: clean claim rate 88%, denial rate 9%, days in A/R 55. Benchmarks are >95-98% clean, <5% denials, <40 days in A/R. What is the right read?",
+        "options": [
+          "Everything is performing fine",
+          "All three miss benchmark — revenue leaks at submission (low clean rate), adjudication (high denials), and collection (slow A/R); fix upstream first",
+          "Only the denial rate matters",
+          "Benchmarks do not apply to smaller practices"
+        ],
+        "answer": 1,
+        "points": 16,
+        "explanation": "The three KPIs tell one story: claims go out dirty (88% clean), get denied (9%), and sit unpaid (55 days). Because most denials originate upstream, the highest-leverage fix is front-end quality — registration, eligibility, coding — which lifts all three numbers together.",
+        "hint": "Three red lights, one engine — start where claims are born."
+      },
+      {
+        "q": "You have one hour for A/R follow-up. Which claims do you work first?",
+        "options": [
+          "The newest claims in the 0-30 bucket",
+          "High-dollar claims in the 61-90 and 91+ buckets that are closest to timely-filing or appeal deadlines",
+          "Claims in alphabetical order by patient name",
+          "Only the smallest balances, to clear volume"
+        ],
+        "answer": 1,
+        "points": 16,
+        "explanation": "Prioritization equals dollars at risk times time sensitivity. High-value aging claims near filing or appeal deadlines lose everything if they expire; new claims still have time. Work the intersection of big money and expiring soon.",
+        "hint": "Save what is about to be lost forever first."
+      },
+      {
+        "q": "What is net collection rate, and why does it matter more than gross collection rate?",
+        "options": [
+          "They measure exactly the same thing",
+          "Net collection rate is collections divided by charges minus contractual adjustments; it measures how much of what you are actually allowed to collect you really collect (benchmark above 95-96%). The gross rate is distorted by write-offs",
+          "Net collection rate is always 100%",
+          "It measures patient satisfaction scores"
+        ],
+        "answer": 1,
+        "points": 16,
+        "explanation": "Gross collections can look fine even while contractual adjustments hide underperformance. Net collection rate strips out the contracted write-offs and asks: of every collectible dollar, how many did we get? Above 95 to 96% is the benchmark.",
+        "hint": "Judge yourself on dollars you were allowed to keep, not dollars you billed."
+      }
+    ]
+  },
+  {
+    "code": "CASE-008",
+    "title": "Full-Cycle Clean Claim Challenge",
+    "description": "Follow fictional patient Sarah Johnson from registration through payment and A/R — including a denial twist.",
+    "difficulty": "Advanced",
+    "category": "FULL_CYCLE",
+    "points": 100,
+    "sort": 8,
+    "questions": [
+      {
+        "q": "Stage 1 — Registration: at check-in, the front desk copies Sarah Johnson's insurance card but does not verify eligibility. What is the risk?",
+        "options": [
+          "No risk — the insurance card is sufficient proof",
+          "The card may be expired or the plan may have changed; without a 270/271 check, the visit may be uninsured and the claim denied",
+          "Verification is only needed for surgeries",
+          "The payer verifies eligibility automatically on claim receipt"
+        ],
+        "answer": 1,
+        "points": 20,
+        "explanation": "A card is a snapshot, not proof — coverage can lapse or change between visits. The 271 response confirms active-on-date-of-service, benefits, and authorization flags. Skipping eligibility verification is the number one beginner mistake and a top source of denials.",
+        "hint": "Cards expire; eligibility is checked live."
+      },
+      {
+        "q": "Stage 2 — Coding: Sarah is seen for right ankle pain after a fall. The coder links CPT 99213 to ICD-10-CM S82.41XA (fracture of right lower leg, initial encounter). Is this sound?",
+        "options": [
+          "Yes — the diagnosis supports the visit, and the 7th character 'A' correctly marks an initial encounter",
+          "No — ankle pain can never be coded",
+          "Yes, but the 7th character does not matter",
+          "No — fractures can never be initial encounters"
+        ],
+        "answer": 0,
+        "points": 20,
+        "explanation": "The fracture diagnosis justifies the office visit, and the 'A' seventh character correctly marks an initial encounter. Accurate, specific coding with valid diagnosis pointers is what survives medical-necessity review.",
+        "hint": "Does the 'why' support the 'what'? Yes."
+      },
+      {
+        "q": "Stage 3 — Claim: the claim goes out on a CMS-1500 (837P). Why is that the right form?",
+        "options": [
+          "It is the only claim form that exists",
+          "The physician's professional services are billed by the provider on the professional claim form — the form follows the biller",
+          "The UB-04 is the form used by physicians",
+          "Claim forms do not matter as long as the amounts are right"
+        ],
+        "answer": 1,
+        "points": 20,
+        "explanation": "The physician's professional services belong on the CMS-1500/837P. If a hospital facility were billing for the same encounter's facility costs, that would go on the UB-04/837I. The form follows the biller, not the service.",
+        "hint": "Who is billing — the physician or the facility?"
+      },
+      {
+        "q": "Stage 4 — Denial twist: the payer denies one line with CO-97 (bundling). The two procedures were a single ankle X-ray interpretation bundled into the visit per NCCI, with modifier indicator '0'. What is the right move?",
+        "options": [
+          "Append modifier -59 and rebill to force payment",
+          "Accept the bundling — indicator '0' means no modifier can override the edit, and the documentation does not support separate payment",
+          "Bill Sarah Johnson for the X-ray interpretation",
+          "Resubmit the identical claim every week"
+        ],
+        "answer": 1,
+        "points": 20,
+        "explanation": "An NCCI indicator of '0' means the edit cannot be bypassed with any modifier. Forcing payment with -59 would be improper. The payer applied the rule correctly, so the right move is to accept the bundling rather than fight a correct edit.",
+        "hint": "Indicator 0 means the edit always wins."
+      },
+      {
+        "q": "Stage 5 — Payment & A/R: the remit arrives — billed $180, allowed $150, CO-45 $30 write-off, patient coinsurance PR-2 $30, payer pays $120. Sarah's $30 balance sits in A/R at 35 days with no payment. What is the right action?",
+        "options": [
+          "Write off the $30 immediately",
+          "Verify the math ($30 + $30 + $120 = $180), confirm the balance is truly patient responsibility, then send the patient statement and follow up — it is in the 31-60 bucket",
+          "Resubmit the claim to the payer",
+          "Dispute that the balance exists"
+        ],
+        "answer": 1,
+        "points": 20,
+        "explanation": "First verify posting accuracy: $180 equals the $30 write-off plus $30 patient share plus $120 payer payment. The $30 is legitimate patient responsibility (PR-2), not a payer error, so the claim does not go back to the payer — it goes to patient collections with statements and follow-up in the 31-60 bucket.",
+        "hint": "PR on the remit means the next stop is the patient, not the payer."
+      }
+    ]
+  }
+]

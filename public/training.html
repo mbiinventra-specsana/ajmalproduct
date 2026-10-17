@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Center — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="sidebar"></aside>
+  <main class="main">
+    <div class="topbar">
+      <div><h1>🎯 Case Center</h1><p>Work realistic billing cases. Every answer is scored and explained.</p></div>
+      <span class="badge-fict">TRAINING MODE · fictional data</span>
+    </div>
+    <div id="list"></div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+const CAT = { ELIGIBILITY:'🔍', CODING:'🧬', CHARGE_ENTRY:'🧾', CLAIMS:'📨', PAYMENTS:'💳', DENIALS:'🛡', AR:'📉', FULL_CYCLE:'👑', GENERAL:'📋' };
+(async () => {
+  const u = await requireLogin(); if (!u) return;
+  shell('training', u);
+  const { cases } = await api('/api/cases');
+  document.getElementById('list').innerHTML = cases.map(c => `
+    <div class="case-row">
+      <div class="ci">${CAT[c.category] || '📋'}</div>
+      <div class="cb">
+        <b>${esc(c.code)} · ${esc(c.title)}</b>
+        <p>${esc(c.description)}</p>
+        <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
+          <span class="pill p-${c.difficulty.toLowerCase()}">${esc(c.difficulty)}</span>
+          ${c.completed ? '<span class="pill p-done">✓ Completed</span>' : c.attempts ? '<span class="pill p-prog">In progress</span>' : ''}
+        </div>
+      </div>
+      <div class="meta">${c.questions} questions<br><b>${c.points} pts</b>
+        ${c.best !== null ? `<br>Best: ${c.best}` : ''}<br><br>
+        <a class="btn btn-teal btn-sm" href="/play?case=${c.id}">${c.completed ? 'Retry' : c.attempts ? 'Continue' : 'Start'} →</a>
+      </div>
+    </div>`).join('') || `<div class="empty">No training cases available yet.</div>`;
+})();
+</script>
+</body>
+</html>

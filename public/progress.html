@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Progress — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="sidebar"></aside>
+  <main class="main">
+    <div class="topbar"><div><h1>📊 My Progress</h1><p>Every attempt, every score, every case mastered.</p></div></div>
+    <div class="cards" id="stats"></div>
+    <div class="grid2">
+      <div class="panel"><h3>Per-case mastery</h3><div id="perCase"></div></div>
+      <div class="panel"><h3>Attempt history</h3><div id="hist"></div></div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+(async () => {
+  const u = await requireLogin(); if (!u) return;
+  shell('progress', u);
+  const p = await api('/api/progress');
+  const s = p.stats;
+  document.getElementById('stats').innerHTML = `
+    <div class="card stat"><span>Level</span><b>${esc(s.level)}</b></div>
+    <div class="card stat"><span>Points</span><b>${s.points}</b></div>
+    <div class="card stat"><span>Accuracy</span><b>${s.accuracy}%</b></div>
+    <div class="card stat"><span>Cases completed</span><b>${s.casesCompleted} / ${s.totalCases}</b></div>`;
+  document.getElementById('perCase').innerHTML = p.perCase.length ? p.perCase.map(c => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f7">
+      <div><b>${esc(c.code)}</b> · ${esc(c.title)}<br><span style="font-size:12.5px;color:#5b6b85">${c.attempts} attempt(s)</span></div>
+      <div style="text-align:right">${c.done ? '<span class="pill p-done">✓ done</span>' : '<span class="pill p-prog">started</span>'}<br>
+      <b style="font-size:14px">best ${c.best ?? 0}</b></div>
+    </div>`).join('') : `<div class="empty">No attempts yet.</div>`;
+  document.getElementById('hist').innerHTML = p.attempts.length ? `
+    <table><tr><th>Case</th><th>Score</th><th>Status</th><th>Date</th></tr>
+    ${p.attempts.map(a => `<tr><td>${esc(a.code)}</td><td><b>${a.score}/${a.max_score}</b></td>
+      <td>${a.status === 'completed' ? '<span class="pill p-done">completed</span>' : '<span class="pill p-prog">' + esc(a.status) + '</span>'}</td>
+      <td>${esc((a.completed_at || a.started_at || '').slice(0, 10))}</td></tr>`).join('')}</table>`
+    : `<div class="empty">No attempts yet.</div>`;
+})();
+</script>
+</body>
+</html>

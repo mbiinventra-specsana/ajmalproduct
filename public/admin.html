@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="sidebar"></aside>
+  <main class="main">
+    <div class="topbar"><div><h1>⚙️ Admin Panel</h1><p>Manage training accounts. There is no public registration — you create every account.</p></div>
+      <button class="btn btn-ghost btn-sm" style="color:#16233a;border-color:#e4eaf3" onclick="logout()">Logout</button></div>
+    <div class="cards" id="stats"></div>
+    <div class="grid2">
+      <div class="panel">
+        <h3>➕ Create account</h3>
+        <div class="alert err" id="err"></div>
+        <div class="field"><label>Full name</label><input class="input" id="nName"></div>
+        <div class="field"><label>Email</label><input class="input" id="nEmail" type="email"></div>
+        <div class="field"><label>Password (6+ chars)</label><input class="input" id="nPass" type="password"></div>
+        <div class="field"><label>Role</label><select class="input" id="nRole">
+          <option value="student">Student</option><option value="instructor">Instructor</option><option value="admin">Admin</option>
+        </select></div>
+        <button class="btn btn-teal" id="create">Create account</button>
+      </div>
+      <div class="panel"><h3>👥 Accounts</h3><div id="users"></div></div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+async function load() {
+  try {
+    const o = await api('/api/admin/overview');
+    document.getElementById('stats').innerHTML = `
+      <div class="card stat"><span>Users</span><b>${o.users}</b></div>
+      <div class="card stat"><span>Students</span><b>${o.students}</b></div>
+      <div class="card stat"><span>Cases</span><b>${o.cases}</b></div>
+      <div class="card stat"><span>Attempts</span><b>${o.attempts}</b></div>`;
+    const { users } = await api('/api/admin/users');
+    document.getElementById('users').innerHTML = `
+      <table><tr><th>Name</th><th>Email</th><th>Role</th><th></th></tr>
+      ${users.map(x => `<tr><td>${esc(x.name)}</td><td>${esc(x.email)}</td>
+        <td><span class="pill ${x.role === 'admin' ? 'p-advanced' : 'p-beginner'}">${esc(x.role)}</span></td>
+        <td><button class="btn btn-line btn-sm" onclick="del(${x.id})">Delete</button></td></tr>`).join('')}
+      </table>`;
+  } catch (e) {
+    document.querySelector('.main').innerHTML = `<div class="empty" style="margin-top:80px">
+      <h2>403 — Admin access required</h2><p>${esc(e.message)}</p><p><a href="/login" style="color:#0e9f8a">← Login</a></p></div>`;
+  }
+}
+async function del(id) {
+  if (!confirm('Delete this account?')) return;
+  try { await api('/api/admin/users/' + id, { method: 'DELETE' }); load(); }
+  catch (e) { alert(e.message); }
+}
+(async () => {
+  const u = await currentUser();
+  if (!u) { location.href = '/login'; return; }
+  shell('admin', u);
+  document.getElementById('create').onclick = async () => {
+    const err = document.getElementById('err');
+    err.classList.remove('err'); err.textContent = '';
+    try {
+      await api('/api/admin/users', { method: 'POST', body: {
+        name: document.getElementById('nName').value,
+        email: document.getElementById('nEmail').value,
+        password: document.getElementById('nPass').value,
+        role: document.getElementById('nRole').value } });
+      ['nName', 'nEmail', 'nPass'].forEach(id => document.getElementById(id).value = '');
+      load();
+    } catch (e) { err.textContent = e.message; err.classList.add('err'); }
+  };
+  load();
+})();
+</script>
+</body>
+</html>
