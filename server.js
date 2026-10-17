@@ -11,6 +11,7 @@ const db = require('./lib/db');
 const labData = require('./lib/lab-data');
 
 const app = express();
+app.set('trust proxy', 1); // behind NexPanel/nginx: lets req.secure reflect X-Forwarded-Proto
 const PORT = process.env.PORT || 3000;
 const ADMIN_PATH = (process.env.ADMIN_PATH || '/admin').replace(/\/$/, '') || '/admin';
 
@@ -29,7 +30,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'bill-dev-secret-change-me',
   resave: false, saveUninitialized: false,
   cookie: { httpOnly: true, sameSite: 'lax', maxAge: 1000 * 60 * 60 * 12,
-            secure: process.env.COOKIE_SECURE === '1' },
+            secure: 'auto' }, // Secure only when actually on HTTPS; works on both
 }));
 
 // login rate limiter (in-memory)
