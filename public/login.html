@@ -43,7 +43,7 @@ document.getElementById('f').addEventListener('submit', async (e) => {
                              password: document.getElementById('pw').value }) });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Login failed');
-    location.href = d.user.role === 'admin' ? '/admin' : '/dashboard';
+    location.href = d.user.role === 'admin' ? '/owner' : '/stu';
   } catch (ex) { err.textContent = ex.message; err.classList.add('err'); }
 });
 </script>

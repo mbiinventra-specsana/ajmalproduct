@@ -81,16 +81,30 @@ const send = (f) => (req, res) => res.sendFile(path.join(__dirname, 'public', f)
 app.get('/', send('index.html'));
 app.get('/login', send('login.html'));
 // student portal: /stu is the student side entry (dashboard)
-app.get('/stu', send('dashboard.html'));
-app.get('/stu/', send('dashboard.html'));
+app.get('/stu', (req, res, next) => {
+  if (!req.session.userId) return res.redirect('/login');
+  send('dashboard.html')(req, res, next);
+});
+app.get('/stu/', (req, res, next) => {
+  if (!req.session.userId) return res.redirect('/login');
+  send('dashboard.html')(req, res, next);
+});
 app.get('/dashboard', send('dashboard.html'));
 app.get('/training', send('training.html'));
 app.get('/play', send('play.html'));
 app.get('/progress', send('progress.html'));
 app.get('/lab', send('lab.html'));
-// owner panel: /owner is the owner side entry
-app.get('/owner', send('owner.html'));
-app.get('/owner/', send('owner.html'));
+// owner panel: fully separate + hidden — only a logged-in admin can open it,
+// everyone else gets the branded 404 (no mention of it anywhere user-side).
+async function ownerPage(req, res, next) {
+  try {
+    const u = req.session.userId ? await db.get('SELECT role FROM users WHERE id=?', [req.session.userId]) : null;
+    if (u && u.role === 'admin') return send('owner.html')(req, res, next);
+    res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+  } catch (e) { next(e); }
+}
+app.get('/owner', ownerPage);
+app.get('/owner/', ownerPage);
 app.get(ADMIN_PATH, send('admin.html'));
 app.get(ADMIN_PATH + '/', send('admin.html'));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
