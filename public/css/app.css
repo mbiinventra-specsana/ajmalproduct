@@ -418,3 +418,15 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-w
 .digest-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .digest-grid .card { text-align: center; }
 @media(max-width: 700px) { .digest-grid { grid-template-columns: 1fr 1fr; } }
+
+/* ---- ultra accounts ---- */
+.acct-tools{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.acct-tools .input{padding:8px 12px;font-size:13px}
+.bulkbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#f0fdfa;border:1px solid #99f6e4;
+  border-radius:12px;padding:10px 12px;margin-bottom:12px;position:sticky;top:0;z-index:5}
+.bulkbar .input{padding:7px 10px;font-size:13px}
+.odot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#22c55e;margin-right:6px;
+  box-shadow:0 0 0 3px rgba(34,197,94,.18);animation:odot-pulse 2s infinite}
+@keyframes odot-pulse{0%,100%{box-shadow:0 0 0 3px rgba(34,197,94,.18)}50%{box-shadow:0 0 0 6px rgba(34,197,94,.06)}}
+.xrow td{background:#f8fafc;border-top:0 !important}
+@media(max-width:700px){.acct-tools{grid-template-columns:1fr 1fr}}
