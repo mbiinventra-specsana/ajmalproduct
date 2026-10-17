@@ -3,6 +3,7 @@
 // accounts are created by an administrator.
 // DB: SQLite by default; MariaDB/MySQL via DB_ENGINE=mysql (+ DB_HOST/DB_PORT/DB_USER/DB_PASS/DB_NAME).
 // Tables auto-create on boot (see lib/db.js).
+require('./lib/env'); // FIRST: load NexPanel env file + normalize, before anything reads env
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
@@ -679,11 +680,13 @@ app.get('/api/admin/overview', requireAdmin, ah(async (req, res) => {
 app.get('/api/admin/diagnostics', requireAdmin, ah(async (req, res) => {
   const fs = require('fs');
   const { sqliteCandidates, sqliteStudentCount } = require('./lib/migrate');
+  const dotenvLoad = require('./lib/dotenv-load');
   const users = (await db.get('SELECT COUNT(*) AS n FROM users')).n;
   const students = (await db.get("SELECT COUNT(*) AS n FROM users WHERE role='student'")).n;
   const out = {
     engine: db.ENGINE,
     dbUsers: users, dbStudents: students,
+    dotenvFile: dotenvLoad.found || null,
     env: {
       DATA_DIR: !!process.env.DATA_DIR,
       DB_ENGINE: !!process.env.DB_ENGINE,
