@@ -423,6 +423,294 @@ app.get('/api/cases/:id', requireAuth, ah(async (req, res) => {
     questions: qs.map(stripQ) });
 }));
 
+// ================= GUIDED CASE MODE =================
+// Step-kind: info | pick | action | quiz | note
+const GUIDED_STEPS = {
+'CASE-001': [
+ { id:'brief', t:'Morning huddle briefing', kind:'info', pts:5,
+   d:'The front desk hands you today\u2019s arrival slip. Before the visit, you must verify the patient has active coverage \u2014 an ineligible claim will be denied as CO-16 and the practice eats the cost. You will use your real workspace data.' },
+ { id:'pick-pt', t:'Select the patient', kind:'pick', pts:10,
+   d:'Choose the patient from your workspace whose coverage you will verify.',
+   src:'/api/rcm/patients', rkey:'patients', label:['name','code'], val:'code', ctx:'patient_code', ctx2:['patient_name','name'] },
+ { id:'pick-ins', t:'Select their insurance', kind:'pick', pts:10,
+   d:'Pick the active policy for this patient. In the real world, always verify the policy that will be billed.',
+   src:'/api/rcm/insurance', rkey:'insurance', label:['payer','member_id'], val:'payer', ctx:'payer', filter:{ field:'patient_code', from:'patient_code' } },
+ { id:'verify', t:'Run the 270/271 eligibility check', kind:'action', pts:15,
+   d:'Send the 270 eligibility inquiry to the payer and read the 271 response.',
+   api:'/api/rcm/eligibility/verify', method:'POST',
+   body:{ patient_code:'{patient_code}', payer:'{payer}', service:'Office Visit' },
+   expect:'id', save:{ check_id:'id' } },
+ { id:'interpret', t:'Interpret the 271 response', kind:'quiz', pts:10,
+   d:'Your check is complete. Based on the coverage, copay and deductible shown:',
+   q:'The 271 shows coverage ACTIVE, $25 copay, $1,000 deductible remaining. What do you tell the front desk?',
+   options:['Collect the $25 copay at check-in; the deductible applies to today\u2019s charges','Bill the patient the full visit amount today','Skip it \u2014 insurance covers everything','Reschedule the patient until the deductible is met'], answer:0 },
+],
+'CASE-002': [
+ { id:'brief', t:'Encounter briefing', kind:'info', pts:5,
+   d:'Established patient, 45, office visit: Type 2 diabetes follow-up and hypertension check. Provider spent 30 minutes, performed a level-3 evaluation and ordered an A1C lab (CPT 83036). Code it cleanly \u2014 wrong codes mean denials.' },
+ { id:'dx', t:'Pick the primary diagnosis', kind:'quiz', pts:10,
+   q:'What is the correct primary ICD-10-CM code for this visit?',
+   options:['E11.65 \u2014 Type 2 diabetes with hyperglycemia','E11.9 \u2014 Type 2 diabetes without complications','I10 \u2014 Essential hypertension','Z00.00 \u2014 Routine general exam'], answer:1 },
+ { id:'cpt', t:'Pick the procedure code', kind:'quiz', pts:10,
+   q:'What CPT best fits a 30-minute established-patient office visit?',
+   options:['99202 \u2014 new patient, straightforward','99213 \u2014 established, low complexity','99214 \u2014 established, moderate complexity','99490 \u2014 chronic care management'], answer:1 },
+ { id:'necessity', t:'Check medical necessity', kind:'quiz', pts:15,
+   q:'Does E11.9 support medical necessity for the A1C lab (83036)?',
+   options:['Yes \u2014 a diabetes diagnosis justifies A1C monitoring','No \u2014 labs never need a diagnosis code','Only when paired with the hypertension code','Only for new patients'], answer:0 },
+ { id:'rationale', t:'Document your rationale', kind:'note', pts:10, min:20,
+   d:'Write 1\u20132 sentences linking diagnosis to procedure \u2014 this is what an auditor looks for.',
+   ph:'E.g. E11.9 supports 99213 and 83036 because\u2026' },
+],
+'CASE-003': [
+ { id:'pick-pt', t:'Select the patient', kind:'pick', pts:10,
+   d:'Choose who today\u2019s charge is for.',
+   src:'/api/rcm/patients', rkey:'patients', label:['name','code'], val:'code', ctx:'patient_code', ctx2:['patient_name','name'] },
+ { id:'charge', t:'Enter the charge', kind:'action', pts:15,
+   d:'Enter today\u2019s encounter charge exactly as documented: CPT 99213, ICD-10 E11.9, $180.00.',
+   api:'/api/rcm/charges', method:'POST', form:['dos','cpt','icd','amount'],
+   body:{ patient_code:'{patient_code}', dos:'{dos}', cpt:'{cpt}', icd:'{icd}', amount:'{amount}' },
+   expect:'id', save:{ charge_id:'id' } },
+ { id:'claim', t:'Create the claim', kind:'action', pts:15,
+   d:'Build the CMS-1500 from your charge. The claim pulls diagnosis and procedure from the charge you just entered.',
+   api:'/api/rcm/claims', method:'POST', body:{ charge_id:'{charge_id}' },
+   expect:'claim_no', save:{ claim_id:'id', claim_no:'claim_no' } },
+ { id:'clean', t:'What makes it clean?', kind:'quiz', pts:10,
+   q:'Your claim is in DRAFT. What makes it \u201cclean\u201d before submission?',
+   options:['Matching patient demographics, valid codes, and an active payer policy','Submitting it as fast as possible','Leaving the diagnosis blank so the payer decides','Faxing it instead of electronic filing'], answer:0 },
+],
+'CASE-004': [
+ { id:'pick-claim', t:'Select a draft claim', kind:'pick', pts:10,
+   d:'Pick a DRAFT claim from your work queue to scrub.',
+   src:'/api/rcm/claims', rkey:'claims', label:['claim_no','payer'], val:'id', ctx:'claim_id',
+   filterStatus:'DRAFT' },
+ { id:'scrub', t:'Run the claim scrubber', kind:'action', pts:15,
+   d:'Run all 13 validation rules against the claim \u2014 the same checks the payer\u2019s system runs.',
+   api:'/api/rcm/claims/{claim_id}/validate', method:'POST', body:{}, expect:'ok', save:{} },
+ { id:'fix', t:'Handle the scrubber flags', kind:'quiz', pts:15,
+   q:'The scrubber flags CO-16: \u201cClaim lacks information.\u201d What is the correct fix?',
+   options:['Correct the missing/invalid data and rebill \u2014 never resubmit unchanged','Resubmit the identical claim immediately','Write the balance off to bad debt','Appeal with a redetermination letter'], answer:0 },
+ { id:'submit', t:'Submit to the payer', kind:'action', pts:10,
+   d:'The claim is clean. Transmit the 837P to the payer.',
+   api:'/api/rcm/claims/{claim_id}/submit', method:'POST', body:{}, expect:'status', save:{ claim_status:'status' } },
+],
+'CASE-005': [
+ { id:'pick-claim', t:'Select a submitted claim', kind:'pick', pts:10,
+   d:'Pick a SUBMITTED claim that is waiting on payer response.',
+   src:'/api/rcm/claims', rkey:'claims', label:['claim_no','payer'], val:'id', ctx:'claim_id',
+   filterStatus:'SUBMITTED' },
+ { id:'era', t:'Read the ERA', kind:'info', pts:5,
+   d:'The 835 remittance arrived: payer allowed $150.00 of the $180.00 billed, paid $120.00, applied a $30 contractual adjustment, and assigned $30 patient responsibility. Post exactly what the ERA says \u2014 never post from memory.' },
+ { id:'post', t:'Post the payment', kind:'action', pts:15,
+   d:'Post the ERA: paid 120, adjustment 30, patient responsibility 30.',
+   api:'/api/rcm/payments', method:'POST',
+   body:{ claim_id:'{claim_id}', paid:'{paid}', adjustment:'{adjustment}', patient_resp:'{patient_resp}' },
+   form:['paid','adjustment','patient_resp'], expect:'ok', save:{} },
+ { id:'balance', t:'Reconcile the balance', kind:'quiz', pts:10,
+   q:'Billed $180, allowed $150, paid $120, adjustment $30. What is the correct patient balance?',
+   options:['$30 \u2014 the patient-responsibility portion of the allowed amount','$60 \u2014 billed minus paid','$0 \u2014 the claim is fully resolved',' $150 \u2014 the full allowed amount'], answer:0 },
+],
+'CASE-006': [
+ { id:'pick-denial', t:'Select the denial', kind:'pick', pts:10,
+   d:'Open your denial work queue and pick a denied claim to work.',
+   src:'/api/rcm/denials', rkey:'denials', label:['claim_no','payer'], val:'id', ctx:'claim_id' },
+ { id:'review', t:'Review the claim', kind:'info', pts:5,
+   d:'Read the denial reason on the remittance. Note the CARC code, the billed vs allowed amounts, and the date of service. A denial is a question \u2014 your job is to find the answer before you act.' },
+ { id:'root', t:'Identify the root cause', kind:'quiz', pts:15,
+   q:'The remittance shows CO-97: \u201cthe benefit for this service is included in the payment for another procedure.\u201d What happened?',
+   options:['Unbundling \u2014 two codes were billed that the payer considers one service','The patient\u2019s coverage lapsed','The claim was filed past the timely-filing limit','The diagnosis does not support the procedure'], answer:0 },
+ { id:'action', t:'Choose the corrective action', kind:'quiz', pts:10,
+   q:'For this CO-97 unbundling denial, what is the correct next step?',
+   options:['Correct the claim (use the proper bundled code or modifier) and rebill','Appeal immediately without changing anything','Write it off \u2014 denials can\u2019t be fixed','Rebill the identical claim next week'], answer:0 },
+ { id:'doc', t:'Document the resolution', kind:'note', pts:10, min:20,
+   d:'Write the resolution note an auditor would want to see: root cause, action taken, expected outcome.',
+   ph:'E.g. CO-97 unbundling \u2014 corrected with modifier 25 and rebilled\u2026' },
+ { id:'resolve', t:'Resolve the denial', kind:'action', pts:10,
+   d:'Execute your corrective action in the system.',
+   api:'/api/rcm/denials/{claim_id}/resolve', method:'POST',
+   body:{ action:'correct', note:'{note}' }, expect:'ok', save:{} },
+],
+'CASE-007': [
+ { id:'ar', t:'Review the A/R aging', kind:'info', pts:10,
+   d:'Open your A/R aging buckets: 0\u201330, 31\u201360, 61\u201390, 90+ days. Money sitting in 90+ is the practice\u2019s cash bleeding out \u2014 that bucket is your priority.' },
+ { id:'prioritize', t:'Prioritize the work', kind:'quiz', pts:10,
+   q:'You have claims in every bucket. Which do you work first?',
+   options:['90+ days \u2014 oldest dollars closest to timely-filing and write-off risk','0\u201330 days \u2014 they are the newest','Whichever payer you like most','Alphabetical by patient name'], answer:0 },
+ { id:'pick-claim2', t:'Select the claim to follow up', kind:'pick', pts:0,
+   d:'Choose any open claim for your follow-up note.',
+   src:'/api/rcm/claims', rkey:'claims', label:['claim_no','payer'], val:'id', ctx:'claim_id' },
+ { id:'followup', t:'Log a follow-up', kind:'action', pts:15,
+   d:'Pick a claim and log a payer follow-up: who you called, what they said, next step date.',
+   api:'/api/rcm/ar/note', method:'POST', form:['note'],
+   body:{ claim_id:'{claim_id}', note:'{note}', kind:'followup' }, expect:'ok', save:{} },
+ { id:'dso', t:'Know your KPIs', kind:'quiz', pts:15,
+   q:'Accounts receivable is $90,000 and average daily charges are $3,000. What is Days in A/R (DSO)?',
+   options:['30 days \u2014 healthy','90 days \u2014 critical','3 days \u2014 excellent','300 days'], answer:0 },
+],
+'CASE-008': [
+ { id:'demo', t:'Review demographics', kind:'pick', pts:10,
+   d:'Step 1 of 8 \u2014 Start with the patient. Confirm name, DOB and contact \u2014 demographics errors are the #1 cause of front-end denials.',
+   src:'/api/rcm/patients', rkey:'patients', label:['name','code'], val:'code', ctx:'patient_code', ctx2:['patient_name','name'] },
+ { id:'pick-ins8', t:'Select payer for the visit', kind:'pick', pts:0,
+   d:'Which payer will be billed for this visit?',
+   src:'/api/rcm/insurance', rkey:'insurance', label:['payer','member_id'], val:'payer', ctx:'payer8',
+   filter:{ field:'patient_code', from:'patient_code' } },
+ { id:'elig', t:'Verify eligibility', kind:'action', pts:10,
+   d:'Step 2 of 8 \u2014 Run the 270/271 check before any charge exists.',
+   api:'/api/rcm/eligibility/verify', method:'POST',
+   body:{ patient_code:'{patient_code}', payer:'{payer8}', service:'Office Visit' }, expect:'id', save:{} },
+ { id:'charge8', t:'Enter the charge', kind:'action', pts:10,
+   d:'Step 3 of 8 \u2014 Enter the visit charge: CPT 99213, E11.9, $180.',
+   api:'/api/rcm/charges', method:'POST', form:['dos'],
+   body:{ patient_code:'{patient_code}', dos:'{dos}', cpt:'99213', icd:'E11.9', amount:180 },
+   expect:'id', save:{ charge_id:'id' } },
+ { id:'claim8', t:'Create + validate the claim', kind:'action', pts:15,
+   d:'Step 4 of 8 \u2014 Build the claim, then immediately run the scrubber.',
+   api:'/api/rcm/claims', method:'POST', body:{ charge_id:'{charge_id}' },
+   expect:'claim_no', save:{ claim_id:'id' } },
+ { id:'submit8', t:'Submit the claim', kind:'action', pts:10,
+   d:'Step 5 of 8 \u2014 Transmit the clean 837P.',
+   api:'/api/rcm/claims/{claim_id}/submit', method:'POST', body:{}, expect:'status', save:{} },
+ { id:'payer', t:'Review the payer response', kind:'quiz', pts:10,
+   d:'Step 6 of 8 \u2014 The 835 arrives.',
+   q:'ERA: allowed $150, paid $120, adjustment $30, patient responsibility $30. What do you post?',
+   options:['Exactly the ERA amounts \u2014 $120 paid, $30 adjustment, $30 patient','The billed amount of $180 as paid','Only the $120 and ignore the rest','$150 as paid in full'], answer:0 },
+ { id:'post8', t:'Post the payment', kind:'action', pts:15,
+   d:'Step 7 of 8 \u2014 Post the ERA to the claim.',
+   api:'/api/rcm/payments', method:'POST', form:['paid','adjustment','patient_resp'],
+   body:{ claim_id:'{claim_id}', paid:'{paid}', adjustment:'{adjustment}', patient_resp:'{patient_resp}' },
+   expect:'ok', save:{} },
+ { id:'ar8', t:'Resolve the A/R', kind:'note', pts:20, min:20,
+   d:'Step 8 of 8 \u2014 $30 patient balance remains. Write the follow-up plan: when and how will you collect it?',
+   ph:'E.g. Send statement in 7 days, call on day 21, offer payment plan\u2026' },
+],
+};
+
+const GUIDED_PREREQ = {
+  'CASE-001': [], 'CASE-002': [],
+  'CASE-003': ['CASE-001','CASE-002'], 'CASE-004': ['CASE-001','CASE-002'], 'CASE-005': ['CASE-001','CASE-002'],
+  'CASE-006': ['CASE-003','CASE-004','CASE-005'], 'CASE-007': ['CASE-003','CASE-004','CASE-005'],
+  'CASE-008': ['CASE-003','CASE-004','CASE-005'],
+};
+
+const JOURNEY_STAGES = [
+  { id:'j1', title:'Patient & Insurance', desc:'Registration and eligibility \u2014 where clean claims begin', cases:['CASE-001'] },
+  { id:'j2', title:'Charge & Claims', desc:'Coding, charge entry and building the claim', cases:['CASE-002','CASE-003'] },
+  { id:'j3', title:'Claim Processing', desc:'Scrubbing and submission \u2014 the payer\u2019s front door', cases:['CASE-004'] },
+  { id:'j4', title:'Payments & A/R', desc:'Posting remits and working the aging buckets', cases:['CASE-005','CASE-007'] },
+  { id:'j5', title:'Denial Management', desc:'Root-cause analysis and corrective action', cases:['CASE-006'] },
+  { id:'j6', title:'Full-Cycle Capstone', desc:'Run the entire revenue cycle end to end', cases:['CASE-008'] },
+];
+
+function guidedPublicSteps(code) {
+  return (GUIDED_STEPS[code] || []).map(s => {
+    const o = { ...s };
+    delete o.answer; // never leak answers
+    return o;
+  });
+}
+
+
+async function guidedDoneSet(uid) {
+  const cases = await db.all('SELECT id, code FROM cases WHERE active=1');
+  const codeById = Object.fromEntries(cases.map(c => [c.id, c.code]));
+  const quizDone = new Set((await db.all(
+    `SELECT DISTINCT case_id FROM attempts WHERE user_id=? AND status='completed'`, [uid]))
+    .map(r => codeById[r.case_id]).filter(Boolean));
+  const gruns = await db.all('SELECT case_id, status, points, step_idx FROM guided_runs WHERE user_id=?', [uid]);
+  const gmap = {};
+  for (const g of gruns) { const code = codeById[g.case_id]; if (code) gmap[code] = g; }
+  const done = code => quizDone.has(code) || (gmap[code] && gmap[code].status === 'completed');
+  return { cases, codeById, quizDone, gmap, done };
+}
+
+app.get('/api/guided/journey', requireAuth, ah(async (req, res) => {
+  const { cases, quizDone, gmap, done } = await guidedDoneSet(req.session.userId);
+  const perCase = {};
+  for (const c of cases) {
+    const code = c.code;
+    const prereqs = GUIDED_PREREQ[code] || [];
+    const missing = prereqs.filter(p => !done(p));
+    perCase[code] = {
+      quizDone: quizDone.has(code),
+      guidedDone: !!(gmap[code] && gmap[code].status === 'completed'),
+      guidedPoints: gmap[code] ? Number(gmap[code].points) : 0,
+      guidedStep: gmap[code] ? Number(gmap[code].step_idx) : 0,
+      guidedTotal: (GUIDED_STEPS[code] || []).length,
+      locked: missing.length > 0,
+      lockReason: missing.length ? 'Complete ' + missing.join(', ') + ' first' : null,
+    };
+  }
+  const stages = JOURNEY_STAGES.map(st => {
+    const nDone = st.cases.filter(done).length;
+    return { ...st, total: st.cases.length, done: nDone, complete: nDone === st.cases.length };
+  });
+  res.json({ stages, cases: perCase });
+}));
+
+app.get('/api/guided/:caseId', requireAuth, ah(async (req, res) => {
+  const c = await db.get('SELECT * FROM cases WHERE id=? AND active=1', [req.params.caseId]);
+  if (!c || !GUIDED_STEPS[c.code]) return res.status(404).json({ error: 'No guided walkthrough for this case.' });
+  const run = await db.get('SELECT status, step_idx, points FROM guided_runs WHERE user_id=? AND case_id=?',
+    [req.session.userId, c.id]);
+  res.json({
+    case: { id: c.id, code: c.code, title: c.title, difficulty: c.difficulty },
+    steps: guidedPublicSteps(c.code),
+    run: run ? { status: run.status, step_idx: Number(run.step_idx), points: Number(run.points) } : null,
+  });
+}));
+
+app.post('/api/guided/:caseId/start', requireAuth, ah(async (req, res) => {
+  const uid = req.session.userId;
+  const c = await db.get('SELECT * FROM cases WHERE id=? AND active=1', [req.params.caseId]);
+  if (!c || !GUIDED_STEPS[c.code]) return res.status(404).json({ error: 'No guided walkthrough for this case.' });
+  const { done } = await guidedDoneSet(uid);
+  const missing = (GUIDED_PREREQ[c.code] || []).filter(p => !done(p));
+  if (missing.length) return res.status(403).json({ error: 'Complete ' + missing.join(', ') + ' first.' });
+  const ex = await db.get('SELECT id FROM guided_runs WHERE user_id=? AND case_id=?', [uid, c.id]);
+  if (ex) await db.run(`UPDATE guided_runs SET status='started', step_idx=0, points=0, started_at=?, completed_at=NULL WHERE id=?`, [db.now(), ex.id]);
+  else await db.run(`INSERT INTO guided_runs (user_id, case_id, status, step_idx, points, started_at) VALUES (?,?,?,?,?,?)`,
+    [uid, c.id, 'started', 0, 0, db.now()]);
+  bustAdminCache();
+  res.json({ ok: true, steps: guidedPublicSteps(c.code) });
+}));
+
+app.post('/api/guided/:caseId/step/:idx', requireAuth, ah(async (req, res) => {
+  const uid = req.session.userId;
+  const c = await db.get('SELECT * FROM cases WHERE id=? AND active=1', [req.params.caseId]);
+  if (!c || !GUIDED_STEPS[c.code]) return res.status(404).json({ error: 'No guided walkthrough for this case.' });
+  const steps = GUIDED_STEPS[c.code];
+  const idx = parseInt(req.params.idx, 10);
+  const step = steps[idx];
+  if (!step) return res.status(404).json({ error: 'Step not found.' });
+  const run = await db.get('SELECT * FROM guided_runs WHERE user_id=? AND case_id=?', [uid, c.id]);
+  if (!run) return res.status(400).json({ error: 'Start the walkthrough first.' });
+  if (run.status === 'completed') return res.status(400).json({ error: 'Walkthrough already completed.' });
+  if (idx !== Number(run.step_idx)) return res.status(400).json({ error: 'Steps must be completed in order.' });
+  const b = req.body || {};
+  let earned = 0;
+  if (step.kind === 'quiz') {
+    if (Number(b.chosen) === step.answer) earned = step.pts;
+    else return res.json({ ok: false, msg: 'Not quite \u2014 review the step and try again.' });
+  } else if (step.kind === 'note') {
+    const t = String(b.text || '').trim();
+    if (t.length >= (step.min || 20)) earned = step.pts;
+    else return res.json({ ok: false, msg: 'Write at least ' + (step.min || 20) + ' characters.' });
+  } else if (step.kind === 'pick') {
+    if (!b.value && b.value !== 0) return res.json({ ok: false, msg: 'Please make a selection.' });
+    earned = step.pts;
+  } else if (step.kind === 'action') {
+    const r = b.result;
+    if (!r || (step.expect && r[step.expect] === undefined)) return res.json({ ok: false, msg: 'The action did not return the expected result \u2014 try again.' });
+    earned = step.pts;
+  } else { earned = step.pts; }
+  const nidx = idx + 1;
+  const doneAll = nidx >= steps.length;
+  await db.run('UPDATE guided_runs SET step_idx=?, points=points+?, status=?, completed_at=? WHERE id=?',
+    [nidx, earned, doneAll ? 'completed' : 'started', doneAll ? db.now() : null, run.id]);
+  bustAdminCache();
+  res.json({ ok: true, pointsEarned: earned, step_idx: nidx, done: doneAll, totalPoints: Number(run.points) + earned });
+}));
+
 app.post('/api/attempts', requireAuth, ah(async (req, res) => {
   const c = await db.get('SELECT * FROM cases WHERE id = ? AND active = 1', [req.body?.caseId]);
   if (!c) return res.status(404).json({ error: 'Case not found.' });
@@ -851,11 +1139,12 @@ app.post('/api/rcm/ar/note', requireAuth, requireFn('ar-note'), ah(async (req, r
   const c = await db.get('SELECT id FROM claims WHERE id = ? AND user_id = ?', [b.claim_id, req.session.userId]);
   if (!c) throw Object.assign(new Error('Claim not found.'), { status: 404 });
   if (!String(b.note || '').trim()) throw Object.assign(new Error('Note cannot be empty.'), { status: 400 });
-  const kind = ['note', 'followup', 'promise'].includes(b.kind) ? b.kind : 'note';
+  let kind = ['note', 'followup', 'promise'].includes(b.kind) ? b.kind : 'note';
+  const promiseAmt = r2(Math.max(0, Number(b.promise_amt) || 0));
+  if (promiseAmt > 0 && kind !== 'promise') kind = 'promise';
   const status = String(b.status || '').slice(0, 40);
   const assigned = String(b.assigned_to || '').slice(0, 40);
   const nextDate = String(b.next_date || '').slice(0, 20);
-  const promiseAmt = r2(Math.max(0, Number(b.promise_amt) || 0));
   await db.run('INSERT INTO ar_notes (user_id, claim_id, note, kind, status, assigned_to, next_date, promise_amt, created_at) VALUES (?,?,?,?,?,?,?,?,?)',
     [req.session.userId, c.id, String(b.note).trim().slice(0, 500), kind, status, assigned, nextDate, promiseAmt, snow()]);
   await db.run("UPDATE claims SET follow_up = 'IN_PROGRESS' WHERE id = ? AND follow_up = 'NOT_STARTED'", [c.id]);
@@ -1017,7 +1306,7 @@ app.get('/api/rcm/reports', requireAuth, ah(cached('stu-reports', 60000, async (
   const days = Math.max(0, parseInt(req.query.days, 10) || 0);
   const since = days ? (db.IS_MYSQL ? `DATE_SUB(NOW(), INTERVAL ${days} DAY)` : `datetime('now', '-${days} days')`) : null;
   const attQ = `SELECT a.*, c.code, c.title FROM attempts a JOIN cases c ON c.id = a.case_id
-    WHERE a.user_id = ? AND a.status = 'finished'` + (since ? ` AND a.finished_at >= ${since}` : '') + ` ORDER BY a.id DESC`;
+    WHERE a.user_id = ? AND a.status = 'completed'` + (since ? ` AND a.completed_at >= ${since}` : '') + ` ORDER BY a.id DESC`;
   const att = await db.all(attQ, [u]);
   const labs = await db.all('SELECT lab_key, MAX(score) AS best, COUNT(*) AS n FROM lab_runs WHERE user_id = ? GROUP BY lab_key', [u]);
   const cl = await db.all('SELECT * FROM claims WHERE user_id = ?', [u]);
@@ -1049,7 +1338,7 @@ app.get('/api/rcm/reports', requireAuth, ah(cached('stu-reports', 60000, async (
       avgDaysAR: open.length ? Math.round(open.reduce((s, c) => s + ageDays(c), 0) / open.length) : 0,
     },
     payers,
-    recent: att.slice(0, 25).map(a => ({ code: a.code, title: a.title, score: a.score, max: a.max_score, when: a.finished_at || a.created_at })),
+    recent: att.slice(0, 25).map(a => ({ code: a.code, title: a.title, score: a.score, max: a.max_score, when: a.completed_at || a.started_at })),
   };
 })));
 
