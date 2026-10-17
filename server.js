@@ -162,6 +162,8 @@ const MENU_ITEMS = [
   ['priorauth', 'Prior Auth Lab', 'labs', 'clip'],
   ['clearinghouse', 'Clearinghouse Sim', 'labs', 'send'],
   ['cred', 'Credentialing Tracker', 'labs', 'clip'],
+  ['hipaa', 'HIPAA Training', 'labs', 'shield'],
+  ['coverage', 'LCD/NCD Checker', 'labs', 'search'],
 ];
 const MENU_ITEM_KEYS = MENU_ITEMS.map(m => m[0]);
 // per-function catalog: [fnKey, label] — actions inside pages, toggleable per student
@@ -228,6 +230,8 @@ function menuItemForPath(p) {
   if (p.startsWith('/api/labs/sprints')) return 'sprints';
   if (p.startsWith('/api/labs/quiz')) return 'quiz';
   if (p.startsWith('/api/labs/era')) return 'era';
+  if (p.startsWith('/api/labs/hipaa')) return 'hipaa';
+  if (p.startsWith('/api/labs/coverage')) return 'coverage';
   if (p.startsWith('/api/labs/priorauth')) return 'priorauth';
   if (p.startsWith('/api/labs/clearinghouse')) return 'clearinghouse';
   if (p.startsWith('/api/labs/statements')) return 'statements';
@@ -322,6 +326,8 @@ app.get('/labs/denials', send('labs/denials.html'));
 app.get('/labs/sprints', send('labs/sprints.html'));
 app.get('/labs/quiz', send('labs/quiz.html'));
 app.get('/labs/era', send('labs/era-posting.html'));
+app.get('/labs/hipaa', send('labs/hipaa.html'));
+app.get('/labs/coverage', send('labs/coverage.html'));
 app.get('/labs/priorauth', send('labs/priorauth.html'));
 app.get('/labs/clearinghouse', send('labs/clearinghouse.html'));
 app.get('/labs/ub04', send('labs/ub04.html'));
@@ -944,6 +950,48 @@ app.post('/api/labs/era/grade', requireAuth, requireFn('lab-run'), ah(async (req
   const score = Math.round(100 * pts / max);
   await logLab(req.session.userId, 'era', score, 100, { scenario: e.id, lines: e.lines.length });
   res.json({ score, max: 100, perLine });
+}));
+
+// ---------- HIPAA compliance training ----------
+const stripHipaa = (h, i) => ({
+  i, id: h.id, topic: h.topic, difficulty: h.difficulty,
+  q: h.q, options: h.options,
+});
+app.get('/api/labs/hipaa', requireAuth, ah(async (req, res) => {
+  res.json({ fictional: true, passPct: labData.HIPAA_PASS_PCT,
+    scenarios: labData.HIPAA.map(stripHipaa) });
+}));
+app.post('/api/labs/hipaa/submit', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
+  const answers = req.body.answers || [];
+  const perQ = labData.HIPAA.map((h, i) => {
+    const a = answers[i];
+    const ok = Number(a) === h.answer;
+    return { i, id: h.id, ok, correct: h.answer, why: h.why, topic: h.topic };
+  });
+  const correct = perQ.filter(r => r.ok).length;
+  const score = Math.round(100 * correct / labData.HIPAA.length);
+  const passed = score >= labData.HIPAA_PASS_PCT;
+  await logLab(req.session.userId, 'hipaa', score, 100,
+    { correct, total: labData.HIPAA.length, passed });
+  res.json({ score, max: 100, correct, total: labData.HIPAA.length, passed,
+    passPct: labData.HIPAA_PASS_PCT, perQ });
+}));
+
+// ---------- LCD/NCD coverage checker ----------
+app.get('/api/labs/coverage', requireAuth, ah(async (req, res) => {
+  res.json({ fictional: true, scenarios: labData.COVERAGE });
+}));
+app.post('/api/labs/coverage/check', requireAuth, ah(async (req, res) => {
+  const cpt = normCode(req.body.cpt), icd = normCode(req.body.icd);
+  if (!cpt || !icd) return res.status(400).json({ error: 'CPT and ICD-10 codes are required.' });
+  const exact = labData.COVERAGE.find(x => normCode(x.cpt) === cpt && normCode(x.icd) === icd);
+  if (exact) return res.json({ match: 'exact', result: exact });
+  const sameCpt = labData.COVERAGE.filter(x => normCode(x.cpt) === cpt);
+  if (sameCpt.length) return res.json({ match: 'cpt-only', cpt,
+    note: 'This CPT is in the coverage library, but not with diagnosis ' + icd + '. Review similar scenarios below.',
+    similar: sameCpt });
+  return res.json({ match: 'none', cpt, icd,
+    note: 'No coverage scenario found for this CPT + diagnosis pair in the training library. In real practice, look up the payer\u2019s LCD/NCD database before billing.' });
 }));
 
 // ---------- Prior Auth workflow lab ----------

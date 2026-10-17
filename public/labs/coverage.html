@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LCD/NCD Coverage Checker — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+<style>
+/* ===== Coverage Checker ULTRA ===== */
+.lab-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:26px 30px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.lab-hero::before{content:"";position:absolute;top:-60px;right:8%;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.lab-hero h1{margin:0 0 8px;font-size:24px;position:relative;z-index:1}
+.lab-hero .psub{color:#b9d4e8;margin:0;font-size:14px;position:relative;z-index:1;max-width:680px;line-height:1.6}
+.eyebrow2{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#34d3bd;margin-bottom:8px;position:relative;z-index:1}
+@keyframes labIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.lab-anim{animation:labIn .45s cubic-bezier(.2,.8,.2,1) backwards}
+.panel{background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;padding:22px;margin-bottom:16px}
+.panel h3{margin:0 0 6px;font-size:16px;color:#0f2743}
+.panel .psub{font-size:13px;color:#64748b;margin:0 0 16px;line-height:1.6}
+.check-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
+.field label{display:block;font-size:11.5px;font-weight:700;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.field input{width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;
+  font-family:ui-monospace,monospace;color:#0f1e33;box-sizing:border-box}
+.field input:focus{outline:none;border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.12)}
+.btn-grade{background:linear-gradient(135deg,#0e9f8a,#0b7d6d);color:#fff;border:none;border-radius:12px;
+  padding:12px 26px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(14,159,138,.3);transition:all .2s}
+.btn-grade:hover{transform:translateY(-2px)}
+.result{border-radius:14px;padding:18px;margin-top:16px;display:none;line-height:1.65;font-size:14px}
+.result.show{display:block}
+.result.covered{background:#f0fdf4;border:1.5px solid #bbf7d0}
+.result.conditional{background:#fffbeb;border:1.5px solid #fde68a}
+.result.not-covered{background:#fef2f2;border:1.5px solid #fecaca}
+.result .verdict{font-size:17px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.result.covered .verdict{color:#166534}.result.conditional .verdict{color:#92400e}.result.not-covered .verdict{color:#991b1b}
+.result .lcd{font-family:ui-monospace,monospace;font-size:12px;color:#64748b;margin-bottom:8px}
+.result ul{margin:8px 0;padding-left:20px;color:#334155}
+.result .why{color:#475569;font-size:13.5px;margin-top:8px}
+.abn{margin-top:12px;border-radius:10px;padding:12px 14px;font-size:13px;background:#fff7ed;border:1px solid #fdba74;color:#9a3412;display:none}
+.abn.show{display:block}
+.abn b{display:block;margin-bottom:4px}
+.scen{border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .2s;background:#fff}
+.scen:hover{border-color:#0e9f8a;transform:translateX(4px);box-shadow:0 4px 14px rgba(14,159,138,.12)}
+.scen .codes{font-family:ui-monospace,monospace;font-size:13px;font-weight:700;color:#0f2743}
+.scen .desc{font-size:12.5px;color:#64748b;margin-top:4px}
+.badge{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 10px;border-radius:8px;letter-spacing:.4px;margin-left:8px;vertical-align:middle}
+.badge.covered{background:#dcfce7;color:#166534}.badge.conditional{background:#fef3c7;color:#92400e}.badge.not-covered{background:#fee2e2;color:#991b1b}
+.abn-box{background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1.5px solid #fdba74;border-radius:14px;padding:18px;margin-bottom:16px}
+.abn-box h4{margin:0 0 8px;color:#9a3412;font-size:15px}
+.abn-box p{margin:6px 0;font-size:13.5px;color:#7c2d12;line-height:1.65}
+.abn-box code{background:#fff;border:1px solid #fdba74;border-radius:6px;padding:1px 7px;font-size:12.5px}
+.search-row{display:flex;gap:10px;margin-bottom:14px}
+.search-row input{flex:1;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit}
+.search-row input:focus{outline:none;border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.12)}
+@media(max-width:700px){.check-grid{grid-template-columns:1fr}.lab-hero{padding:20px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside id="sidebar"></aside>
+  <main>
+    <div class="lab-hero lab-anim">
+      <div class="eyebrow2">Advanced Labs · Medical Necessity</div>
+      <h1>🔍 LCD / NCD Coverage Checker</h1>
+      <p class="psub">Before you bill, check whether the payer covers it. Enter a <b style="color:#5eead4">CPT/HCPCS</b> + <b style="color:#5eead4">ICD-10</b> pair and see the Local/National Coverage Determination verdict — covered, conditional, or not covered — plus when to get an <b style="color:#5eead4">ABN</b> signed.</p>
+    </div>
+
+    <div class="panel lab-anim" style="animation-delay:.05s">
+      <h3>🧪 Check coverage</h3>
+      <p class="psub">Type a procedure code and a diagnosis code. Example: <b>82306</b> + <b>E55.9</b> (covered) vs <b>82306</b> + <b>Z13.1</b> (not covered — screening).</p>
+      <div class="check-grid">
+        <div class="field"><label>CPT / HCPCS code</label><input id="in-cpt" placeholder="e.g. 82306" maxlength="8" autocomplete="off"></div>
+        <div class="field"><label>ICD-10 diagnosis</label><input id="in-icd" placeholder="e.g. E55.9" maxlength="10" autocomplete="off"></div>
+        <button class="btn-grade" id="btn-check">Check →</button>
+      </div>
+      <div id="result" class="result"></div>
+      <div id="abn-warn" class="abn"></div>
+    </div>
+
+    <div class="abn-box lab-anim" style="animation-delay:.08s">
+      <h4>📝 What is an ABN (Advance Beneficiary Notice)?</h4>
+      <p>When Medicare is <b>likely to deny</b> a service as not medically necessary, have the patient sign an <b>ABN (Form CMS-R-131)</b> <i>before</i> the service. With a signed ABN, bill with the <code>GA</code> modifier — liability shifts to the patient. <b>Without</b> an ABN, use <code>GZ</code> and the <b>practice absorbs the cost</b>.</p>
+      <p>Golden rule: <b>no ABN + denial = your loss.</b> Check coverage first, get the signature, then bill.</p>
+    </div>
+
+    <div class="panel lab-anim" style="animation-delay:.1s">
+      <h3>📚 Coverage scenario library <span style="font-size:12px;color:#64748b;font-weight:600" id="lib-count"></span></h3>
+      <p class="psub">16 real coverage scenarios. Click any scenario to load it into the checker.</p>
+      <div class="search-row"><input id="lib-search" placeholder="Search by CPT, ICD, keyword… (e.g. vitamin, acupuncture, BRCA)"></div>
+      <div id="lib-list"></div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+let LIB = [];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const VLABEL = { covered:['✅ Covered','covered'], conditional:['⚠️ Conditional','conditional'], 'not-covered':['🚫 Not Covered','not-covered'] };
+
+async function init(){
+  shell('coverage');
+  try {
+    const d = await api('/api/labs/coverage');
+    LIB = d.scenarios || [];
+    renderLib('');
+  } catch(e){
+    $('lib-list').innerHTML = '<p style="color:#dc2626">Failed to load: '+esc(e.message)+'</p>';
+  }
+}
+
+function showResult(data){
+  const r = $('result'), abn = $('abn-warn');
+  if (data.match === 'none') {
+    r.className = 'result show conditional';
+    r.innerHTML = '<div class="verdict">❓ No library match</div><div class="why">'+esc(data.note)+'</div>';
+    abn.className = 'abn'; return;
+  }
+  if (data.match === 'cpt-only') {
+    r.className = 'result show conditional';
+    r.innerHTML = '<div class="verdict">⚠️ CPT found — diagnosis not in library</div><div class="why">'+esc(data.note)+'</div>';
+    abn.className = 'abn'; renderSimilar(data.similar); return;
+  }
+  const x = data.result, [label, cls] = VLABEL[x.decision] || VLABEL.conditional;
+  r.className = 'result show ' + cls;
+  r.innerHTML = '<div class="verdict">'+label+'</div>'+
+    '<div class="lcd">'+esc(x.cpt)+' · '+esc(x.cptDesc)+' &nbsp;|&nbsp; '+esc(x.icd)+' · '+esc(x.icdDesc)+'</div>'+
+    '<div class="lcd">Reference: '+esc(x.lcd)+'</div>'+
+    '<ul>'+x.conditions.map(c => '<li>'+esc(c)+'</li>').join('')+'</ul>'+
+    '<div class="why"><b>Why:</b> '+esc(x.why)+'</div>';
+  if (x.abn) {
+    abn.className = 'abn show';
+    abn.innerHTML = '<b>📝 ABN recommended</b>Get a signed Advance Beneficiary Notice BEFORE the service and bill with the <b>GA</b> modifier. Without it, a denial becomes the practice\u2019s loss (GZ).';
+  } else abn.className = 'abn';
+}
+
+function renderSimilar(list){
+  const r = $('result');
+  r.innerHTML += '<div style="margin-top:12px"><b style="font-size:13px">Similar scenarios for this CPT:</b></div>' +
+    list.map(x => '<div class="scen" data-id="'+x.id+'"><span class="codes">'+esc(x.cpt)+' + '+esc(x.icd)+
+      '</span><span class="badge '+x.decision+'">'+VLABEL[x.decision][0]+'</span><div class="desc">'+esc(x.cptDesc)+' · '+esc(x.icdDesc)+'</div></div>').join('');
+  bindScenClicks();
+}
+
+function renderLib(q){
+  q = q.toLowerCase();
+  const list = LIB.filter(x => !q || (x.cpt+' '+x.icd+' '+x.cptDesc+' '+x.icdDesc+' '+x.why).toLowerCase().includes(q));
+  $('lib-count').textContent = '· '+list.length+' shown';
+  $('lib-list').innerHTML = list.map(x =>
+    '<div class="scen" data-id="'+x.id+'"><span class="codes">'+esc(x.cpt)+' + '+esc(x.icd)+'</span>'+
+    '<span class="badge '+x.decision+'">'+VLABEL[x.decision][0]+'</span>'+
+    '<div class="desc">'+esc(x.cptDesc)+' · '+esc(x.icdDesc)+'</div></div>').join('') ||
+    '<p style="color:#64748b;font-size:13.5px">No scenarios match.</p>';
+  bindScenClicks();
+}
+function bindScenClicks(){
+  document.querySelectorAll('#lib-list .scen, #result .scen').forEach(el => el.onclick = () => {
+    const x = LIB.find(v => v.id === el.dataset.id); if (!x) return;
+    $('in-cpt').value = x.cpt; $('in-icd').value = x.icd;
+    showResult({ match:'exact', result:x });
+    $('result').scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+}
+
+async function check(){
+  const cpt = $('in-cpt').value.trim(), icd = $('in-icd').value.trim();
+  if (!cpt || !icd) { alert('Enter both a CPT and an ICD-10 code.'); return; }
+  const btn = $('btn-check'); btn.disabled = true; btn.textContent = 'Checking…';
+  try {
+    const d = await api('/api/labs/coverage/check', { method:'POST', body:{ cpt, icd } });
+    showResult(d);
+  } catch(e){ alert('Check failed: '+e.message); }
+  btn.disabled = false; btn.textContent = 'Check →';
+}
+$('btn-check').onclick = check;
+[$('in-cpt'), $('in-icd')].forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') check(); }));
+$('lib-search').addEventListener('input', e => renderLib(e.target.value));
+
+init();
+</script>
+</body>
+</html>
