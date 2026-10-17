@@ -120,7 +120,7 @@ async function boot() {
 (async () => {
   const u = await currentUser();
   if (!u) { location.href = '/owner'; return; }
-  shell('owner', u);
+  adminShell('owner', u); // owner gets its own admin sidebar, not the student one
   document.getElementById('create').onclick = async () => {
     const err = document.getElementById('err');
     err.classList.remove('err'); err.textContent = '';

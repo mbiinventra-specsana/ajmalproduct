@@ -86,3 +86,28 @@ function shell(active, user) {
       <div style="margin-top:10px"><span class="badge-fict">TRAINING MODE · fictional data</span></div>
     </div>`;
 }
+// Admin-only sidebar for the Owner Panel — no student items.
+function adminShell(active, user) {
+  const nav = [
+    ['Admin', [
+      ['owner', 'Dashboard', '/owner', '👑'],
+      ['accounts', 'Accounts', '/owner#users', '👥'],
+      ['syshealth', 'System health', '/owner#syshealth', '🖥️'],
+    ]],
+    ['Preview', [
+      ['studentview', 'Student view', '/dashboard', '🎓'],
+    ]],
+  ];
+  document.getElementById('sidebar').innerHTML = `
+    <div class="brand"><div class="mark">👑</div><div>MbiInventra<small>owner console</small></div></div>
+    <nav class="snav">${nav.map(([g, items]) => `
+      <div class="grp">${g}</div>
+      ${items.map(([k, label, href, e]) =>
+        `<a href="${href}" class="${active === k ? 'on' : ''}"><span class="e">${e}</span>${label}</a>`).join('')}
+    `).join('')}</nav>
+    <div class="sfoot">
+      <div style="margin-bottom:8px">👤 ${esc(user.name)}<br><span style="color:#7c8ea8;font-size:12px">${esc(user.role)}</span></div>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
+      <div style="margin-top:10px"><span class="badge-fict">TRAINING MODE · fictional data</span></div>
+    </div>`;
+}
