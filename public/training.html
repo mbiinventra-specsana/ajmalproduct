@@ -4,43 +4,81 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Case Center — MbiInventra RCM Academy</title>
 <link rel="stylesheet" href="/css/app.css">
+<style>
+.mode-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.gbar{height:8px;background:#eef2f7;border-radius:6px;overflow:hidden;margin-top:8px}
+.gbar i{display:block;height:100%;background:linear-gradient(90deg,#0e9f8a,#34d3bd);border-radius:6px}
+.lockline{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;color:#b45309;background:#fef3c7;border-radius:8px;padding:8px 12px}
+.case-row.locked{opacity:.75}
+.fbtns{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap}
+.fbtn{padding:8px 16px;border-radius:10px;border:2px solid #e2e8f0;background:#fff;font-weight:600;font-size:13.5px;cursor:pointer;color:#5b6b85}
+.fbtn.on{border-color:#0e9f8a;background:#e6f7f3;color:#0e9f8a}
+</style>
 </head>
 <body>
 <div class="shell">
   <aside class="side" id="sidebar"></aside>
   <main class="main">
     <div class="topbar">
-      <div><h1>🎯 Case Center</h1><p>Work realistic billing cases. Every answer is scored and explained.</p></div>
+      <div><h1>🎯 Case Center</h1><p>Two ways to master each case: <b>Quiz mode</b> tests your knowledge, <b>Guided walkthrough</b> trains you on real workspace data — step by step, like a senior biller beside you.</p></div>
       <span class="badge-fict">TRAINING MODE · fictional data</span>
     </div>
-    <div id="list"></div>
+    <div class="fbtns" id="filters"></div>
+    <div id="list"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div></div>
   </main>
 </div>
 <script src="/js/app.js"></script>
 <script>
 const CAT = { ELIGIBILITY:'🔍', CODING:'🧬', CHARGE_ENTRY:'🧾', CLAIMS:'📨', PAYMENTS:'💳', DENIALS:'🛡', AR:'📉', FULL_CYCLE:'👑', GENERAL:'📋' };
-(async () => {
+let allCases = [], gstat = {}, filt = 'All';
+async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('training', u);
   if (!guardFeature(u, 'training', 'Case Center')) return;
-  const { cases } = await api('/api/cases');
-  document.getElementById('list').innerHTML = cases.map(c => `
-    <div class="case-row">
+  const [{ cases }, j] = await Promise.all([api('/api/cases'), api('/api/guided/journey').catch(() => null)]);
+  allCases = cases;
+  if (j) gstat = j.cases;
+  renderFilters(); render();
+}
+function renderFilters() {
+  const fs = ['All', 'Beginner', 'Intermediate', 'Advanced'];
+  document.getElementById('filters').innerHTML = fs.map(f =>
+    `<button class="fbtn ${filt === f ? 'on' : ''}" data-f="${f}">${f}</button>`).join('');
+  document.querySelectorAll('.fbtn').forEach(b => b.onclick = () => { filt = b.dataset.f; renderFilters(); render(); });
+}
+function render() {
+  const rs = allCases.filter(c => filt === 'All' || c.difficulty === filt);
+  document.getElementById('list').innerHTML = rs.map(c => {
+    const g = gstat[c.code] || {};
+    const locked = !!g.locked;
+    const gpct = g.guidedTotal ? Math.round(100 * (g.guidedDone ? g.guidedTotal : g.guidedStep) / g.guidedTotal) : 0;
+    return `
+    <div class="case-row ${locked ? 'locked' : ''}">
       <div class="ci">${CAT[c.category] || '📋'}</div>
       <div class="cb">
         <b>${esc(c.code)} · ${esc(c.title)}</b>
         <p>${esc(c.description)}</p>
-        <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
+        <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <span class="pill p-${c.difficulty.toLowerCase()}">${esc(c.difficulty)}</span>
-          ${c.completed ? '<span class="pill p-done">✓ Completed</span>' : c.attempts ? '<span class="pill p-prog">In progress</span>' : ''}
+          ${c.completed ? '<span class="pill p-done">✓ Quiz done</span>' : c.attempts ? '<span class="pill p-prog">Quiz in progress</span>' : ''}
+          ${g.guidedDone ? '<span class="pill p-done">🧭 Guided done</span>' : gpct > 0 ? `<span class="pill p-prog">Guided ${gpct}%</span>` : ''}
         </div>
+        ${g.guidedTotal ? `<div class="gbar" title="Guided progress"><i style="width:${gpct}%"></i></div>` : ''}
+        ${locked ? `<div class="lockline">🔒 ${esc(g.lockReason || 'Locked')}</div>` : ''}
       </div>
       <div class="meta">${c.questions} questions<br><b>${c.points} pts</b>
-        ${c.best !== null ? `<br>Best: ${c.best}` : ''}<br><br>
-        <a class="btn btn-teal btn-sm" href="/play?case=${c.id}">${c.completed ? 'Retry' : c.attempts ? 'Continue' : 'Start'} →</a>
+        ${c.best !== null ? `<br>Best: ${c.best}` : ''}${g.guidedPoints ? `<br><span style="color:#0e9f8a">+${g.guidedPoints} guided</span>` : ''}<br><br>
+        ${locked
+          ? `<span class="btn btn-line btn-sm" style="opacity:.5;pointer-events:none">🔒 Locked</span>`
+          : `<div class="mode-row">
+              <a class="btn btn-line btn-sm" href="/play?case=${c.id}">🧠 Quiz ${c.completed ? 'retry' : c.attempts ? 'continue' : 'start'}</a>
+              <a class="btn btn-teal btn-sm" href="/play?case=${c.id}&mode=guided">🧭 Guided ${g.guidedDone ? 'replay' : g.guidedStep > 0 ? 'resume' : 'start'}</a>
+            </div>`}
       </div>
-    </div>`).join('') || `<div class="empty">No training cases available yet.</div>`;
-})();
+    </div>`;
+  }).join('') || `<div class="empty">No training cases at this level yet.</div>`;
+}
+load();
 </script>
 </body>
 </html>

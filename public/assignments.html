@@ -21,11 +21,13 @@ async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('assignments', u);
   if (!guardFeature(u, 'assignments', 'Assignments')) return;
-  const d = await api('/api/cases');
+  const [d, j] = await Promise.all([api('/api/cases'), api('/api/guided/journey').catch(() => null)]);
+  const gs = (j && j.cases) || {};
   rows = d.cases.map(c => {
     const pct = c.best != null ? Math.round(100 * c.best / Math.max(1, c.points)) : null;
-    const st = !c.attempts ? 'ASSIGNED' : pct >= 70 ? 'COMPLETED' : 'IN_PROGRESS';
-    return { ...c, st, pct };
+    const g = gs[c.code] || {};
+    const st = (pct >= 70 || g.guidedDone) ? 'COMPLETED' : !c.attempts && !g.guidedStep ? 'ASSIGNED' : 'IN_PROGRESS';
+    return { ...c, st, pct, g };
   });
   const n = s => rows.filter(r => r.st === s).length;
   document.getElementById('kpis').innerHTML = [
@@ -53,11 +55,10 @@ function render() {
           <span class="bdg ${SCLS[c.st]}">${esc(c.st.replace('_', ' '))}</span>
           ${c.attempts ? `<span class="bdg b-gray">${c.attempts} attempt(s)${c.pct != null ? ` · best ${c.pct}%` : ''}</span>` : ''}
         </div></div>
-      <div>${c.st === 'COMPLETED'
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${c.st === 'COMPLETED'
         ? `<a class="btn btn-line btn-sm" href="/progress">Review</a>`
-        : c.attempts
-          ? `<a class="btn btn-teal btn-sm" href="/play?case=${c.id}">Continue →</a>`
-          : `<a class="btn btn-teal btn-sm" href="/play?case=${c.id}">Start →</a>`}</div>
+        : `<a class="btn btn-teal btn-sm" href="/play?case=${c.id}">${c.attempts ? 'Continue quiz →' : 'Start quiz →'}</a>
+           ${!(c.g && c.g.locked) ? `<a class="btn btn-line btn-sm" href="/play?case=${c.id}&mode=guided">🧭 Guided</a>` : `<span class="bdg b-gray">🔒 ${esc((c.g && c.g.lockReason) || 'Locked')}</span>`}`}</div>
     </div>`).join('');
 }
 load();

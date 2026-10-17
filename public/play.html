@@ -4,6 +4,32 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Training Case — MbiInventra RCM Academy</title>
 <link rel="stylesheet" href="/css/app.css">
+<style>
+.grail{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.gstep-dot{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:#f1f5f9;font-size:13px;font-weight:600;color:#64748b;border:2px solid transparent}
+.gstep-dot .n{width:24px;height:24px;border-radius:50%;background:#cbd5e1;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.gstep-dot.done{background:#e6f7f3;color:#0e9f8a}.gstep-dot.done .n{background:#0e9f8a}
+.gstep-dot.cur{background:#fff;color:#0f2743;border-color:#0e9f8a;box-shadow:0 2px 12px rgba(14,159,138,.15)}
+.gstep-dot.cur .n{background:#0e9f8a}
+.gcard{background:#fff;border-radius:16px;padding:28px;box-shadow:0 4px 24px rgba(15,39,67,.07);max-width:760px}
+.gcard h2{margin:0 0 6px;font-size:22px;color:#0f2743}
+.gcard .gk{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#0e9f8a;margin-bottom:8px}
+.gcard .gd{color:#5b6b85;line-height:1.6;margin:0 0 18px}
+.gpick{display:grid;gap:10px;max-height:320px;overflow:auto;margin-bottom:16px}
+.gpick button{text-align:left;padding:12px 14px;border:2px solid #e2e8f0;border-radius:10px;background:#fff;cursor:pointer;font-size:14px}
+.gpick button:hover{border-color:#0e9f8a}
+.gpick button.sel{border-color:#0e9f8a;background:#e6f7f3}
+.gform{display:grid;gap:12px;margin-bottom:16px}
+.gform label{font-size:13px;font-weight:600;color:#0f2743}
+.gform input,.gform textarea{padding:10px 12px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;width:100%;box-sizing:border-box}
+.gform input:focus,.gform textarea:focus{border-color:#0e9f8a;outline:none}
+.gpoints{display:inline-block;background:#fef3c7;color:#92400e;font-weight:700;font-size:13px;padding:4px 12px;border-radius:20px;margin-bottom:12px}
+.gtoast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f2743;color:#fff;padding:12px 24px;border-radius:12px;font-weight:600;z-index:99;animation:gpop .3s ease}
+@keyframes gpop{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+.gdone{text-align:center;padding:40px 20px}
+.gdone .ring{width:110px;height:110px;margin:0 auto 18px}
+@media(max-width:640px){.gcard{padding:18px}.grail{overflow-x:auto;flex-wrap:nowrap}}
+</style>
 </head>
 <body>
 <div class="shell">
@@ -84,12 +110,175 @@ async function finish() {
     </div>`;
 }
 
+
+/* ============ GUIDED WALKTHROUGH MODE ============ */
+let G = null; // {caseId, code, title, steps, idx, ctx, points}
+function gtoast(msg) {
+  const t = document.createElement('div');
+  t.className = 'gtoast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+}
+function gsub(str, ctx) {
+  return String(str).replace(/\{(\w+)\}/g, (_, k) => ctx[k] !== undefined ? ctx[k] : '');
+}
+function grail() {
+  return `<div class="grail">` + G.steps.map((s, i) => {
+    const cls = i < G.idx ? 'done' : i === G.idx ? 'cur' : '';
+    const mark = i < G.idx ? '✓' : (i + 1);
+    return `<div class="gstep-dot ${cls}"><span class="n">${mark}</span><span>${esc(s.t)}</span></div>`;
+  }).join('') + `</div>`;
+}
+async function grender() {
+  const st = G.steps[G.idx];
+  const total = G.steps.reduce((a, b) => a + b.pts, 0);
+  let body = '';
+  const head = `${grail()}
+    <div class="gcard"><div class="gk">${esc(G.code)} · Step ${G.idx + 1} of ${G.steps.length} · Guided walkthrough</div>
+    <div class="gpoints">⭐ ${st.pts} pts · earned ${G.points}/${total}</div>
+    <h2>${esc(st.t)}</h2><p class="gd">${esc(st.d || '')}</p><div id="gbody"></div>
+    <div class="feedback" id="gfb"></div>
+    <div id="gnext" style="margin-top:16px;text-align:right"></div></div>`;
+  stage.innerHTML = head;
+  const gb = document.getElementById('gbody'), gn = document.getElementById('gnext');
+  if (st.kind === 'info') {
+    if (st.body) gb.innerHTML = `<div class="hintbox show">${esc(st.body)}</div>`;
+    gn.innerHTML = `<button class="btn btn-teal" id="ggo">Continue →</button>`;
+    document.getElementById('ggo').onclick = () => gcomplete({});
+  } else if (st.kind === 'pick') {
+    gb.innerHTML = `<div class="gpick" id="glist"><div class="empty">Loading…</div></div>`;
+    try {
+      const r = await api(st.src);
+      let rows = r[st.rkey] || [];
+      if (st.filter && G.ctx[st.filter.from]) rows = rows.filter(x => String(x[st.filter.field]) === String(G.ctx[st.filter.from]));
+      if (st.filterStatus) rows = rows.filter(x => String(x.status) === st.filterStatus);
+      gb.innerHTML = `<div class="gpick" id="glist">` + (rows.map(x => {
+        const lbl = st.label.map(f => esc(x[f] ?? '')).join(' · ');
+        return `<button data-v="${esc(String(x[st.val]))}" data-x='${esc(JSON.stringify(x))}'>${lbl}</button>`;
+      }).join('') || `<div class="empty">No records found. Create one in the Workspace first, then come back.</div>`) + `</div>`;
+      let sel = null, selRow = null;
+      gb.querySelectorAll('#glist button').forEach(b => b.onclick = () => {
+        gb.querySelectorAll('#glist button').forEach(x => x.classList.remove('sel'));
+        b.classList.add('sel'); sel = b.dataset.v;
+        try { selRow = JSON.parse(b.dataset.x); } catch { selRow = null; }
+      });
+      gn.innerHTML = `<button class="btn btn-teal" id="ggo">Continue →</button>`;
+      document.getElementById('ggo').onclick = () => {
+        if (sel === null) { gfb('Please make a selection.'); return; }
+        G.ctx[st.ctx] = sel;
+        if (st.ctx2) G.ctx[st.ctx2[0]] = selRow ? selRow[st.ctx2[1]] : '';
+        gcomplete({ value: sel });
+      };
+    } catch (e) { gb.innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+  } else if (st.kind === 'quiz') {
+    gb.innerHTML = `<div id="gopts">` + st.options.map((o, i) =>
+      `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('') + `</div>`;
+    gb.querySelectorAll('.opt').forEach(b => b.onclick = async () => {
+      gb.querySelectorAll('.opt').forEach(x => x.disabled = true);
+      const r = await gcomplete({ chosen: +b.dataset.i });
+      if (r && r.ok === false) {
+        b.classList.add('wrong');
+        gfb(r.msg);
+        gb.querySelectorAll('.opt').forEach(x => x.disabled = false);
+      }
+    });
+  } else if (st.kind === 'note') {
+    gb.innerHTML = `<div class="gform"><label>Your notes</label>
+      <textarea id="gnote" rows="4" placeholder="${esc(st.ph || 'Write here…')}"></textarea></div>`;
+    gn.innerHTML = `<button class="btn btn-teal" id="ggo">Submit notes →</button>`;
+    document.getElementById('ggo').onclick = () => gcomplete({ text: document.getElementById('gnote').value });
+  } else if (st.kind === 'action') {
+    const fields = st.form || [];
+    gb.innerHTML = (fields.length ? `<div class="gform">` + fields.map(f =>
+      `<label>${esc(f)}<input id="gf_${f}" value="${esc((st.defaults && st.defaults[f]) || '')}" placeholder="${esc(f)}"></label>`).join('') + `</div>`
+      : `<p class="gd">This step runs a real workspace action.</p>`);
+    gn.innerHTML = `<button class="btn btn-teal" id="ggo">▶ Run this step</button>`;
+    document.getElementById('ggo').onclick = async () => {
+      const btn = document.getElementById('ggo'); btn.disabled = true; btn.textContent = 'Working…';
+      try {
+        const payload = {};
+        for (const [k, v] of Object.entries(st.body || {})) {
+          let val = gsub(v, G.ctx);
+          const inp = document.getElementById('gf_' + k);
+          if (inp) val = inp.value;
+          else if (fields.includes(k)) { const fi = document.getElementById('gf_' + k); val = fi ? fi.value : val; }
+          payload[k] = val;
+        }
+        // fill any form fields not in body template
+        for (const f of fields) if (!(f in payload)) { const fi = document.getElementById('gf_' + f); if (fi) payload[f] = fi.value; }
+        const r = await api(gsub(st.api, G.ctx), { method: st.method || 'POST', body: payload });
+        if (st.save) for (const [ck, rk] of Object.entries(st.save)) G.ctx[ck] = r[rk];
+        // capture note text for resolve actions
+        const cr = await gcomplete({ result: r });
+        if (cr && cr.ok === false) { gfb(cr.msg); btn.disabled = false; btn.textContent = '▶ Run this step'; }
+      } catch (e) { gfb(e.message); btn.disabled = false; btn.textContent = '▶ Run this step'; }
+    };
+  }
+}
+function gfb(msg) {
+  const fb = document.getElementById('gfb');
+  if (!fb) return;
+  fb.className = 'feedback no'; fb.innerHTML = `<b>Hold on</b> — ${esc(msg)}`;
+}
+async function gcomplete(payload) {
+  try {
+    const r = await api(`/api/guided/${G.caseId}/step/${G.idx}`, { method: 'POST', body: payload });
+    if (r.ok === false) return r;
+    G.points = r.totalPoints;
+    if (G.steps[G.idx] && G.steps[G.idx].kind === 'note' && payload.text) G.ctx['note'] = payload.text;
+    G.idx = r.step_idx;
+    if (r.pointsEarned) gtoast(`+ ${r.pointsEarned} pts`);
+    if (r.done) gfinish(); else grender();
+    return r;
+  } catch (e) { gfb(e.message); return { ok: false }; }
+}
+function gfinish() {
+  const total = G.steps.reduce((a, b) => a + b.pts, 0);
+  stage.innerHTML = `${grail()}
+    <div class="gcard gdone">
+      <div class="ring" style="--p:${Math.round(100 * G.points / total)}%">${Math.round(100 * G.points / total)}%</div>
+      <h2>Walkthrough complete!</h2>
+      <p style="color:#5b6b85;margin:8px 0">You earned <b>${G.points} / ${total}</b> guided points on real workspace data.</p>
+      <p style="color:#5b6b85;font-size:14px">Try the quiz mode too — both count toward mastery.</p>
+      <div style="margin-top:22px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a class="btn btn-line" href="/training">Case Center</a>
+        <a class="btn btn-teal" href="/play?case=${G.caseId}">Try quiz mode →</a>
+      </div>
+    </div>`;
+}
+async function bootGuided(u, caseId) {
+  try {
+    const g = await api('/api/guided/' + caseId);
+    G = { caseId, code: g.case.code, title: g.case.title, steps: g.steps, idx: 0, ctx: {}, points: 0 };
+    if (g.run && g.run.status !== 'completed') { G.idx = g.run.step_idx; G.points = g.run.points; }
+    if (g.run && g.run.status === 'completed') {
+      // offer restart
+      stage.innerHTML = `<div class="gcard gdone"><h2>Already completed</h2>
+        <p style="color:#5b6b85">You finished this walkthrough with <b>${g.run.points} pts</b>.</p>
+        <div style="margin-top:18px;display:flex;gap:12px;justify-content:center">
+          <a class="btn btn-line" href="/training">Case Center</a>
+          <button class="btn btn-teal" id="grestart">Restart walkthrough ↻</button></div></div>`;
+      document.getElementById('grestart').onclick = async () => {
+        await api('/api/guided/' + caseId + '/start', { method: 'POST' });
+        G.idx = 0; G.points = 0; G.ctx = {}; grender();
+      };
+      return;
+    }
+    // resume notice
+    if (G.idx > 0) gtoast(`Resumed at step ${G.idx + 1}`);
+    grender();
+  } catch (e) {
+    stage.innerHTML = `<div class="empty">${esc(e.message)}<br><a href="/training" style="color:#0e9f8a">← back</a></div>`;
+  }
+}
+
 (async () => {
   const u = await requireLogin(); if (!u) return;
   shell('training', u);
   if (!guardFeature(u, 'training', 'Case Player')) return;
-  const caseId = new URLSearchParams(location.search).get('case');
+  const qs = new URLSearchParams(location.search);
+  const caseId = qs.get('case');
   if (!caseId) { location.href = '/training'; return; }
+  if (qs.get('mode') === 'guided') { await bootGuided(u, caseId); return; }
   stage.innerHTML = `<div class="empty">Loading case…</div>`;
   try {
     const meta = await api('/api/cases/' + caseId);
