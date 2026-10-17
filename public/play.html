@@ -222,7 +222,7 @@ function gfb(msg) {
 async function gcomplete(payload) {
   try {
     const r = await api(`/api/guided/${G.caseId}/step/${G.idx}`, { method: 'POST', body: payload });
-    if (r.ok === false) return r;
+    if (r.ok === false) { G.retries[G.idx] = (G.retries[G.idx] || 0) + 1; return r; }
     G.points = r.totalPoints;
     if (G.steps[G.idx] && G.steps[G.idx].kind === 'note' && payload.text) G.ctx['note'] = payload.text;
     G.idx = r.step_idx;
@@ -233,17 +233,57 @@ async function gcomplete(payload) {
 }
 function gfinish() {
   const total = G.steps.reduce((a, b) => a + b.pts, 0);
+  const pct = Math.round(100 * G.points / total);
+  const totalRetries = Object.values(G.retries).reduce((a, b) => a + b, 0);
+  const firstTry = G.steps.length - Object.keys(G.retries).length;
+  // performance heading (MedArix-style)
+  const perf = totalRetries === 0 ? ['Excellent Work! 🎉', 'Flawless walkthrough — every step correct on the first try. You demonstrated strong RCM understanding.']
+    : totalRetries <= 2 ? ['Great Job! 👏', 'Solid walkthrough with minor stumbles. Review the flagged steps below to sharpen your skills.']
+    : ['Good Attempt 💪', 'You completed the walkthrough. Focus on the steps below where retries were needed.'];
+  // per-step breakdown
+  const stepRows = G.steps.map((st, i) => {
+    const rt = G.retries[i] || 0;
+    return `<div class="sr-row"><span class="sr-n">${i + 1}</span>
+      <div style="flex:1"><b>${esc(st.t)}</b><br><span style="font-size:12px;color:#64748b">${st.pts} pts</span></div>
+      ${rt === 0 ? '<span class="bdg b-green"><span class="dot"></span>First try</span>' : `<span class="bdg b-amber"><span class="dot"></span>${rt} retr${rt > 1 ? 'ies' : 'y'}</span>`}
+    </div>`;
+  }).join('');
+  // items to improve
+  const improve = G.steps.map((st, i) => ({ st, i, rt: G.retries[i] || 0 })).filter(x => x.rt > 0);
+  const improveHtml = improve.length ? `<div class="imp-box"><h4>📝 Items to improve</h4><ul>` +
+    improve.map(({ st, rt }) => `<li><b>${esc(st.t)}</b> — needed ${rt} retr${rt > 1 ? 'ies' : 'y'}. ${esc(st.tip || 'Review this workflow step and try to get it first-try next time.')}</li>`).join('') + `</ul></div>` : '';
   stage.innerHTML = `${grail()}
-    <div class="gcard gdone">
-      <div class="ring" style="--p:${Math.round(100 * G.points / total)}%">${Math.round(100 * G.points / total)}%</div>
-      <h2>Walkthrough complete!</h2>
-      <p style="color:#5b6b85;margin:8px 0">You earned <b>${G.points} / ${total}</b> guided points on real workspace data.</p>
-      <p style="color:#5b6b85;font-size:14px">Try the quiz mode too — both count toward mastery.</p>
+    <div class="gcard gdone" style="max-width:640px">
+      <div class="eyebrow2" style="text-align:center">Training Result</div>
+      <h2 style="text-align:center;margin:4px 0">${esc(G.code)} — ${esc(G.title)}</h2>
+      <div style="display:flex;justify-content:center;margin:18px 0">
+        <div class="ring" style="--p:${pct}%;width:110px;height:110px;font-size:24px">${pct}%</div></div>
+      <div style="text-align:center"><span class="bdg ${pct === 100 && totalRetries === 0 ? 'b-green' : pct >= 70 ? 'b-amber' : 'b-red'}" style="font-size:13px">${G.points} / ${total} pts</span></div>
+      <h3 style="text-align:center;margin:16px 0 8px">${perf[0]}</h3>
+      <p style="color:#5b6b85;text-align:center;max-width:480px;margin:0 auto">${perf[1]}</p>
+      <div class="kv-card" style="margin:18px 0;text-align:left">
+        <div class="kv"><span>📊 Steps first-try</span><b>${firstTry}/${G.steps.length}</b></div>
+        <div class="kv"><span>🔄 Total retries</span><b>${totalRetries}</b></div>
+        <div class="kv"><span>📅 Completed</span><b>${new Date().toLocaleDateString()}</b></div>
+      </div>
+      <h4 style="margin:16px 0 10px">Step breakdown</h4>
+      <div style="text-align:left">${stepRows}</div>
+      ${improveHtml}
       <div style="margin-top:22px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-        <a class="btn btn-line" href="/training">Case Center</a>
+        <a class="btn btn-line" href="/training">← Case Center</a>
         <a class="btn btn-teal" href="/play?case=${G.caseId}">Try quiz mode →</a>
       </div>
-    </div>`;
+    </div>
+    <style>
+    .sr-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f1f5f9}
+    .sr-row:last-child{border:none}
+    .sr-n{width:28px;height:28px;border-radius:50%;background:#f1f5f9;color:#475569;font-weight:700;font-size:12px;
+      display:flex;align-items:center;justify-content:center;flex:none}
+    .imp-box{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px;margin-top:16px;text-align:left}
+    .imp-box h4{margin:0 0 10px;color:#92400e}
+    .imp-box ul{margin:0;padding-left:20px;font-size:13.5px;color:#57534e}
+    .imp-box li{margin-bottom:8px}
+    </style>`;
 }
 async function bootGuided(u, caseId) {
   try {
@@ -259,7 +299,7 @@ async function bootGuided(u, caseId) {
       }
       g = await api('/api/guided/' + caseId);
     }
-    G = { caseId, code: g.case.code, title: g.case.title, steps: g.steps, idx: 0, ctx: {}, points: 0 };
+    G = { caseId, code: g.case.code, title: g.case.title, steps: g.steps, idx: 0, ctx: {}, points: 0, retries: {} };
     if (g.run && g.run.status !== 'completed') { G.idx = g.run.step_idx; G.points = g.run.points; }
     if (g.run && g.run.status === 'completed') {
       // offer restart
