@@ -5,6 +5,22 @@
 <title>Claim Scrubber Sandbox — MbiInventra RCM Academy</title>
 <link rel="stylesheet" href="/css/app.css">
 <style>
+/* ===== Scrubber Lab ULTRA ===== */
+.lab-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:26px 30px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.lab-hero::before{content:"";position:absolute;top:-60px;right:8%;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.lab-hero::after{content:"";position:absolute;bottom:-90px;left:32%;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.12),transparent 70%)}
+.lab-hero h1{margin:0 0 8px;font-size:24px;position:relative;z-index:1}
+.lab-hero .psub{color:#b9d4e8;margin:0;font-size:14px;position:relative;z-index:1;max-width:640px;line-height:1.6}
+.lab-hero .act-row{position:relative;z-index:1;margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 16px;font-size:13px;backdrop-filter:blur(6px);color:#dbeafe}
+.hstat b{font-size:16px;color:#5eead4}
+.eyebrow2{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#34d3bd;margin-bottom:8px;position:relative;z-index:1}
+@keyframes labIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.lab-anim{animation:labIn .45s cubic-bezier(.2,.8,.2,1) backwards}
 .scr-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:16px}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .fld label{display:block;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
@@ -12,15 +28,21 @@
 .line-card{border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:10px;background:#f8fafc}
 .line-card .lhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:700;font-size:13px;color:#0a1628}
 .lgrid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:8px}
-.verdict{border-radius:12px;padding:16px;margin-bottom:14px;text-align:center}
-.verdict.clean{background:#dcfce7;color:#166534}
-.verdict.warn{background:#fef3c7;color:#92400e}
-.verdict.rej{background:#fee2e2;color:#991b1b}
-.verdict b{font-size:22px;display:block}
-.issue{border-left:4px solid #e2e8f0;padding:8px 12px;margin-bottom:8px;background:#f8fafc;border-radius:0 8px 8px 0;font-size:13px}
-.issue.err{border-color:#ef4444}
-.issue.wrn{border-color:#f59e0b}
-.issue .icode{font-weight:800;font-size:11px;color:#64748b}
+.verdict{border-radius:14px;padding:20px;margin-bottom:14px;text-align:center;box-shadow:0 4px 16px rgba(10,22,40,.08)}
+.verdict.clean{background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#166534;border:1px solid #86efac}
+.verdict.warn{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border:1px solid #fcd34d}
+.verdict.rej{background:linear-gradient(135deg,#fee2e2,#fecaca);color:#991b1b;border:1px solid #fca5a5}
+.verdict b{font-size:24px;display:block;margin-bottom:4px}
+.verdict .score-ring{display:inline-flex;align-items:center;justify-content:center;width:84px;height:84px;border-radius:50%;
+  background:#fff;font-size:22px;font-weight:800;margin:10px 0;box-shadow:inset 0 2px 8px rgba(0,0,0,.08)}
+.issue{border-left:4px solid #e2e8f0;padding:10px 14px;margin-bottom:10px;background:#fff;border-radius:0 10px 10px 0;
+  font-size:13px;box-shadow:0 1px 4px rgba(10,22,40,.05);animation:labIn .3s ease backwards}
+.issue.err{border-color:#ef4444;background:#fef2f2}
+.issue.wrn{border-color:#f59e0b;background:#fffbeb}
+.issue .icode{font-weight:800;font-size:11px;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:6px;margin-right:6px}
+.line-card{border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:10px;background:#fff;
+  box-shadow:0 1px 4px rgba(10,22,40,.04);transition:all .16s}
+.line-card:hover{border-color:#0e9f8a;box-shadow:0 3px 12px rgba(14,159,138,.1)}
 @media(max-width:1000px){.scr-grid{grid-template-columns:1fr}.lgrid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -28,9 +50,15 @@
 <div class="shell">
   <aside class="side" id="sidebar"></aside>
   <main class="main cc">
-    <div class="cc-head">
-      <div><h1>🧹 Claim Scrubber Sandbox</h1><p>Build a CMS-1500-style claim, run it through the scrubber, and chase a 100% first-pass yield. Fictional data only.</p></div>
-      <span class="badge-fict" id="best"></span>
+    <div class="lab-hero lab-anim">
+      <div class="eyebrow2">Advanced Labs · Claim Scrubber</div>
+      <h1>🧹 Claim Scrubber Sandbox</h1>
+      <p class="psub">Build a CMS-1500-style claim, run it through the 13-rule scrubber, and chase a <b style="color:#5eead4">100% first-pass yield</b>. Every clean claim is money in the bank.</p>
+      <div class="act-row">
+        <span class="hstat">🏆 Best <b id="best">—</b></span>
+        <span class="hstat">📏 <b>13</b> scrubber rules</span>
+        <span class="hstat">🏦 <b>4</b> payers</span>
+      </div>
     </div>
     <div class="scr-grid">
       <div class="panel-light">
@@ -94,7 +122,7 @@ function lineCard(n) {
   if (!guardFeature(u, 'scrubber', 'Claim Scrubber')) return;
   const [meta, pats, bests] = await Promise.all([api('/api/labs/scrub/meta'), api('/api/patients'), api('/api/labs/bests')]);
   PAYERS = meta.payers;
-  document.getElementById('best').textContent = bests.bests.scrubber != null ? `BEST ${bests.bests.scrubber}%` : 'NO RUNS YET';
+  document.getElementById('best').textContent = bests.bests.scrubber != null ? `${bests.bests.scrubber}%` : '—';
   document.getElementById('patient').innerHTML = pats.patients.map(p => `<option value="${p.code}">${esc(p.code)} — ${esc(p.name)}</option>`).join('');
   const ps = document.getElementById('payer');
   ps.innerHTML = Object.entries(PAYERS).map(([k, v]) => `<option value="${k}">${esc(v.name)}</option>`).join('');
@@ -124,13 +152,15 @@ function lineCard(n) {
       const cls = r.verdict === 'CLEAN' ? 'clean' : r.verdict === 'ACCEPTED WITH WARNINGS' ? 'warn' : 'rej';
       const icon = r.verdict === 'CLEAN' ? '✅' : r.verdict === 'ACCEPTED WITH WARNINGS' ? '⚠️' : '🛑';
       rep.innerHTML = `
-        <div class="verdict ${cls}"><b>${icon} ${r.verdict}</b>First-pass yield: <b>${r.score}%</b></div>
+        <div class="verdict ${cls} lab-anim"><b>${icon} ${r.verdict}</b>
+          <div><span class="score-ring" style="color:${cls === 'clean' ? '#166534' : cls === 'warn' ? '#92400e' : '#991b1b'}">${r.score}%</span></div>
+          <div style="font-size:13px;font-weight:600">First-pass yield</div></div>
         ${r.errors.map(e => `<div class="issue err"><span class="icode">${esc(e.code)}</span> — ${esc(e.msg)}</div>`).join('')}
         ${r.warnings.map(e => `<div class="issue wrn"><span class="icode">${esc(e.code)}</span> — ${esc(e.msg)}</div>`).join('')}
         ${!r.errors.length && !r.warnings.length ? '<div class="empty">No edits triggered. This claim would go out clean — the habit that pays.</div>' : ''}
         <div style="font-size:12.5px;color:#64748b;margin-top:8px">Run logged. Fix the issues and scrub again to beat your best.</div>`;
       const b = await api('/api/labs/bests');
-      if (b.bests.scrubber != null) document.getElementById('best').textContent = `BEST ${b.bests.scrubber}%`;
+      if (b.bests.scrubber != null) document.getElementById('best').textContent = `${b.bests.scrubber}%`;
     } catch (e) { rep.innerHTML = `<div class="empty">Error: ${esc(e.message)}</div>`; }
   };
 })();

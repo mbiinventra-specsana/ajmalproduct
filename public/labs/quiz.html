@@ -5,11 +5,47 @@
 <title>Quiz Arena — MbiInventra RCM Academy</title>
 <link rel="stylesheet" href="/css/app.css">
 <style>
-.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:8px}
-.mode{border:1px solid #e2e8f0;border-radius:12px;padding:18px;background:#fff;cursor:pointer;transition:.15s}
-.mode:hover{border-color:#14b8a6;transform:translateY(-2px)}
-.mode b{font-size:15px;color:#0a1628}
-.mode p{font-size:13px;color:#64748b;margin:6px 0 10px}
+/* ===== Quiz Arena ULTRA ===== */
+.lab-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:26px 30px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.lab-hero::before{content:"";position:absolute;top:-60px;right:8%;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.lab-hero::after{content:"";position:absolute;bottom:-90px;left:32%;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.12),transparent 70%)}
+.lab-hero h1{margin:0 0 8px;font-size:24px;position:relative;z-index:1}
+.lab-hero .psub{color:#b9d4e8;margin:0;font-size:14px;position:relative;z-index:1;max-width:640px;line-height:1.6}
+.lab-hero .act-row{position:relative;z-index:1;margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 16px;font-size:13px;backdrop-filter:blur(6px);color:#dbeafe}
+.hstat b{font-size:16px;color:#5eead4}
+.eyebrow2{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#34d3bd;margin-bottom:8px;position:relative;z-index:1}
+@keyframes labIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.lab-anim{animation:labIn .45s cubic-bezier(.2,.8,.2,1) backwards}
+.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:8px}
+.mode{border:1.5px solid #e2e8f0;border-radius:16px;padding:22px;background:#fff;cursor:pointer;transition:all .22s;
+  position:relative;overflow:hidden}
+.mode::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#0e9f8a,#34d3bd);
+  opacity:0;transition:opacity .2s}
+.mode:hover{border-color:#0e9f8a;transform:translateY(-4px);box-shadow:0 10px 28px rgba(14,159,138,.14)}
+.mode:hover::before{opacity:1}
+.mode .mico{font-size:34px;display:block;margin-bottom:10px}
+.mode b{font-size:16px;color:#0a1628}
+.mode p{font-size:13px;color:#64748b;margin:8px 0 12px;line-height:1.55}
+.mode .mfoot{display:flex;align-items:center;justify-content:space-between}
+.mode .go{font-size:13px;color:#0e9f8a;font-weight:700}
+.qq{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px;margin-bottom:14px;
+  box-shadow:0 1px 5px rgba(10,22,40,.04);transition:border-color .15s}
+.qq:hover{border-color:#cbd5e1}
+.qq label{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;padding:10px 12px;border-radius:10px;
+  cursor:pointer;color:#1e293b;transition:background .15s;border:1.5px solid transparent;margin-bottom:6px}
+.qq label:hover{background:#f0fdfa;border-color:#99f6e4}
+.qq label input{margin-top:3px;accent-color:#0e9f8a}
+.qq .fb{font-size:13px;margin-top:10px;padding:10px 14px;border-radius:10px;display:none;line-height:1.55}
+.qq .fb.ok{display:block;background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#166534;border:1px solid #86efac}
+.qq .fb.no{display:block;background:linear-gradient(135deg,#fee2e2,#fecaca);color:#991b1b;border:1px solid #fca5a5}
+.timerbar{position:sticky;top:0;z-index:5;background:linear-gradient(135deg,#0a1628,#0f2743);color:#fff;border-radius:14px;
+  padding:14px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;
+  box-shadow:0 6px 20px rgba(10,22,40,.25)}
 .qq{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px;margin-bottom:12px}
 .qq .stem{font-size:14.5px;color:#0f1e33;margin-bottom:4px}
 .qq .meta{font-size:11.5px;color:#64748b;margin-bottom:10px}
@@ -27,9 +63,15 @@
 <div class="shell">
   <aside class="side" id="sidebar"></aside>
   <main class="main cc">
-    <div class="cc-head">
-      <div><h1>🎲 Quiz Arena</h1><p>Adaptive drill modes. Train your weakest links like the pros do. Fictional question bank.</p></div>
-      
+    <div class="lab-hero lab-anim">
+      <div class="eyebrow2">Advanced Labs · Adaptive Drills</div>
+      <h1>🎲 Quiz Arena</h1>
+      <p class="psub">Adaptive drill modes. Train your weakest links like the pros do — <b style="color:#5eead4">targeted practice beats random repetition</b>.</p>
+      <div class="act-row">
+        <span class="hstat">🎮 <b>4</b> game modes</span>
+        <span class="hstat">🎯 Weakest-link targeting</span>
+        <span class="hstat">🔁 Missed-question drills</span>
+      </div>
     </div>
     <div id="stage"></div>
   </main>
@@ -39,35 +81,38 @@
 const LET = ['A', 'B', 'C', 'D'];
 let QS = [], MODE = '', timer = null, left = 0;
 const MODES = [
-  ['timed', '⏱️ Timed Quiz', '20 questions · 15 minutes. Exam-day pressure, real pacing.', 20, 900],
-  ['weakest', '🎯 Weakest Subject', 'Auto-targets your two lowest-scoring cases. 15 questions.', 15, 0],
-  ['missed', '🔁 Missed Questions', 'Only questions you got wrong before. Kill your blind spots.', 20, 0],
-  ['mix', '🎲 Random Mix', '15 questions from the full bank. Warm-up or cool-down.', 15, 0],
+  ['timed', '⏱️', 'Timed Quiz', '20 questions · 15 minutes. Exam-day pressure, real pacing.', 20, 900],
+  ['weakest', '🎯', 'Weakest Subject', 'Auto-targets your two lowest-scoring cases. 15 questions of pure growth.', 15, 0],
+  ['missed', '🔁', 'Missed Questions', 'Only questions you got wrong before. Kill your blind spots.', 20, 0],
+  ['mix', '🎲', 'Random Mix', '15 questions from the full bank. Warm-up or cool-down.', 15, 0],
 ];
 async function bests() { try { return (await api('/api/labs/bests')).bests; } catch (e) { return {}; } }
 async function menu() {
   const b = await bests();
   document.getElementById('stage').innerHTML = `
-    <div class="mode-grid">${MODES.map(([k, t, d]) => `
-      <div class="mode" onclick="start('${k}')">
-        <b>${t}</b>${b['quiz-' + k] != null ? ` <span class="st st-done">best ${b['quiz-' + k]}%</span>` : ''}
-        <p>${d}</p><span style="font-size:13px;color:#0e9f8a;font-weight:700">Enter →</span>
+    <div class="mode-grid">${MODES.map(([k, ic, t, d], ix) => `
+      <div class="mode lab-anim" style="animation-delay:${ix * .07}s" onclick="start('${k}')">
+        <span class="mico">${ic}</span>
+        <b>${t}</b>${b['quiz-' + k] != null ? ` <span class="bdg b-green" style="margin-left:6px">🏆 ${b['quiz-' + k]}%</span>` : ' <span class="bdg b-amber" style="margin-left:6px">new</span>'}
+        <p>${d}</p>
+        <div class="mfoot"><span class="go">Enter arena →</span></div>
       </div>`).join('')}</div>
-    <div class="empty">Modes unlock from your own history — attempt cases first for Weakest Subject and Missed Questions to light up.</div>`;
+    <div class="empty lab-anim" style="animation-delay:.3s"><div class="empty-ic" style="font-size:40px">🎮</div>
+      <h4>Your arena awaits</h4><p>Modes unlock from your own history — attempt cases first for<br><b>Weakest Subject</b> and <b>Missed Questions</b> to light up.</p></div>`;
 }
 async function start(mode) {
   MODE = mode;
   const cfg = MODES.find(m => m[0] === mode);
-  const d = await api(`/api/labs/quiz?mode=${mode}&n=${cfg[3]}`);
+  const d = await api(`/api/labs/quiz?mode=${mode}&n=${cfg[4]}`);
   if (!d.questions.length) {
     document.getElementById('stage').innerHTML = `<div class="panel-light"><div class="empty">${esc(d.note || 'No questions available yet — complete some cases first, then come back.')}</div>
       <button class="btn btn-line" onclick="menu()" style="margin-top:12px">← Back to modes</button></div>`;
     return;
   }
-  QS = d.questions; left = cfg[4];
+  QS = d.questions; left = cfg[5];
   let html = '';
   if (left) {
-    html += `<div class="timerbar"><span>⏱️ ${esc(cfg[1])}</span><span class="t" id="clock"></span></div>`;
+    html += `<div class="timerbar"><span>${esc(cfg[1])} ${esc(cfg[2])}</span><span class="t" id="clock"></span></div>`;
     timer = setInterval(() => {
       left--;
       const el = document.getElementById('clock');
@@ -75,10 +120,10 @@ async function start(mode) {
       if (left <= 0) submit();
     }, 1000);
   }
-  html += `<div class="panel-light" style="margin-bottom:14px"><h3>${esc(cfg[1])}</h3>
+  html += `<div class="panel-light lab-anim" style="margin-bottom:14px"><h3>${esc(cfg[1])} ${esc(cfg[2])}</h3>
     <div style="font-size:13px;color:#64748b">${QS.length} questions · answer everything, then submit.</div></div>`;
   html += QS.map((q, qi) => `
-    <div class="qq" data-q="${q.id}">
+    <div class="qq lab-anim" data-q="${q.id}" style="animation-delay:${Math.min(qi * .04, .4)}s">
       <div class="meta">${esc(q.caseCode)} · Q${q.qnum} · ${qi + 1}/${QS.length}</div>
       <div class="stem">${esc(q.prompt)}</div>
       ${q.options.map((o, i) => `<label><input type="radio" name="q${q.id}" value="${i}"> <b>${LET[i]}.</b> ${esc(o)}</label>`).join('')}
@@ -112,9 +157,15 @@ async function submit() {
   const top = document.createElement('div');
   top.className = 'panel-light';
   top.style.cssText = 'margin-bottom:16px;text-align:center';
-  top.innerHTML = `<b style="font-size:28px;color:#0a1628">${r.pct}%</b><div style="color:#64748b">${r.score}/${r.max} points · ${esc(MODE)} mode · run logged</div>
-    <button class="btn btn-teal" onclick="menu()" style="margin-top:10px">← Back to modes</button>
-    <button class="btn btn-line" onclick="start('${MODE}')" style="margin-top:10px;margin-left:8px">↺ Retry</button>`;
+  const medal = r.pct >= 90 ? '🥇' : r.pct >= 75 ? '🥈' : r.pct >= 60 ? '🥉' : '💪';
+  top.style.cssText = 'margin-bottom:16px;text-align:center;background:linear-gradient(135deg,#0f2743,#143a5e);color:#fff;border-radius:18px;padding:28px;box-shadow:0 10px 30px rgba(15,39,67,.3)';
+  top.innerHTML = `<div style="font-size:52px;margin-bottom:4px">${medal}</div>
+    <div class="eyebrow2" style="z-index:auto">Arena Result</div>
+    <b style="font-size:44px;color:#fff">${r.pct}<span style="font-size:20px;color:#94a3b8">%</span></b>
+    <div style="color:#b9d4e8;margin-top:6px">${r.score}/${r.max} points · ${esc(MODE)} mode · run logged</div>
+    <div style="font-size:13.5px;margin-top:10px;color:#b9d4e8">${r.pct >= 90 ? 'Arena champion! Flawless knowledge.' : r.pct >= 75 ? 'Strong run — almost elite.' : r.pct >= 60 ? 'Good fight — review the misses above.' : 'Every master was once a beginner. Retry!'}</div>
+    <div style="margin-top:16px"><button class="btn btn-teal" onclick="menu()">← Back to modes</button>
+    <button class="btn btn-line" onclick="start('${MODE}')" style="margin-left:8px;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff">↺ Retry</button></div>`;
   document.getElementById('stage').prepend(top);
 }
 (async () => {
