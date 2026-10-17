@@ -5,37 +5,128 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login — MbiInventra RCM Academy</title>
 <link rel="stylesheet" href="/css/app.css">
+<style>
+/* ===== Login ULTRA ===== */
+.auth-wrap{display:flex;min-height:100vh}
+.auth-side{flex:1.1;background:linear-gradient(135deg,#0a1c33 0%,#0f2743 40%,#0d3b35 100%);color:#fff;
+  padding:56px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.auth-side::before{content:"";position:absolute;top:-100px;right:-60px;width:380px;height:380px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.22),transparent 70%);animation:float 8s ease-in-out infinite}
+.auth-side::after{content:"";position:absolute;bottom:-120px;left:-40px;width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.12),transparent 70%);animation:float 10s ease-in-out infinite reverse}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-24px)}}
+.auth-side>*{position:relative;z-index:1}
+.auth-brand{display:flex;align-items:center;gap:14px;margin-bottom:44px;animation:slideIn .5s ease}
+.auth-brand .mark{width:52px;height:52px;border-radius:15px;background:linear-gradient(135deg,#0e9f8a,#34d3bd);
+  display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 6px 20px rgba(14,159,138,.45)}
+.auth-brand b{font-size:21px;display:block}
+.auth-brand small{color:#7c8ea8;font-size:12.5px}
+.auth-side h2{font-size:38px;line-height:1.2;margin:0 0 16px;font-weight:800;letter-spacing:-.5px;animation:slideIn .5s .08s ease backwards}
+.auth-side h2 .hl{background:linear-gradient(90deg,#34d3bd,#5eead4);-webkit-background-clip:text;background-clip:text;color:transparent}
+.auth-side>p{color:#a9bdd6;font-size:16px;line-height:1.7;max-width:460px;margin:0 0 34px;animation:slideIn .5s .14s ease backwards}
+.feat-list{display:flex;flex-direction:column;gap:14px;margin-bottom:36px;animation:slideIn .5s .2s ease backwards}
+.feat{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;padding:13px 18px;backdrop-filter:blur(8px);transition:all .2s;max-width:460px}
+.feat:hover{background:rgba(255,255,255,.1);transform:translateX(6px)}
+.feat .fi{width:42px;height:42px;border-radius:12px;background:rgba(52,211,189,.15);display:flex;align-items:center;
+  justify-content:center;font-size:20px;flex:none}
+.feat b{font-size:14.5px;display:block}
+.feat span{font-size:12.5px;color:#8fa8c4}
+.hero-stats{display:flex;gap:26px;animation:slideIn .5s .26s ease backwards}
+.hstat2 b{font-size:26px;display:block;background:linear-gradient(90deg,#fff,#5eead4);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hstat2 span{font-size:12px;color:#7c8ea8;text-transform:uppercase;letter-spacing:1px}
+@keyframes slideIn{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+/* form side */
+.auth-form{flex:1;background:#fff;padding:56px;display:flex;flex-direction:column;justify-content:center;max-width:560px}
+.auth-form h1{font-size:30px;margin:0 0 8px;color:#0f2743;letter-spacing:-.5px;animation:fadeUp .5s ease}
+.auth-form .sub{color:#64748b;font-size:14.5px;margin:0 0 30px;animation:fadeUp .5s .06s ease backwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.field{margin-bottom:18px;animation:fadeUp .5s .12s ease backwards}
+.field label{display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:8px}
+.inp-wrap{position:relative}
+.inp-wrap .ii{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:17px;color:#94a3b8}
+.input{width:100%;padding:14px 16px 14px 44px;border:2px solid #e8eef4;border-radius:13px;font-size:15px;
+  transition:all .2s;background:#f8fafc;color:#0f2743;box-sizing:border-box}
+.input:focus{outline:none;border-color:#0e9f8a;background:#fff;box-shadow:0 0 0 4px rgba(14,159,138,.12)}
+.input::placeholder{color:#b0bdcf}
+.pw-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;
+  cursor:pointer;font-size:17px;color:#94a3b8;padding:4px}
+.pw-toggle:hover{color:#0e9f8a}
+.btn-login{width:100%;padding:15px;border:none;border-radius:13px;font-size:16px;font-weight:700;cursor:pointer;
+  background:linear-gradient(135deg,#0e9f8a,#0b7c6c);color:#fff;transition:all .22s;
+  box-shadow:0 6px 20px rgba(14,159,138,.35);display:flex;align-items:center;justify-content:center;gap:10px;
+  animation:fadeUp .5s .18s ease backwards}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(14,159,138,.45)}
+.btn-login:active{transform:translateY(0)}
+.btn-login:disabled{opacity:.7;cursor:wait;transform:none}
+.btn-login .spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;
+  border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.alert{display:none;padding:13px 17px;border-radius:12px;font-size:14px;margin-bottom:20px;animation:shake .4s ease}
+.alert.err{display:block;background:#fef2f2;border:1px solid #fecaca;color:#dc2626}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.fict{background:#f1f5f9;border-radius:12px;padding:15px 18px;font-size:13px;color:#64748b;line-height:1.6;
+  margin-top:24px;animation:fadeUp .5s .24s ease backwards}
+.back-link{margin-top:26px;font-size:13.5px;animation:fadeUp .5s .3s ease backwards}
+.back-link a{color:#0e9f8a;text-decoration:none;font-weight:600}
+.back-link a:hover{text-decoration:underline}
+@media(max-width:900px){
+  .auth-wrap{flex-direction:column}
+  .auth-side{padding:40px 28px;min-height:auto}
+  .auth-side h2{font-size:28px}
+  .feat-list{display:none}
+  .auth-form{padding:36px 24px;max-width:none}
+}
+</style>
 </head>
 <body>
 <div class="auth-wrap">
   <div class="auth-side">
-    <div class="brand" style="margin-bottom:34px"><div class="mark">⚕</div><div>MbiInventra<small>bill.mbiinventra.com</small></div></div>
-    <h2>Train like a billing professional.</h2>
+    <div class="auth-brand"><div class="mark">⚕</div><div><b>MbiInventra</b><small>bill.mbiinventra.com</small></div></div>
+    <h2>Train like a <span class="hl">billing professional.</span></h2>
     <p>Work realistic USA medical billing cases — eligibility, coding, claims, denials, payments and A/R — with instant feedback on every answer.</p>
-    <div class="hero-badges" style="margin-top:26px">
-      <span class="hbadge">🎯 8 training cases</span>
-      <span class="hbadge">🏆 Levels &amp; points</span>
-      <span class="hbadge">🔒 Fictional data only</span>
+    <div class="feat-list">
+      <div class="feat"><span class="fi">🧭</span><div><b>Guided walkthroughs</b><span>Step-by-step on real workspace data</span></div></div>
+      <div class="feat"><span class="fi">🧾</span><div><b>Full RCM cycle</b><span>Charge → claim → scrub → submit → paid</span></div></div>
+      <div class="feat"><span class="fi">🏆</span><div><b>Levels & points</b><span>Climb from Beginner to Executive</span></div></div>
+      <div class="feat"><span class="fi">🔬</span><div><b>Advanced labs</b><span>Scrubber sandbox, denial lab, sprints</span></div></div>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat2"><b>8</b><span>Training cases</span></div>
+      <div class="hstat2"><b>13</b><span>Scrubber rules</span></div>
+      <div class="hstat2"><b>5</b><span>Career levels</span></div>
     </div>
   </div>
   <div class="auth-form">
-    <h1>Welcome back</h1>
+    <h1>Welcome back 👋</h1>
     <p class="sub">Login to continue your training. Accounts are created by your administrator.</p>
-    <div class="alert err" id="err"></div>
+    <div class="alert" id="err"></div>
     <form id="f">
-      <div class="field"><label>Email</label><input class="input" id="email" type="email" required autocomplete="username" placeholder="you@example.com"></div>
-      <div class="field"><label>Password</label><input class="input" id="pw" type="password" required autocomplete="current-password" placeholder="••••••••"></div>
-      <button class="btn btn-teal" style="width:100%;justify-content:center" type="submit">Login →</button>
+      <div class="field"><label>Email</label>
+        <div class="inp-wrap"><span class="ii">📧</span>
+        <input class="input" id="email" type="email" required autocomplete="username" placeholder="you@example.com"></div></div>
+      <div class="field"><label>Password</label>
+        <div class="inp-wrap"><span class="ii">🔒</span>
+        <input class="input" id="pw" type="password" required autocomplete="current-password" placeholder="••••••••" style="padding-right:48px">
+        <button type="button" class="pw-toggle" id="pwt" title="Show password">👁️</button></div></div>
+      <button class="btn-login" type="submit" id="lbtn"><span>Login →</span></button>
     </form>
-    <div class="fict">No public registration — your training account is created by an administrator. Contact them if you need access.</div>
-    <p style="margin-top:22px;font-size:13px;color:#8a97ad"><a href="/">← Back to home</a></p>
+    <div class="fict">🔐 <b>No public registration</b> — your training account is created by an administrator. Contact them if you need access.</div>
+    <p class="back-link"><a href="/">← Back to home</a></p>
   </div>
 </div>
 <script>
+document.getElementById('pwt').onclick = () => {
+  const pw = document.getElementById('pw'), t = document.getElementById('pwt');
+  const show = pw.type === 'password';
+  pw.type = show ? 'text' : 'password';
+  t.textContent = show ? '🙈' : '👁️';
+};
 document.getElementById('f').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const err = document.getElementById('err');
+  const err = document.getElementById('err'), btn = document.getElementById('lbtn');
   err.classList.remove('err'); err.textContent = '';
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span><span>Logging in…</span>';
   try {
     const r = await fetch('/api/login', { method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -47,8 +138,12 @@ document.getElementById('f').addEventListener('submit', async (e) => {
       await fetch('/api/logout', { method: 'POST' }).catch(() => {});
       throw new Error('This login is for students only. The owner uses the separate owner portal.');
     }
-    location.href = '/stu';
-  } catch (ex) { err.textContent = ex.message; err.classList.add('err'); }
+    btn.innerHTML = '<span>✓ Welcome!</span>';
+    setTimeout(() => location.href = '/stu', 400);
+  } catch (ex) {
+    err.textContent = ex.message; err.classList.add('err');
+    btn.disabled = false; btn.innerHTML = '<span>Login →</span>';
+  }
 });
 </script>
 </body>
