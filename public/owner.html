@@ -81,10 +81,34 @@
       <h3>📊 Learning analytics</h3>
       <div id="heatmap"><div class="skel skel-title"></div><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div><div class="skel skel-line w80"></div></div>
     </div>
+    <div class="grid2">
+      <div class="panel"><h3>📈 Readiness trend <span style="font-weight:400;font-size:12px;color:#8a97ad">last 8 weeks</span></h3><div id="trendChart"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line w60"></div></div></div>
+      <div class="panel"><h3>🕸️ Category mastery <span style="font-weight:400;font-size:12px;color:#8a97ad">class average</span></h3><div id="radarChart" style="text-align:center"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h3>🚀 Top improvers <span style="font-weight:400;font-size:12px;color:#8a97ad">last 30 days</span></h3><div id="improvers"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
+      <div class="panel"><h3>🔮 Predicted ready date <span style="font-weight:400;font-size:12px;color:#8a97ad">500 pts target</span></h3><div id="predictions"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line w60"></div></div></div>
+    </div>
+    <div class="panel"><h3>📊 Score distribution <span style="font-weight:400;font-size:12px;color:#8a97ad">best score per student per case</span></h3><div id="distChart"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div></div>
+      <div style="display:flex;gap:14px;font-size:12px;color:#8a97ad;margin-top:8px;flex-wrap:wrap">
+        <span><b class="dot" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#e11d48;margin-right:4px"></b>0–49%</span>
+        <span><b class="dot" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#f59e0b;margin-right:4px"></b>50–69%</span>
+        <span><b class="dot" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#0e9f8a;margin-right:4px"></b>70–84%</span>
+        <span><b class="dot" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#0f2743;margin-right:4px"></b>85–100%</span>
+      </div>
+    </div>
+    <div class="panel"><h3>⚔️ Student compare</h3>
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <select class="input" id="cmpA" style="flex:1;min-width:180px"><option value="">Select student A…</option></select>
+        <select class="input" id="cmpB" style="flex:1;min-width:180px"><option value="">Select student B…</option></select>
+      </div>
+      <div id="cmpOut"><div class="empty">Pick two students to compare side by side.</div></div>
+    </div>
     </section>
     <!-- ACCOUNTS -->
     <section data-sec="accounts" style="display:none">
-    <div class="topbar"><div><h1>👥 Accounts</h1><p>Create and manage student, instructor and admin accounts.</p></div></div>
+    <div class="topbar"><div><h1>👥 Accounts</h1><p>Create and manage student, instructor and admin accounts.</p></div>
+      <button class="btn btn-teal btn-sm" onclick="openImport()">📥 Import CSV</button></div>
     <div class="grid2">
       <div class="panel">
         <h3>➕ Create account</h3>
@@ -96,9 +120,42 @@
           <option value="student">Student</option><option value="instructor">Instructor</option><option value="admin">Admin</option>
         </select></div>
         <button class="btn btn-teal" id="create">Create account</button>
-        <p style="font-size:12.5px;color:#8a97ad;margin-top:12px">No public registration exists — every account is created here.</p>
+        <p style="font-size:12.5px;color:#8a97ad;margin-top:12px">No public registration exists — every account is created here. Or <a href="#" onclick="openImport();return false" style="color:#0e9f8a">import many via CSV</a>.</p>
       </div>
-      <div class="panel"><h3>👥 Accounts</h3><div id="users"><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div></div></div>
+      <div class="panel">
+        <h3>👥 Accounts <span id="uCount" style="font-weight:400;font-size:12px;color:#8a97ad"></span></h3>
+        <div class="acct-tools">
+          <input class="input" id="uSearch" placeholder="🔍 Search name or email…" oninput="renderUsers()">
+          <select class="input" id="uRole" onchange="renderUsers()">
+            <option value="">All roles</option><option value="student">Students</option>
+            <option value="instructor">Instructors</option><option value="admin">Admins</option>
+          </select>
+          <select class="input" id="uStatus" onchange="renderUsers()">
+            <option value="">Any status</option><option value="online">🟢 Online now</option>
+            <option value="active">Active (7d)</option><option value="inactive">Inactive 7d+</option>
+          </select>
+          <select class="input" id="uSort" onchange="renderUsers()">
+            <option value="new">Newest first</option><option value="name">Name A–Z</option>
+            <option value="points">Most points</option><option value="active">Recently active</option>
+          </select>
+        </div>
+        <div id="bulkBar" class="bulkbar" style="display:none">
+          <b><span id="bulkN">0</span> selected</b>
+          <select class="input" id="bulkFeat" style="max-width:170px">
+            <option value="">Feature…</option>
+            <option value="workspace">Workspace</option><option value="patients">Patients</option>
+            <option value="billing">Billing</option><option value="revenue">Revenue Cycle</option>
+            <option value="training">Training</option><option value="labs">Advanced Labs</option>
+          </select>
+          <button class="btn btn-line btn-sm" onclick="bulkFeatures(true)">Enable</button>
+          <button class="btn btn-line btn-sm" onclick="bulkFeatures(false)">Disable</button>
+          <button class="btn btn-line btn-sm" onclick="bulkPreset('exam')">🎯 Exam</button>
+          <button class="btn btn-line btn-sm" onclick="bulkPreset('full')">✅ Full</button>
+          <button class="btn btn-sm" style="background:#fdeceb;color:#c0392b" onclick="bulkDelete()">🗑 Delete</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearSel()">✕</button>
+        </div>
+        <div id="users"><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div><div class="skel-table-row"><div class="skel" style="flex:2"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div><div class="skel" style="flex:1"></div></div></div>
+      </div>
     </div>
     </section>
     <!-- ANNOUNCEMENTS -->
@@ -133,15 +190,155 @@
 </div>
 <script src="/js/app.js"></script>
 <script>
+let _usersCache = [], _sel = new Set(), _expanded = new Set(), _featCache = null;
+function relTime(ts) {
+  if (!ts) return '<span style="color:#a0aec0">never</span>';
+  const ms = Date.now() - new Date(String(ts).replace(' ', 'T') + 'Z').getTime();
+  if (ms < 0) return 'just now';
+  const m = Math.floor(ms / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  const d = Math.floor(h / 24);
+  if (d < 30) return d + 'd ago';
+  return Math.floor(d / 30) + 'mo ago';
+}
+function isInactive7(ts) {
+  if (!ts) return true;
+  return (Date.now() - new Date(String(ts).replace(' ', 'T') + 'Z').getTime()) > 7 * 864e5;
+}
 async function loadUsers() {
   const { users } = await api('/api/admin/users');
+  _usersCache = users; _sel = new Set();
+  renderUsers();
+}
+function filteredUsers() {
+  const q = (document.getElementById('uSearch').value || '').toLowerCase();
+  const role = document.getElementById('uRole').value;
+  const status = document.getElementById('uStatus').value;
+  const sort = document.getElementById('uSort').value;
+  let list = _usersCache.filter(u => {
+    if (q && !(u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))) return false;
+    if (role && u.role !== role) return false;
+    if (status === 'online' && !u.online) return false;
+    if (status === 'active' && isInactive7(u.last_active)) return false;
+    if (status === 'inactive' && !isInactive7(u.last_active)) return false;
+    return true;
+  });
+  const tsm = (u) => u.last_active ? new Date(String(u.last_active).replace(' ', 'T') + 'Z').getTime() : 0;
+  if (sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+  else if (sort === 'points') list.sort((a, b) => (b.points || 0) - (a.points || 0));
+  else if (sort === 'active') list.sort((a, b) => tsm(b) - tsm(a));
+  else list.sort((a, b) => b.id - a.id);
+  return list;
+}
+function renderUsers() {
+  const list = filteredUsers();
+  document.getElementById('uCount').textContent = `(${list.length} shown · ${_usersCache.length} total)`;
+  const allIds = list.map(u => u.id);
+  const allSel = allIds.length > 0 && allIds.every(id => _sel.has(id));
   document.getElementById('users').innerHTML = `
-    <table><tr><th>Name</th><th>Role</th><th></th></tr>
-    ${users.map(x => `<tr><td>${esc(x.name)}<br><span style="font-size:12px;color:#8a97ad">${esc(x.email)}</span></td>
-      <td><span class="pill ${x.role === 'admin' ? 'p-advanced' : 'p-beginner'}">${esc(x.role)}</span></td>
-      <td style="white-space:nowrap"><button class="btn btn-teal btn-sm" onclick="manage(${x.id})">Manage</button>
-      <button class="btn btn-line btn-sm" onclick="del(${x.id})">Delete</button></td></tr>`).join('')}
-    </table>`;
+    <table><tr><th style="width:34px"><input type="checkbox" ${allSel ? 'checked' : ''} onchange="toggleSelAll(this.checked)" title="Select all"></th>
+    <th>Student</th><th>Stats</th><th>Last active</th><th></th></tr>
+    ${list.map(u => `
+      <tr style="${_sel.has(u.id) ? 'background:#f0fdfa' : ''}">
+        <td><input type="checkbox" ${u.id === ME_ID ? 'disabled' : ''} ${_sel.has(u.id) ? 'checked' : ''} onchange="toggleSel(${u.id}, this.checked)"></td>
+        <td>${u.online ? '<span class="odot" title="Online now"></span>' : ''}<b>${esc(u.name)}</b><br>
+          <span style="font-size:12px;color:#8a97ad">${esc(u.email)}</span><br>
+          <span class="pill ${u.role === 'admin' ? 'p-advanced' : u.role === 'instructor' ? 'p-prog' : 'p-beginner'}">${esc(u.role)}</span></td>
+        <td style="font-size:12.5px;white-space:nowrap"><b>${u.points || 0}</b> pts<br>
+          <span style="color:#8a97ad">${u.cases_done || 0} cases</span></td>
+        <td style="font-size:12.5px;white-space:nowrap">${relTime(u.last_active)}</td>
+        <td style="white-space:nowrap;text-align:right">
+          <button class="btn btn-line btn-sm" onclick="toggleExpand(${u.id})">${_expanded.has(u.id) ? '▴ Modules' : '▾ Modules'}</button>
+          <button class="btn btn-ghost btn-sm" title="Open student view in new tab" onclick="window.open('/dashboard','_blank')">👁</button>
+          <button class="btn btn-teal btn-sm" onclick="manage(${u.id})">Manage</button>
+          ${u.id === ME_ID ? '' : `<button class="btn btn-line btn-sm" onclick="del(${u.id})">Delete</button>`}
+        </td>
+      </tr>
+      ${_expanded.has(u.id) ? `<tr class="xrow"><td></td><td colspan="4"><div id="xfeat-${u.id}"><div class="skel skel-line w60"></div></div></td></tr>` : ''}
+    `).join('') || `<tr><td colspan="5"><div class="empty">No accounts match.</div></td></tr>`}</table>`;
+  // lazy-fill expanded feature rows
+  for (const id of _expanded) { const el = document.getElementById('xfeat-' + id); if (el) fillInlineFeatures(id); }
+  updateBulkBar();
+}
+function toggleSel(id, on) { on ? _sel.add(id) : _sel.delete(id); renderUsers(); }
+function toggleSelAll(on) { filteredUsers().forEach(u => { if (u.id !== ME_ID) on ? _sel.add(u.id) : _sel.delete(u.id); }); renderUsers(); }
+function clearSel() { _sel.clear(); renderUsers(); }
+function updateBulkBar() {
+  const bar = document.getElementById('bulkBar');
+  bar.style.display = _sel.size ? 'flex' : 'none';
+  document.getElementById('bulkN').textContent = _sel.size;
+}
+async function bulkFeatures(enabled) {
+  const feature = document.getElementById('bulkFeat').value;
+  if (!feature) return alert('Pick a feature first.');
+  if (!confirm(`${enabled ? 'Enable' : 'Disable'} "${feature}" for ${_sel.size} account(s)?`)) return;
+  await api('/api/admin/users/bulk-features', { method: 'POST', body: { ids: [..._sel], feature, enabled } });
+  _loadedSec['accounts'] = false; await loadUsers();
+  alert(`Done — ${feature} ${enabled ? 'enabled' : 'disabled'}.`);
+}
+async function bulkPreset(which) {
+  if (!confirm(which === 'exam' ? `Exam Mode (training only) for ${_sel.size} account(s)?` : `Full Access for ${_sel.size} account(s)?`)) return;
+  await api('/api/admin/users/bulk-preset', { method: 'POST', body: { ids: [..._sel], preset: which } });
+  _loadedSec['accounts'] = false; await loadUsers();
+  alert('Preset applied.');
+}
+async function bulkDelete() {
+  if (!confirm(`Delete ${_sel.size} account(s) and ALL their data? This cannot be undone.`)) return;
+  const r = await api('/api/admin/users/bulk-delete', { method: 'POST', body: { ids: [..._sel] } });
+  _loadedSec['accounts'] = false; await loadUsers();
+  alert(`Deleted ${r.deleted} account(s).`);
+}
+async function toggleExpand(id) {
+  _expanded.has(id) ? _expanded.delete(id) : _expanded.add(id);
+  renderUsers();
+}
+async function fillInlineFeatures(id) {
+  try {
+    if (!_featCache) _featCache = (await api('/api/admin/features')).features;
+    const d = await api('/api/admin/users/' + id);
+    const off = new Set(d.features.filter(f => !f.enabled).map(f => f.feature));
+    document.getElementById('xfeat-' + id).innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px">` +
+      _featCache.map(f => `<label class="feat-row" style="margin:0;padding:7px 10px"><span style="font-size:12.5px"><b>${f.icon} ${esc(f.label)}</b></span>
+        <span class="switch"><input type="checkbox" ${off.has(f.key) ? '' : 'checked'}
+          onchange="inlineFeat(${id},'${f.key}',this.checked)"><span class="sl"></span></span></label>`).join('') + `</div>`;
+  } catch (e) { const el = document.getElementById('xfeat-' + id); if (el) el.innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+async function inlineFeat(id, key, on) {
+  await api('/api/admin/users/' + id + '/features', { method: 'POST', body: { features: { [key]: on } } });
+}
+// ---- CSV import ----
+function openImport() {
+  openModal('📥 Import accounts via CSV', `
+    <p style="font-size:13px;color:#64748b;margin-bottom:10px">One per line: <code>name,email,password,role</code> — role optional (default student). Max 500 rows.</p>
+    <textarea class="input" id="csvText" rows="8" style="font-family:monospace;font-size:12.5px" placeholder="Ali Khan,ali@mail.com,secret123,student&#10;Sara Ahmed,sara@mail.com,pass456,student"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+      <label class="btn btn-line btn-sm" style="cursor:pointer">📎 Choose file<input type="file" id="csvFile" accept=".csv,.txt" style="display:none"></label>
+      <button class="btn btn-teal btn-sm" onclick="doImport()">Import</button>
+    </div>
+    <div id="impOut" style="margin-top:12px"></div>`);
+  document.getElementById('csvFile').onchange = (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => document.getElementById('csvText').value = r.result;
+    r.readAsText(f);
+  };
+}
+async function doImport() {
+  const out = document.getElementById('impOut');
+  out.innerHTML = '<div class="skel skel-line"></div><div class="skel skel-line w60"></div>';
+  try {
+    const r = await api('/api/admin/users/import', { method: 'POST', body: { csv: document.getElementById('csvText').value } });
+    out.innerHTML = `
+      <div class="alert ${r.errors.length ? 'err' : ''}" style="display:block">
+        ✅ Created <b>${r.created.length}</b>${r.errors.length ? ` · ❌ <b>${r.errors.length}</b> failed` : ''}</div>
+      ${r.errors.length ? `<table style="margin-top:8px"><tr><th>Row</th><th>Email</th><th>Error</th></tr>
+        ${r.errors.map(e => `<tr><td>${e.row}</td><td>${esc(e.email)}</td><td>${esc(e.error)}</td></tr>`).join('')}</table>` : ''}
+      ${r.created.length ? `<div style="font-size:12.5px;color:#64748b;margin-top:8px">Created: ${r.created.slice(0, 5).map(c => esc(c.email)).join(', ')}${r.created.length > 5 ? ` +${r.created.length - 5} more` : ''}</div>` : ''}`;
+    if (r.created.length) { _loadedSec['accounts'] = false; await loadUsers(); }
+  } catch (e) { out.innerHTML = `<div class="alert err" style="display:block">${esc(e.message)}</div>`; }
 }
 // ---- per-student control panel (modal) ----
 async function manage(id) {
@@ -252,8 +449,11 @@ function heatColor(pct) {
 function heatText(pct) { return pct == null ? '#8a97ad' : (pct >= 80 || pct < 40 ? '#fff' : '#333'); }
 async function loadAnalytics() {
   try {
-    const h = await api('/api/admin/heatmap');
-    const lb = await api('/api/leaderboard');
+    const [h, lb, tr] = await Promise.all([
+      api('/api/admin/heatmap'),
+      api('/api/leaderboard'),
+      api('/api/admin/trends').catch(() => null),
+    ]);
     if (!h.students.length) {
       document.getElementById('heatmap').innerHTML = '<div class="empty">No students yet.</div>'; return;
     }
@@ -280,7 +480,104 @@ async function loadAnalytics() {
             <td><b>${esc(t.name)}</b></td><td><b>${t.points}</b></td><td>${t.cases_done}</td></tr>`).join('')}</table>`
           : '<div class="empty">No scores yet.</div>'}</div>
       </div>`;
+    if (tr) renderTrends(tr);
   } catch (e) { document.getElementById('heatmap').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+function renderTrends(tr) {
+  // ---- 1. readiness trend (SVG line) ----
+  const W = 560, H = 180, P = 34;
+  const pts = tr.weeklyTrend;
+  const xs = i => P + i * (W - 2 * P) / Math.max(1, pts.length - 1);
+  const ys = v => H - P - (v / 100) * (H - 2 * P);
+  const line = pts.map((p, i) => `${xs(i).toFixed(1)},${ys(p.readiness).toFixed(1)}`).join(' ');
+  const area = `${P},${H - P} ${line} ${W - P},${H - P}`;
+  document.getElementById('trendChart').innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">
+      <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0e9f8a" stop-opacity=".35"/><stop offset="1" stop-color="#0e9f8a" stop-opacity="0"/>
+      </linearGradient></defs>
+      ${[0, 25, 50, 75, 100].map(v => `<line x1="${P}" y1="${ys(v)}" x2="${W - P}" y2="${ys(v)}" stroke="#eef2f7" stroke-width="1"/>
+        <text x="${P - 6}" y="${ys(v) + 4}" font-size="10" fill="#8a97ad" text-anchor="end">${v}</text>`).join('')}
+      <polygon points="${area}" fill="url(#tg)"/>
+      <polyline points="${line}" fill="none" stroke="#0e9f8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${pts.map((p, i) => `<circle cx="${xs(i)}" cy="${ys(p.readiness)}" r="4.5" fill="#fff" stroke="#0e9f8a" stroke-width="2.5">
+        <title>${esc(p.week)}: ${p.readiness}%</title></circle>
+        <text x="${xs(i)}" y="${H - 8}" font-size="10" fill="#8a97ad" text-anchor="middle">${esc(p.week)}</text>`).join('')}
+    </svg>`;
+
+  // ---- 2. category radar (SVG spider) ----
+  const cats = tr.categoryMastery, n = cats.length;
+  const C = 150, R = 105, cx = C, cy = C;
+  const ang = i => (Math.PI * 2 * i) / n - Math.PI / 2;
+  const pt = (i, v) => `${(cx + R * (v / 100) * Math.cos(ang(i))).toFixed(1)},${(cy + R * (v / 100) * Math.sin(ang(i))).toFixed(1)}`;
+  const rings = [25, 50, 75, 100].map(v =>
+    `<polygon points="${cats.map((_, i) => pt(i, v)).join(' ')}" fill="none" stroke="#e5eaf1" stroke-width="1"/>`).join('');
+  const spokes = cats.map((_, i) => `<line x1="${cx}" y1="${cy}" x2="${pt(i, 100).split(',')[0]}" y2="${pt(i, 100).split(',')[1]}" stroke="#e5eaf1"/>`).join('');
+  const labels = cats.map((c, i) => {
+    const x = cx + (R + 26) * Math.cos(ang(i)), y = cy + (R + 26) * Math.sin(ang(i));
+    return `<text x="${x.toFixed(0)}" y="${y.toFixed(0)}" font-size="10.5" font-weight="600" fill="#475569" text-anchor="middle" dominant-baseline="middle">${esc(c.category.replace(/_/g, ' '))}</text>
+      <text x="${x.toFixed(0)}" y="${(y + 13).toFixed(0)}" font-size="10" fill="#0e9f8a" font-weight="700" text-anchor="middle">${c.avg}%</text>`;
+  }).join('');
+  document.getElementById('radarChart').innerHTML = `
+    <svg viewBox="0 0 ${C * 2 + 40} ${C * 2 + 40}" style="width:100%;max-width:380px;height:auto">
+      <g transform="translate(20,20)">${rings}${spokes}
+      <polygon points="${cats.map((c, i) => pt(i, c.avg)).join(' ')}" fill="rgba(14,159,138,.22)" stroke="#0e9f8a" stroke-width="2.5" stroke-linejoin="round"/>
+      ${cats.map((c, i) => `<circle cx="${pt(i, c.avg).split(',')[0]}" cy="${pt(i, c.avg).split(',')[1]}" r="3.5" fill="#0e9f8a"/>`).join('')}
+      ${labels}</g></svg>`;
+
+  // ---- 3. top improvers ----
+  document.getElementById('improvers').innerHTML = tr.improvers.length ? tr.improvers.map((m, i) => `
+    <div class="funnel-row"><div class="fl">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1)} ${esc(m.name)}</div>
+      <div class="funnel-bar"><i style="width:${Math.min(100, m.gain * 2)}%"></i></div>
+      <div class="fv"><b style="color:#0e9f8a">+${m.gain}%</b> <span style="color:#8a97ad">· ${m.tries} tries</span></div></div>`).join('')
+    : `<div class="empty">No improvers yet — need 4+ attempts in 30 days.</div>`;
+
+  // ---- 4. predictions ----
+  const stBadge = s => s === 'achieved' ? '<span class="pill p-beginner">achieved</span>'
+    : s === 'on-track' ? '<span class="pill p-beginner">on track</span>'
+    : s === 'slow' ? '<span class="pill p-prog">slow pace</span>' : '<span class="pill">no data</span>';
+  document.getElementById('predictions').innerHTML = `<table><tr><th>Student</th><th>Pts</th><th>Pts/day</th><th>Ready by</th><th></th></tr>${
+    tr.predictions.slice(0, 8).map(p => `<tr><td><b>${esc(p.name)}</b></td><td>${p.points}</td>
+      <td>${p.velocity}</td><td>${p.readyDate ? esc(p.readyDate) : '—'}</td><td>${stBadge(p.status)}</td></tr>`).join('')
+  }</table>`;
+
+  // ---- 5. score distribution ----
+  const cols = ['#e11d48', '#f59e0b', '#0e9f8a', '#0f2743'];
+  document.getElementById('distChart').innerHTML = tr.distribution.map(d => {
+    const tot = d.buckets.reduce((x, y) => x + y, 0) || 1;
+    return `<div class="funnel-row"><div class="fl">${esc(d.code.replace('CASE-', 'C'))}</div>
+      <div style="flex:1;display:flex;height:22px;border-radius:8px;overflow:hidden;background:#eef2f7">${
+        d.buckets.map((b, i) => b ? `<div style="width:${(100 * b / tot).toFixed(1)}%;background:${cols[i]}" title="${b} students"></div>` : '').join('')
+      }</div>
+      <div class="fv">${tot} att.</div></div>`;
+  }).join('');
+
+  // ---- 6. compare mode ----
+  const opts = tr.studentStats.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  const aSel = document.getElementById('cmpA'), bSel = document.getElementById('cmpB');
+  aSel.innerHTML = '<option value="">Select student A…</option>' + opts;
+  bSel.innerHTML = '<option value="">Select student B…</option>' + opts;
+  const byId = Object.fromEntries(tr.studentStats.map(s => [s.id, s]));
+  const renderCmp = () => {
+    const A = byId[aSel.value], B = byId[bSel.value];
+    if (!A || !B) { document.getElementById('cmpOut').innerHTML = '<div class="empty">Pick two students to compare side by side.</div>'; return; }
+    const row = (label, fa, fb, suffix = '') => {
+      const mx = Math.max(fa, fb, 1);
+      const cell = (v, other) => `<td style="width:38%"><div style="font-size:15px;font-weight:800;color:${v >= other ? '#0e9f8a' : '#475569'}">${v}${suffix}</div>
+        <div class="vs-bar ${v >= other ? 'you' : 'avg'}"><i style="width:${Math.round(100 * v / mx)}%"></i></div></td>`;
+      return `<tr><td style="font-size:13px;font-weight:600">${label}</td>${cell(fa, fb)}${cell(fb, fa)}</tr>`;
+    };
+    document.getElementById('cmpOut').innerHTML = `<table>
+      <tr><th></th><th style="width:38%">🅰️ ${esc(A.name)}</th><th style="width:38%">🅱️ ${esc(B.name)}</th></tr>
+      ${row('Points', A.points, B.points)}
+      ${row('Accuracy', A.accuracy, B.accuracy, '%')}
+      ${row('Cases done', A.casesDone, B.casesDone)}
+      ${row('Attempts', A.attempts, B.attempts)}
+      ${row('Active days', A.activeDays, B.activeDays)}
+      ${row('Readiness', A.readiness, B.readiness, '%')}
+    </table>`;
+  };
+  aSel.onchange = renderCmp; bSel.onchange = renderCmp;
 }
 // ---- announcements ----
 async function loadAnnouncements() {
@@ -469,6 +766,7 @@ async function boot() {
   document.getElementById('sidebar').innerHTML = `<div class="skel skel-brand"></div><nav class="snav"><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div></nav>`;
   const u0 = await currentUser();
   if (!u0) return;
+  window.ME_ID = u0.id;
   const KEY = { dashboard: 'owner', analytics: 'analytics', accounts: 'accounts', announce: 'announce', sessions: 'sessions', system: 'syshealth' }[SEC] || 'owner';
   adminShell(KEY, u0);
   ownerShow(SEC);

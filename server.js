@@ -813,7 +813,99 @@ app.get('/api/admin/diagnostics', requireAdmin, ah(async (req, res) => {
   res.json(out);
 }));
 app.get('/api/admin/users', requireAdmin, ah(async (req, res) => {
-  res.json({ users: await db.all('SELECT id,name,email,role,created_at,last_login FROM users ORDER BY id') });
+  const cutoff = db.IS_MYSQL ? 'DATE_SUB(NOW(), INTERVAL 15 MINUTE)' : `datetime('now', '-15 minutes')`;
+  res.json({ users: await db.all(
+    `SELECT u.id, u.name, u.email, u.role, u.created_at, u.last_login,
+       COALESCE((SELECT SUM(a.score) FROM attempts a WHERE a.user_id = u.id), 0) AS points,
+       (SELECT COUNT(DISTINCT CASE WHEN a2.status = 'completed' THEN a2.case_id END) FROM attempts a2 WHERE a2.user_id = u.id) AS cases_done,
+       (SELECT MAX(ts) FROM (SELECT a3.started_at AS ts FROM attempts a3 WHERE a3.user_id = u.id
+         UNION ALL SELECT l.created_at FROM lab_runs l WHERE l.user_id = u.id) t) AS last_active,
+       EXISTS(SELECT 1 FROM login_sessions s WHERE s.user_id = u.id AND s.last_seen >= ${cutoff}) AS online
+     FROM users u ORDER BY u.id`) });
+}));
+// ---- ULTRA accounts: bulk ops + CSV import ----
+const _validIds = (ids) => [...new Set((Array.isArray(ids) ? ids : []).map(Number).filter(n => n > 0))].slice(0, 500);
+app.post('/api/admin/users/bulk-features', requireAdmin, ah(async (req, res) => {
+  const ids = _validIds(req.body && req.body.ids);
+  const feature = String((req.body && req.body.feature) || '');
+  const enabled = (req.body && req.body.enabled) ? 1 : 0;
+  if (!FEATURES.map(f => f[0]).includes(feature)) return res.status(400).json({ error: 'Invalid feature.' });
+  if (!ids.length) return res.status(400).json({ error: 'No users selected.' });
+  let n = 0;
+  for (const id of ids) {
+    const has = await db.get('SELECT 1 FROM student_features WHERE user_id=? AND feature=?', [id, feature]);
+    if (has) await db.run('UPDATE student_features SET enabled=? WHERE user_id=? AND feature=?', [enabled, id, feature]);
+    else await db.run('INSERT INTO student_features (user_id, feature, enabled) VALUES (?,?,?)', [id, feature, enabled]);
+    n++;
+  }
+  res.json({ ok: true, updated: n });
+}));
+app.post('/api/admin/users/bulk-preset', requireAdmin, ah(async (req, res) => {
+  const ids = _validIds(req.body && req.body.ids);
+  const preset = String((req.body && req.body.preset) || '');
+  const feats = preset === 'exam'
+    ? { workspace: 0, patients: 0, billing: 0, revenue: 0, training: 1, labs: 0 }
+    : preset === 'full'
+    ? { workspace: 1, patients: 1, billing: 1, revenue: 1, training: 1, labs: 1 }
+    : null;
+  if (!feats) return res.status(400).json({ error: 'Invalid preset.' });
+  if (!ids.length) return res.status(400).json({ error: 'No users selected.' });
+  let n = 0;
+  for (const id of ids) {
+    for (const [k, en] of Object.entries(feats)) {
+      const has = await db.get('SELECT 1 FROM student_features WHERE user_id=? AND feature=?', [id, k]);
+      if (has) await db.run('UPDATE student_features SET enabled=? WHERE user_id=? AND feature=?', [en, id, k]);
+      else await db.run('INSERT INTO student_features (user_id, feature, enabled) VALUES (?,?,?)', [id, k, en]);
+    }
+    n++;
+  }
+  res.json({ ok: true, updated: n });
+}));
+app.post('/api/admin/users/bulk-delete', requireAdmin, ah(async (req, res) => {
+  const ids = _validIds(req.body && req.body.ids).filter(id => id !== req.adminUser.id);
+  if (!ids.length) return res.status(400).json({ error: 'No users selected (you cannot delete yourself).' });
+  let n = 0;
+  for (const id of ids) { await db.run('DELETE FROM users WHERE id = ?', [id]); n++; }
+  res.json({ ok: true, deleted: n });
+}));
+function _parseCSV(text) {
+  const rows = []; let row = [], cur = '', q = false;
+  const push = () => { row.push(cur); cur = ''; };
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; }
+      else cur += c;
+    } else if (c === '"') q = true;
+    else if (c === ',') push();
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; push(); if (row.some(v => v.trim() !== '')) rows.push(row); row = []; }
+    else cur += c;
+  }
+  push(); if (row.some(v => v.trim() !== '')) rows.push(row);
+  return rows;
+}
+app.post('/api/admin/users/import', requireAdmin, ah(async (req, res) => {
+  const text = String((req.body && req.body.csv) || '').slice(0, 200000);
+  if (!text.trim()) return res.status(400).json({ error: 'Empty CSV.' });
+  const rows = _parseCSV(text);
+  // drop header row if it looks like one
+  if (rows.length && /name/i.test(rows[0][0] || '') && /email/i.test(rows[0][1] || '')) rows.shift();
+  const created = [], errors = [];
+  const roles = ['student', 'instructor', 'admin'];
+  for (let i = 0; i < Math.min(rows.length, 500); i++) {
+    const [name = '', email = '', password = '', roleRaw = ''] = rows[i].map(v => (v || '').trim());
+    const role = roles.includes(roleRaw.toLowerCase()) ? roleRaw.toLowerCase() : 'student';
+    const fail = (e) => { errors.push({ row: i + 1, email: email || '(blank)', error: e }); };
+    if (!name) { fail('Name required.'); continue; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { fail('Invalid email.'); continue; }
+    if (password.length < 6) { fail('Password must be 6+ chars.'); continue; }
+    try {
+      await db.run('INSERT INTO users (name,email,pass_hash,role,created_at) VALUES (?,?,?,?,?)',
+        [name.slice(0, 80), email.toLowerCase().slice(0, 120), db.hashPassword(password), role, db.now()]);
+      created.push({ name, email: email.toLowerCase() });
+    } catch (e) { fail('Email already exists.'); }
+  }
+  res.json({ ok: true, created, errors, total: rows.length });
 }));
 app.get('/api/admin/attempts', requireAdmin, ah(async (req, res) => {
   res.json({ attempts: await db.all(
@@ -1121,6 +1213,132 @@ app.get('/api/student-insights', requireAuth, ah(async (req, res) => {
 }));
 
 // ---- analytics: skill-gap heatmap + exam readiness ----
+// ---- ULTRA analytics: trends, radar, improvers, distribution, predictions, compare ----
+app.get('/api/admin/trends', requireAdmin, ah(async (req, res) => {
+  const students = await db.all("SELECT id, name FROM users WHERE role='student' ORDER BY name");
+  const cases = await db.all('SELECT id, code, title, category FROM cases WHERE active=1 ORDER BY sort');
+  const totalCases = cases.length || 1;
+  const catList = [...new Set(cases.map(c => c.category))];
+  const attempts = await db.all(
+    `SELECT user_id, case_id, score, max_score, completed_at FROM attempts
+     WHERE status='completed' AND completed_at IS NOT NULL`);
+  const labs = await db.all('SELECT user_id, created_at FROM lab_runs');
+  const labByUser = {};
+  for (const l of labs) (labByUser[l.user_id] ||= []).push(l.created_at);
+  const attByUser = {};
+  for (const a of attempts) (attByUser[a.user_id] ||= []).push(a);
+  const pct = a => a.max_score > 0 ? 100 * a.score / a.max_score : 0;
+  const ts = v => new Date(String(v).replace(' ', 'T') + 'Z').getTime();
+
+  // readiness for a set of attempts + lab count (mirrors heatmap formula)
+  const readinessOf = (atts, labCount) => {
+    const doneCases = new Set(atts.map(a => a.case_id)).size;
+    const avg = atts.length ? atts.reduce((x, a) => x + pct(a), 0) / atts.length : 0;
+    return Math.round(50 * doneCases / totalCases + 0.3 * avg + 20 * Math.min(10, labCount) / 10);
+  };
+
+  // 1. weekly readiness trend — last 8 weeks, cumulative up to each week end
+  const now = Date.now(), WEEK = 7 * 864e5;
+  const weekStart = now - 8 * WEEK;
+  const weeklyTrend = [];
+  for (let w = 0; w < 8; w++) {
+    const end = weekStart + (w + 1) * WEEK;
+    let sum = 0, n = 0;
+    for (const st of students) {
+      const atts = (attByUser[st.id] || []).filter(a => ts(a.completed_at) <= end);
+      const labN = (labByUser[st.id] || []).filter(t => ts(t) <= end).length;
+      if (atts.length || labN) { sum += readinessOf(atts, labN); n++; }
+    }
+    const d = new Date(weekStart + w * WEEK);
+    weeklyTrend.push({ week: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), readiness: n ? Math.round(sum / n) : 0 });
+  }
+
+  // 2. category mastery (class average best-score % per category)
+  const bestByUC = {};
+  for (const a of attempts) {
+    const k = a.user_id + ':' + a.case_id, p = pct(a);
+    if (!bestByUC[k] || p > bestByUC[k]) bestByUC[k] = p;
+  }
+  const caseCat = Object.fromEntries(cases.map(c => [c.id, c.category]));
+  const catAcc = {};
+  for (const k in bestByUC) {
+    const cid = Number(k.split(':')[1]), cat = caseCat[cid];
+    if (!cat) continue;
+    (catAcc[cat] ||= []).push(bestByUC[k]);
+  }
+  const categoryMastery = catList.map(c => ({
+    category: c, avg: catAcc[c] ? Math.round(catAcc[c].reduce((x, y) => x + y, 0) / catAcc[c].length) : 0,
+  }));
+
+  // 3. top improvers — last 30 days, second-half avg minus first-half avg
+  const since30 = now - 30 * 864e5;
+  const improvers = [];
+  for (const st of students) {
+    const recent = (attByUser[st.id] || []).filter(a => ts(a.completed_at) >= since30)
+      .sort((a, b) => ts(a.completed_at) - ts(b.completed_at));
+    if (recent.length >= 4) {
+      const half = Math.floor(recent.length / 2);
+      const avg = arr => arr.reduce((x, a) => x + pct(a), 0) / arr.length;
+      const gain = avg(recent.slice(half)) - avg(recent.slice(0, half));
+      if (gain > 0) improvers.push({ id: st.id, name: st.name, gain: Math.round(gain * 10) / 10, tries: recent.length });
+    }
+  }
+  improvers.sort((a, b) => b.gain - a.gain);
+
+  // 4. score distribution per case (best % buckets)
+  const dist = cases.map(c => {
+    const buckets = [0, 0, 0, 0];
+    for (const st of students) {
+      const b = bestByUC[st.id + ':' + c.id];
+      if (b == null) continue;
+      buckets[b < 50 ? 0 : b < 70 ? 1 : b < 85 ? 2 : 3]++;
+    }
+    return { code: c.code, buckets };
+  });
+
+  // 5. predicted ready date — velocity = points per active day, target 500
+  const daySetByUser = {};
+  for (const a of attempts) {
+    const d = String(a.completed_at).slice(0, 10);
+    ((daySetByUser[a.user_id] ||= new Set())).add(d);
+  }
+  for (const l of labs) {
+    const d = String(l.created_at).slice(0, 10);
+    ((daySetByUser[l.user_id] ||= new Set())).add(d);
+  }
+  const pointsByUser = {};
+  for (const a of attempts) pointsByUser[a.user_id] = (pointsByUser[a.user_id] || 0) + a.score;
+  const predictions = students.map(st => {
+    const pts = pointsByUser[st.id] || 0;
+    const activeDays = (daySetByUser[st.id] || new Set()).size;
+    const vel = activeDays > 0 ? pts / activeDays : 0;
+    let readyDate = null, status = 'no-data';
+    if (pts >= 500) { status = 'achieved'; }
+    else if (vel > 0) {
+      const daysLeft = Math.ceil((500 - pts) / vel);
+      readyDate = new Date(now + daysLeft * 864e5).toISOString().slice(0, 10);
+      status = daysLeft <= 90 ? 'on-track' : 'slow';
+    }
+    return { id: st.id, name: st.name, points: pts, velocity: Math.round(vel * 10) / 10, readyDate, status };
+  }).sort((a, b) => b.points - a.points);
+
+  // 6. per-student stats for compare mode
+  const studentStats = students.map(st => {
+    const atts = attByUser[st.id] || [];
+    return {
+      id: st.id, name: st.name,
+      points: pointsByUser[st.id] || 0,
+      accuracy: atts.length ? Math.round(atts.reduce((x, a) => x + pct(a), 0) / atts.length) : 0,
+      casesDone: new Set(atts.map(a => a.case_id)).size,
+      attempts: atts.length,
+      activeDays: (daySetByUser[st.id] || new Set()).size,
+      readiness: readinessOf(atts, (labByUser[st.id] || []).length),
+    };
+  });
+
+  res.json({ weeklyTrend, categoryMastery, improvers: improvers.slice(0, 5), distribution: dist, predictions, studentStats });
+}));
+
 app.get('/api/admin/heatmap', requireAdmin, ah(async (req, res) => {
   const students = await db.all("SELECT id, name FROM users WHERE role = 'student' ORDER BY name");
   const cases = await db.all('SELECT id, code, title FROM cases WHERE active = 1 ORDER BY sort');
