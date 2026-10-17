@@ -2,6 +2,33 @@
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Charge Entry — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css">
 <style>
+/* ===== Charges ULTRA ===== */
+.pt-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:24px 28px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.pt-hero::before{content:"";position:absolute;top:-50px;right:10%;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.pt-hero h1{margin:0 0 6px;font-size:22px;position:relative}
+.pt-hero .psub{color:#b9d4e8;margin:0;font-size:13.5px;position:relative}
+.pt-hero .act-row{position:relative;margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pt-hero .hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 14px;font-size:13px;backdrop-filter:blur(6px)}
+.pt-hero .hstat b{font-size:16px}
+.pfilters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.pf{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:24px;border:1.5px solid #e2e8f0;
+  background:#fff;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;transition:all .2s;
+  box-shadow:0 1px 3px rgba(10,22,40,.04);font-family:inherit}
+.pf:hover{border-color:#0e9f8a;color:#0f2743;transform:translateY(-1px);box-shadow:0 3px 10px rgba(14,159,138,.12)}
+.pf.on{background:linear-gradient(135deg,#0f2743,#1a3a5c);color:#fff;border-color:#0f2743;
+  box-shadow:0 4px 14px rgba(15,39,67,.25)}
+.pf .cnt{background:#f1f5f9;color:#475569;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;min-width:24px;text-align:center}
+.pf.on .cnt{background:rgba(255,255,255,.2);color:#fff}
+.pav{width:38px;height:38px;border-radius:11px;color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+@keyframes ccIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pt-anim{animation:ccIn .4s cubic-bezier(.2,.8,.2,1) backwards}
+.kic{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#f0fdfa,#ccfbf1);
+  display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+/* charge entry form bits */
 .ta-wrap{position:relative}
 .ta-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:10px;max-height:220px;overflow:auto;z-index:50;box-shadow:0 12px 32px rgba(15,39,67,.14);display:none}
 .ta-list.open{display:block}
@@ -13,28 +40,47 @@
 .cprev b{color:#0f766e}
 .dupwarn{background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px;display:none}
 .dupwarn.show{display:block}
+@media(max-width:700px){.pt-hero{padding:20px}.pf{padding:8px 14px;font-size:12px}}
 </style></head>
 <body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
-  <div class="phead"><div>
-    <div class="eyebrow2">Charge Entry</div><h1>Charges</h1>
+  <div class="pt-hero pt-anim">
+    <div class="eyebrow2" style="color:#34d3bd">Charge Entry</div>
+    <h1>🧾 Charges</h1>
     <p class="psub">Enter billable services — date of service, CPT, diagnosis, units and amount. Saved charges become claims.</p>
-  </div><button class="btn btn-teal btn-sm" id="addBtn" data-fn="charges-add">+ Enter Charge</button></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)">
-    <div class="skel" style="height:86px;border-radius:14px"></div><div class="skel" style="height:86px;border-radius:14px"></div>
-    <div class="skel" style="height:86px;border-radius:14px"></div><div class="skel" style="height:86px;border-radius:14px"></div>
+    <div class="act-row">
+      <button class="btn-hero" id="addBtn" data-fn="charges-add" style="padding:9px 18px;font-size:13px">+ Enter Charge</button>
+      <span class="hstat">Total <b id="hTotal">—</b></span>
+      <span class="hstat">Ready <b id="hReady" style="color:#5eead4">—</b></span>
+      <span class="hstat">Billed <b id="hBilled">—</b></span>
+    </div>
   </div>
-  <div class="info-panel">🧾 <b>Charge entry training:</b> a charge represents one billable service. Enter the DOS, CPT code, ICD-10 diagnosis, modifier, units and fee — accuracy here decides whether the claim pays or denies.</div>
-  <div class="panel"><div class="prow"><h3 style="margin:0">Charge History</h3>
-    <input class="search" id="q" placeholder="Search charges…"></div>
-    <div class="twrap"><table><thead><tr>
-      <th>Date</th><th>Patient</th><th>Provider</th><th>CPT</th><th>Diagnosis</th><th>Mod</th><th>Units</th><th>Amount</th><th>Status</th><th>Claim</th><th></th>
-    </tr></thead><tbody id="rows"><tr><td colspan="11"><div class="skel" style="height:38px"></div><div class="skel" style="height:38px;margin-top:8px"></div><div class="skel" style="height:38px;margin-top:8px"></div></td></tr></tbody></table></div>
-    <div class="empty" id="empty" style="display:none">No charges yet — enter your first charge. 🧾</div>
+
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div>
+    <div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
+
+  <div class="info-panel pt-anim" style="animation-delay:.06s">🧾 <b>Charge entry training:</b> a charge represents one billable service. Enter the DOS, CPT code, ICD-10 diagnosis, modifier, units and fee — accuracy here decides whether the claim pays or denies.</div>
+
+  <div class="panel pt-anim" style="animation-delay:.08s">
+    <div class="prow"><h3 style="margin:0">Charge History</h3>
+      <input class="search" id="q" placeholder="Search patient, CPT, ICD…"></div>
+    <div class="pfilters" id="pfilters">
+      <button class="pf on" data-f="all">📋 All <span class="cnt" id="cAll">0</span></button>
+      <button class="pf" data-f="ready">✅ Ready <span class="cnt" id="cReady">0</span></button>
+      <button class="pf" data-f="linked">🔗 Linked <span class="cnt" id="cLinked">0</span></button>
+      <button class="pf" data-f="unlinked">⚪ Not linked <span class="cnt" id="cUnlinked">0</span></button>
+    </div>
+    <div id="tblSk"><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div></div>
+    <div class="twrap" id="twrap" style="display:none;overflow-x:auto"><table class="wq-table" style="min-width:820px"><thead><tr>
+      <th>Charge</th><th>Date</th><th>CPT</th><th>Diagnosis</th><th>Units</th><th>Amount</th><th>Status</th><th>Claim</th><th style="text-align:right">Action</th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="empty" id="empty" style="display:none"><div class="empty-ic">🧾</div><h4>No charges yet</h4><p>Enter your first billable charge —<br>or complete the <b>Charge Entry</b> case in the Case Center.</p><div style="margin-top:14px"><button class="btn btn-teal" id="emptyAdd">+ Enter Your First Charge</button></div></div>
   </div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
-let rows = [], q = '', pts = [];
+let rows = [], q = '', pts = [], f = 'all';
 const CPTS = [
   ['99202','Office visit, new pt, low'],['99203','Office visit, new pt, mod'],['99204','Office visit, new pt, high'],
   ['99211','Office visit, est, minimal'],['99212','Office visit, est, low'],['99213','Office visit, est, low-mid'],
@@ -52,41 +98,72 @@ const CPTS = [
 const ICDS = [['J06.9','Acute URI'],['I10','Hypertension'],['E11.9','Type 2 diabetes'],['M54.50','Low back pain'],['R05.1','Acute cough'],['J02.9','Acute pharyngitis'],['R07.9','Chest pain'],['Z00.00','General exam, adult'],['F41.1','Generalized anxiety'],['M25.561','Knee pain, right']];
 const cptDesc = c => (CPTS.find(x => x[0] === c) || [c, ''])[1];
 const icdDesc = c => (ICDS.find(x => x[0] === c) || [c, ''])[1];
+const ptName = code => { const p = pts.find(x => x.code === code); return p ? p.name : code; };
+const initials = n => String(n || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+const avBg = s => { const hues = [160, 200, 220, 180, 190, 210]; let h = 0; for (const c of String(s)) h += c.charCodeAt(0); return `hsl(${hues[h % hues.length]},45%,42%)`; };
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('charges', u);
   if (!guardFeature(u, 'charges', 'Charge Entry')) return;
   const [d, p] = await Promise.all([api('/api/rcm/charges'), api('/api/rcm/patients')]);
   rows = d.charges; pts = p.patients;
+  const ready = rows.filter(r => r.status === 'READY').length;
+  const linked = rows.filter(r => r.claim_id).length;
+  const total = rows.reduce((s, r) => s + Number(r.amount), 0);
+  document.getElementById('hTotal').textContent = rows.length;
+  document.getElementById('hReady').textContent = ready;
+  document.getElementById('hBilled').textContent = money(total);
   document.getElementById('kpis').innerHTML = [
-    ['Total charges', rows.length, 'Entered'],
-    ['Ready', rows.filter(r => r.status === 'READY').length, 'Awaiting claim'],
-    ['Linked to claims', rows.filter(r => r.claim_id).length, 'Converted'],
-    ['Total billed', money(rows.reduce((s, r) => s + Number(r.amount), 0)), 'All charges'],
-  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+    ['🧾', 'Total charges', rows.length, 'Entered'],
+    ['✅', 'Ready to bill', ready, 'Awaiting claim'],
+    ['🔗', 'Linked to claims', linked, 'Converted'],
+    ['💰', 'Total billed', money(total), 'All charges'],
+  ].map(([ic, l, v, s], i) => `<div class="kpi pt-anim" style="animation-delay:${.04 * i}s"><span class="kic">${ic}</span><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
   render();
 }
+function filtered() {
+  let rs = rows.filter(r => (r.patient_code + ' ' + ptName(r.patient_code) + ' ' + r.cpt + ' ' + r.icd).toLowerCase().includes(q));
+  if (f === 'ready') rs = rs.filter(r => r.status === 'READY');
+  if (f === 'linked') rs = rs.filter(r => r.claim_id);
+  if (f === 'unlinked') rs = rs.filter(r => !r.claim_id);
+  return rs;
+}
 function render() {
-  const rs = rows.filter(r => (r.patient_code + ' ' + r.cpt + ' ' + r.icd).toLowerCase().includes(q));
-  document.getElementById('rows').innerHTML = rs.map(r => `<tr>
-    <td>${esc(r.dos)}</td><td><b>${esc(r.patient_code)}</b></td><td>${esc(r.provider)}</td>
-    <td><code>${esc(r.cpt)}</code><br><small style="color:#94a3b8">${esc(cptDesc(r.cpt))}</small></td>
-    <td><code>${esc(r.icd)}</code></td><td>${esc(r.modifier) || '—'}</td>
-    <td>${r.units}</td><td><b>${money(r.amount)}</b></td>
-    <td><span class="bdg ${r.status === 'READY' ? 'b-green' : 'b-blue'}">${esc(r.status)}</span></td>
-    <td>${r.claim_id ? '<span class="bdg b-teal">Created</span>' : '<span style="color:#94a3b8">Not created</span>'}</td>
-    <td>${!r.claim_id ? `<button class="btn btn-teal btn-sm" data-fn="claims-create" onclick="toClaim(${r.id})">Claim →</button>` : ''}</td></tr>`).join('')
-    || `<tr><td colspan="11" class="empty">No charges match.</td></tr>`;
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  set('cAll', rows.length);
+  set('cReady', rows.filter(r => r.status === 'READY').length);
+  set('cLinked', rows.filter(r => r.claim_id).length);
+  set('cUnlinked', rows.filter(r => !r.claim_id).length);
+  const rs = filtered();
+  document.getElementById('tblSk').style.display = 'none';
   document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
+  document.getElementById('twrap').style.display = rows.length ? 'block' : 'none';
+  document.getElementById('rows').innerHTML = rs.map((r, ix) => `<tr class="pt-anim" style="animation-delay:${Math.min(ix * .03, .3)}s">
+    <td><div style="display:flex;align-items:center;gap:12px">
+      <span class="pav" style="background:${avBg(r.patient_code)}">${esc(initials(ptName(r.patient_code)))}</span>
+      <div><b>${esc(r.patient_code)}</b><br><span style="font-size:13px;font-weight:600">${esc(ptName(r.patient_code))}</span>
+      <br><span style="font-size:11.5px;color:#94a3b8">${esc(r.provider || '')}</span></div></div></td>
+    <td style="white-space:nowrap">${esc(String(r.dos || '').slice(0, 10))}</td>
+    <td><code style="font-weight:700;color:#0f766e">${esc(r.cpt)}</code><br><small style="color:#94a3b8">${esc(cptDesc(r.cpt))}</small>${r.modifier ? `<br><span class="bdg b-blue" style="margin-top:3px">-${esc(r.modifier)}</span>` : ''}</td>
+    <td><code>${esc(r.icd)}</code><br><small style="color:#94a3b8">${esc(icdDesc(r.icd))}</small></td>
+    <td><b>${r.units}</b></td><td><b>${money(r.amount)}</b></td>
+    <td><span class="bdg ${r.status === 'READY' ? 'b-green' : 'b-blue'}"><span class="dot"></span>${esc(r.status)}</span></td>
+    <td>${r.claim_id ? '<span class="bdg b-teal"><span class="dot"></span>Created</span>' : '<span style="color:#94a3b8;font-size:12px">Not created</span>'}</td>
+    <td style="text-align:right;white-space:nowrap">${!r.claim_id ? `<button class="btn btn-teal btn-sm" data-fn="claims-create" onclick="toClaim(${r.id})">Claim →</button>` : ''}</td></tr>`).join('')
+    || `<tr><td colspan="9" class="empty">No charges match this filter.</td></tr>`;
 }
 async function toClaim(id) {
   if (!confirm('Create a claim from this charge now?')) return;
   try {
-    const r = await api('/api/rcm/claims', { method: 'POST', body: { charge_id: id } });
+    await api('/api/rcm/claims', { method: 'POST', body: { charge_id: id } });
     location.href = '/claims';
   } catch (e) { alert(e.message); }
 }
 document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+document.querySelectorAll('#pfilters .pf').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#pfilters .pf').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); f = b.dataset.f; render();
+});
 function taWire(input, list, onPick) {
   const draw = v => {
     v = v.trim().toLowerCase();
@@ -100,7 +177,8 @@ function taWire(input, list, onPick) {
   input.addEventListener('input', () => draw(input.value));
   input.addEventListener('blur', () => setTimeout(() => list.classList.remove('open'), 150));
 }
-document.getElementById('addBtn').onclick = () => {
+function openChargeModal() {
+  if (!pts.length) { alert('No patients yet. Add a patient first (Patients page).'); return; }
   const today = new Date().toISOString().slice(0, 10);
   openModal('Enter Charge', `
     <div class="frow"><div class="fld"><label>Patient</label><select id="f_pt">${pts.map(p => `<option value="${p.code}">${p.code} — ${esc(p.name)}</option>`).join('')}</select></div>
@@ -143,6 +221,8 @@ document.getElementById('addBtn').onclick = () => {
       } catch (e) { alert(e.message); }
     };
   });
-};
+}
+document.getElementById('addBtn').onclick = openChargeModal;
+document.getElementById('emptyAdd').onclick = openChargeModal;
 load();
 </script></body></html>

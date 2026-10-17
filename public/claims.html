@@ -2,6 +2,33 @@
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Claims — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css">
 <style>
+/* ===== Claims ULTRA ===== */
+.pt-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:24px 28px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.pt-hero::before{content:"";position:absolute;top:-50px;right:10%;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.pt-hero h1{margin:0 0 6px;font-size:22px;position:relative}
+.pt-hero .psub{color:#b9d4e8;margin:0;font-size:13.5px;position:relative}
+.pt-hero .act-row{position:relative;margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pt-hero .hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 14px;font-size:13px;backdrop-filter:blur(6px)}
+.pt-hero .hstat b{font-size:16px}
+.pfilters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.pf{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:24px;border:1.5px solid #e2e8f0;
+  background:#fff;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;transition:all .2s;
+  box-shadow:0 1px 3px rgba(10,22,40,.04);font-family:inherit}
+.pf:hover{border-color:#0e9f8a;color:#0f2743;transform:translateY(-1px);box-shadow:0 3px 10px rgba(14,159,138,.12)}
+.pf.on{background:linear-gradient(135deg,#0f2743,#1a3a5c);color:#fff;border-color:#0f2743;
+  box-shadow:0 4px 14px rgba(15,39,67,.25)}
+.pf .cnt{background:#f1f5f9;color:#475569;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;min-width:24px;text-align:center}
+.pf.on .cnt{background:rgba(255,255,255,.2);color:#fff}
+.pav{width:38px;height:38px;border-radius:11px;color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+@keyframes ccIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pt-anim{animation:ccIn .4s cubic-bezier(.2,.8,.2,1) backwards}
+.kic{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#f0fdfa,#ccfbf1);
+  display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+/* lifecycle timeline */
 .tl{display:flex;align-items:flex-start;margin:6px 0 2px;overflow-x:auto;padding:4px 2px}
 .tl-step{display:flex;flex-direction:column;align-items:center;min-width:96px;position:relative;text-align:center}
 .tl-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:#e2e8f0;color:#64748b;z-index:1}
@@ -26,36 +53,57 @@
 .drow span:first-child{color:#64748b}
 .ovl{position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:190;display:none}
 .ovl.open{display:block}
-.xrow{cursor:pointer}
+.xrow{cursor:pointer;transition:background .15s}
 .xrow:hover{background:#f8fafc}
 .xdet td{background:#f8fafc !important;border-top:0 !important}
+.act-row{display:flex;gap:6px;flex-wrap:wrap}
+.act-row .btn{padding:6px 10px;font-size:12px}
+@media(max-width:700px){.pt-hero{padding:20px}.pf{padding:8px 14px;font-size:12px}}
 </style></head>
 <body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
-  <div class="phead"><div>
-    <div class="eyebrow2">Claims Management</div><h1>Claims</h1>
+  <div class="pt-hero pt-anim">
+    <div class="eyebrow2" style="color:#34d3bd">Claims Management</div>
+    <h1>📄 Claims</h1>
     <p class="psub">Create claims from charges, validate them with the scrubber, then submit — only clean claims go out.</p>
-  </div><button class="btn btn-teal btn-sm" id="addBtn" data-fn="claims-create">+ Create Claim</button></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)">
-    <div class="skel" style="height:86px;border-radius:14px"></div><div class="skel" style="height:86px;border-radius:14px"></div>
-    <div class="skel" style="height:86px;border-radius:14px"></div><div class="skel" style="height:86px;border-radius:14px"></div>
+    <div class="act-row">
+      <button class="btn-hero" id="addBtn" data-fn="claims-create" style="padding:9px 18px;font-size:13px">+ Create Claim</button>
+      <span class="hstat">Total <b id="hTotal">—</b></span>
+      <span class="hstat">Paid <b id="hPaid" style="color:#5eead4">—</b></span>
+      <span class="hstat">Denied <b id="hDenied" style="color:#fca5a5">—</b></span>
+    </div>
   </div>
-  <div class="info-panel">📄 <b>Claim creation training:</b> pick a READY charge — the patient, payer and charge auto-connect into a professional claim. <b>Validate</b> runs the 13-rule scrubber; only <b>PASSED</b> claims can be <b>submitted</b>. Click a row for the lifecycle timeline.</div>
-  <div class="panel"><div class="prow"><h3 style="margin:0">Claim History</h3>
-    <input class="search" id="q" placeholder="Search claims…"></div>
-    <div class="twrap"><table><thead><tr>
-      <th></th><th>Claim #</th><th>Patient</th><th>Payer</th><th>CPT</th><th>DOS</th><th>Billed</th><th>Status</th><th>Validation</th><th>Action</th>
-    </tr></thead><tbody id="rows"><tr><td colspan="10"><div class="skel" style="height:38px"></div><div class="skel" style="height:38px;margin-top:8px"></div><div class="skel" style="height:38px;margin-top:8px"></div></td></tr></tbody></table></div>
-    <div class="empty" id="empty" style="display:none">No claims yet — create one from a charge. 📄</div>
+
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div>
+    <div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
+
+  <div class="info-panel pt-anim" style="animation-delay:.06s">📄 <b>Claim creation training:</b> pick a READY charge — the patient, payer and charge auto-connect into a professional claim. <b>Validate</b> runs the 13-rule scrubber; only <b>PASSED</b> claims can be <b>submitted</b>. Click a row for the lifecycle timeline.</div>
+
+  <div class="panel pt-anim" style="animation-delay:.08s">
+    <div class="prow"><h3 style="margin:0">Claim History</h3>
+      <input class="search" id="q" placeholder="Search claim #, patient, payer…"></div>
+    <div class="pfilters" id="pfilters">
+      <button class="pf on" data-f="all">📋 All <span class="cnt" id="cAll">0</span></button>
+      <button class="pf" data-f="draft">📝 Draft <span class="cnt" id="cDraft">0</span></button>
+      <button class="pf" data-f="submitted">📤 Submitted <span class="cnt" id="cSub">0</span></button>
+      <button class="pf" data-f="paid">✅ Paid <span class="cnt" id="cPaid">0</span></button>
+      <button class="pf" data-f="denied">🚫 Denied <span class="cnt" id="cDen">0</span></button>
+    </div>
+    <div id="tblSk"><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div></div>
+    <div class="twrap" id="twrap" style="display:none;overflow-x:auto"><table class="wq-table" style="min-width:900px"><thead><tr>
+      <th></th><th>Claim</th><th>Patient</th><th>Payer</th><th>CPT · DOS</th><th>Billed</th><th>Status</th><th>Validation</th><th style="text-align:right">Action</th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="empty" id="empty" style="display:none"><div class="empty-ic">📄</div><h4>No claims yet</h4><p>Create your first claim from a charge —<br>or complete the <b>Claim Creation</b> case in the Case Center.</p><div style="margin-top:14px"><button class="btn btn-teal" id="emptyAdd">+ Create Your First Claim</button></div></div>
   </div>
 </div></main></div>
 <div class="ovl" id="ovl" onclick="closeDrawer()"></div>
 <aside class="drawer" id="drawer"><div class="drawer-h"><h3 style="margin:0" id="dTitle">Claim</h3><button class="btn btn-ghost btn-sm" onclick="closeDrawer()">✕</button></div><div class="drawer-b" id="dBody"></div></aside>
 <script src="/js/app.js"></script>
 <script>
-let rows = [], q = '', charges = [], openId = null;
+let rows = [], q = '', charges = [], openId = null, f = 'all';
 const SCLS = { DRAFT: 'b-gray', SUBMITTED: 'b-blue', PAID: 'b-green', DENIED: 'b-red', APPEALED: 'b-amber', WRITTEN_OFF: 'b-gray' };
 const VCLS = { PASSED: 'b-green', FAILED: 'b-red', NOT_VALIDATED: 'b-amber' };
-// 13-rule scrubber checklist: rule -> {name, codes[]}
 const RULES = [
   ['Patient on file', ['MISS-001']],
   ['Payer on file', ['MISS-002']],
@@ -79,18 +127,26 @@ const RULE_TIP = {
   'MOD-001': 'Some payers reject -59; use X-modifiers.', 'MOD-003': '-25 is E/M only.',
   'DUP-001': 'Same CPT + DOS without modifier risks CO-97.', 'TF-001': 'Late filing = CO-29 denial.',
 };
+const initials = n => String(n || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+const avBg = s => { const hues = [160, 200, 220, 180, 190, 210]; let h = 0; for (const c of String(s)) h += c.charCodeAt(0); return `hsl(${hues[h % hues.length]},45%,42%)`; };
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('claims', u);
   if (!guardFeature(u, 'claims', 'Claims')) return;
   const [d, ch] = await Promise.all([api('/api/rcm/claims'), api('/api/rcm/charges')]);
   rows = d.claims; charges = ch.charges.filter(c => !c.claim_id);
+  const paid = rows.filter(r => r.status === 'PAID').length;
+  const denied = rows.filter(r => r.status === 'DENIED').length;
+  const billed = rows.reduce((s, r) => s + Number(r.billed), 0);
+  document.getElementById('hTotal').textContent = rows.length;
+  document.getElementById('hPaid').textContent = paid;
+  document.getElementById('hDenied').textContent = denied;
   document.getElementById('kpis').innerHTML = [
-    ['Total claims', rows.length, 'Created'],
-    ['Draft', rows.filter(r => r.status === 'DRAFT').length, 'Not submitted'],
-    ['Submitted', rows.filter(r => ['SUBMITTED', 'PAID'].includes(r.status)).length, 'Out / paid'],
-    ['Total billed', money(rows.reduce((s, r) => s + Number(r.billed), 0)), 'All claims'],
-  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+    ['📄', 'Total claims', rows.length, 'Created'],
+    ['📤', 'Submitted', rows.filter(r => ['SUBMITTED', 'PAID'].includes(r.status)).length, 'Out / paid'],
+    ['✅', 'Paid', paid, 'Adjudicated'],
+    ['💰', 'Total billed', money(billed), 'All claims'],
+  ].map(([ic, l, v, s], i) => `<div class="kpi pt-anim" style="animation-delay:${.04 * i}s"><span class="kic">${ic}</span><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
   render();
 }
 function tlSteps(r) {
@@ -109,27 +165,47 @@ function tlSteps(r) {
       <div class="tl-lbl">${s[0]}</div><div class="tl-ts">${s[1] ? esc(String(s[1]).slice(0, 10)) : '—'}</div></div>`;
   }).join('');
 }
+function filtered() {
+  let rs = rows.filter(r => (r.claim_no + ' ' + r.patient_code + ' ' + r.payer).toLowerCase().includes(q));
+  if (f === 'draft') rs = rs.filter(r => r.status === 'DRAFT');
+  if (f === 'submitted') rs = rs.filter(r => r.status === 'SUBMITTED');
+  if (f === 'paid') rs = rs.filter(r => r.status === 'PAID');
+  if (f === 'denied') rs = rs.filter(r => r.status === 'DENIED');
+  return rs;
+}
 function render() {
-  const rs = rows.filter(r => (r.claim_no + ' ' + r.patient_code + ' ' + r.payer).toLowerCase().includes(q));
-  document.getElementById('rows').innerHTML = rs.map(r => `
-    <tr class="xrow" onclick="toggleX(${r.id})">
-      <td>${openId === r.id ? '▾' : '▸'}</td>
-      <td><b><code>${esc(r.claim_no)}</code></b>${r.denial_code ? `<br><span class="bdg b-red" style="margin-top:4px">${esc(r.denial_code)}</span>` : ''}</td>
-      <td>${esc(r.patient_code)}</td><td style="max-width:170px">${esc(r.payer)}</td>
-      <td><code>${esc(r.cpt)}</code></td><td>${esc(r.dos)}</td><td><b>${money(r.billed)}</b></td>
-      <td><span class="bdg ${SCLS[r.status] || 'b-gray'}">${esc(r.status.replace('_', ' '))}</span></td>
-      <td><span class="bdg ${VCLS[r.validation] || 'b-gray'}">${esc(r.validation.replace('_', ' '))}</span></td>
-      <td><div class="act-row" onclick="event.stopPropagation()">
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  set('cAll', rows.length);
+  set('cDraft', rows.filter(r => r.status === 'DRAFT').length);
+  set('cSub', rows.filter(r => r.status === 'SUBMITTED').length);
+  set('cPaid', rows.filter(r => r.status === 'PAID').length);
+  set('cDen', rows.filter(r => r.status === 'DENIED').length);
+  const rs = filtered();
+  document.getElementById('tblSk').style.display = 'none';
+  document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
+  document.getElementById('twrap').style.display = rows.length ? 'block' : 'none';
+  document.getElementById('rows').innerHTML = rs.map((r, ix) => `
+    <tr class="xrow pt-anim" style="animation-delay:${Math.min(ix * .03, .3)}s" onclick="toggleX(${r.id})">
+      <td style="font-size:13px;color:#94a3b8">${openId === r.id ? '▾' : '▸'}</td>
+      <td><b><code style="font-weight:700">${esc(r.claim_no)}</code></b>${r.denial_code ? `<br><span class="bdg b-red" style="margin-top:4px"><span class="dot"></span>${esc(r.denial_code)}</span>` : ''}</td>
+      <td><div style="display:flex;align-items:center;gap:10px">
+        <span class="pav" style="background:${avBg(r.patient_code)};width:32px;height:32px;font-size:11px">${esc(initials(r.patient_code))}</span>
+        <b style="font-size:13px">${esc(r.patient_code)}</b></div></td>
+      <td style="max-width:160px;font-size:13px">${esc(r.payer)}</td>
+      <td><code style="color:#0f766e;font-weight:700">${esc(r.cpt)}</code><br><span style="font-size:11.5px;color:#94a3b8">${esc(String(r.dos || '').slice(0, 10))}</span></td>
+      <td><b>${money(r.billed)}</b></td>
+      <td><span class="bdg ${SCLS[r.status] || 'b-gray'}"><span class="dot"></span>${esc(r.status.replace('_', ' '))}</span></td>
+      <td><span class="bdg ${VCLS[r.validation] || 'b-gray'}"><span class="dot"></span>${esc(r.validation.replace('_', ' '))}</span></td>
+      <td style="text-align:right"><div class="act-row" style="justify-content:flex-end" onclick="event.stopPropagation()">
         ${r.status === 'DRAFT' ? `<button class="btn btn-line btn-sm" data-fn="claims-validate" onclick="validate(${r.id})">Validate</button>` : ''}
         ${r.status === 'DRAFT' && r.validation === 'PASSED' ? `<button class="btn btn-teal btn-sm" data-fn="claims-submit" onclick="submitCl(${r.id})">Submit →</button>` : ''}
-        ${r.status === 'DENIED' ? `<button class="btn btn-teal btn-sm" onclick="resetCl(${r.id})" data-fn="claims-create">↺ Reset to draft</button>` : ''}
+        ${r.status === 'DENIED' ? `<button class="btn btn-teal btn-sm" onclick="resetCl(${r.id})" data-fn="claims-create">↺ Reset</button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="openDrawer(${r.id})">Details</button>
       </div></td></tr>
-    ${openId === r.id ? `<tr class="xdet"><td colspan="10"><div class="tl">${tlSteps(r)}</div>
+    ${openId === r.id ? `<tr class="xdet"><td colspan="9"><div class="tl">${tlSteps(r)}</div>
       ${r.denial_code ? `<div class="info-panel" style="background:#fef2f2;border-color:#fecaca;color:#7f1d1d;margin:8px 0 0">🚫 <b>${esc(r.denial_code)}</b> — work it in <a href="/denials"><b>Denials</b></a>, or reset to draft to correct & resubmit.</div>` : ''}
       </td></tr>` : ''}`).join('')
-    || `<tr><td colspan="10" class="empty">No claims match.</td></tr>`;
-  document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
+    || `<tr><td colspan="9" class="empty">No claims match this filter.</td></tr>`;
 }
 function toggleX(id) { openId = openId === id ? null : id; render(); }
 function checklist(errors, warnings) {
@@ -181,12 +257,12 @@ async function openDrawer(id) {
   const c = r.claim, ch = r.charge, pays = r.payments || [];
   document.getElementById('dTitle').textContent = c.claim_no;
   document.getElementById('dBody').innerHTML = `
-    <div style="margin-bottom:14px"><span class="bdg ${SCLS[c.status] || 'b-gray'}">${esc(c.status.replace('_', ' '))}</span>
-    <span class="bdg ${VCLS[c.validation] || 'b-gray'}" style="margin-left:6px">${esc(c.validation.replace('_', ' '))}</span></div>
+    <div style="margin-bottom:14px"><span class="bdg ${SCLS[c.status] || 'b-gray'}"><span class="dot"></span>${esc(c.status.replace('_', ' '))}</span>
+    <span class="bdg ${VCLS[c.validation] || 'b-gray'}" style="margin-left:6px"><span class="dot"></span>${esc(c.validation.replace('_', ' '))}</span></div>
     <h4 style="margin:0 0 4px">Lifecycle</h4><div class="tl" style="margin-bottom:14px">${tlSteps(c)}</div>
     <h4 style="margin:0 0 4px">Claim details</h4>
     ${[['Patient', c.patient_code], ['Payer', c.payer], ['CPT', c.cpt], ['ICD-10', c.icd],
-       ['Modifier', c.modifier || '—'], ['Date of service', c.dos], ['Billed', money(c.billed)],
+       ['Modifier', c.modifier || '—'], ['Date of service', String(c.dos || '').slice(0, 10)], ['Billed', money(c.billed)],
        ['Allowed', money(c.allowed)], ['Payer paid', money(c.paid)], ['Adjustment', money(c.adjustment)],
        ['Patient resp.', money(c.patient_resp)], ['Denial', c.denial_code || '—'],
        ['Submitted', (c.submitted_at || '—').slice(0, 10)], ['Created', (c.created_at || '').slice(0, 10)]
@@ -209,7 +285,11 @@ function closeDrawer() {
   document.getElementById('drawer').classList.remove('open');
 }
 document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
-document.getElementById('addBtn').onclick = () => {
+document.querySelectorAll('#pfilters .pf').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#pfilters .pf').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); f = b.dataset.f; render();
+});
+function openClaimModal() {
   if (!charges.length) { alert('No READY charges. Enter a charge first (Charge Entry).'); return; }
   openModal('Create Claim', `
     <div class="fld"><label>Select READY charge</label><select id="f_ch">${charges.map(c =>
@@ -222,6 +302,8 @@ document.getElementById('addBtn').onclick = () => {
       catch (e) { alert(e.message); }
     };
   });
-};
+}
+document.getElementById('addBtn').onclick = openClaimModal;
+document.getElementById('emptyAdd').onclick = openClaimModal;
 load();
 </script></body></html>
