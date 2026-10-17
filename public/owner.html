@@ -1006,7 +1006,7 @@ async function loadOwnerSection(sec) {
   else if (sec === 'system') await loadSystem();
 }
 function ownerShow(sec) {
-  document.querySelectorAll('[data-sec]').forEach(el => el.style.display = el.dataset.sec === sec ? '' : 'none');
+  document.querySelectorAll('section[data-sec]').forEach(el => el.style.display = el.dataset.sec === sec ? '' : 'none');
   document.querySelectorAll('.snav a[data-sec]').forEach(a => a.classList.toggle('on', a.dataset.sec === sec));
   window.scrollTo(0, 0);
 }
