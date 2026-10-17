@@ -3,3 +3,14 @@ data/
 *.db
 *.db-journal
 .env
+
+# never commit session cookie jars (live auth tokens)
+adm2.txt
+adm3.txt
+c.txt
+c2.txt
+c3.txt
+jar5.txt
+jar6.txt
+stu2.txt
+*cookie*.txt

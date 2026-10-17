@@ -8,6 +8,7 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const db = require('./lib/db');
 const labData = require('./lib/lab-data');
 
@@ -22,15 +23,23 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'");
   next();
 });
+// authenticated API responses must never be cached by proxies
+app.use('/api', (req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
 
 app.use(express.json({ limit: '256kb' }));
 // gzip compression — must come before static + routes for max effect
 app.use(require('compression')({ threshold: 1024 }));
+const _sessionSecret = process.env.SESSION_SECRET || (() => {
+  const g = crypto.randomBytes(32).toString('hex');
+  console.log('[warn] SESSION_SECRET not set — generated a random secret for this boot. Sessions will NOT survive restarts. Set SESSION_SECRET env for persistence!');
+  return g;
+})();
 app.use(session({
   name: 'bill.sid',
-  secret: process.env.SESSION_SECRET || 'bill-dev-secret-change-me',
+  secret: _sessionSecret,
   resave: false, saveUninitialized: false,
   cookie: { httpOnly: true, sameSite: 'lax', maxAge: 1000 * 60 * 60 * 12,
             secure: 'auto' }, // Secure only when actually on HTTPS; works on both
@@ -72,24 +81,44 @@ setInterval(() => {
   db.run('DELETE FROM login_sessions WHERE last_seen < ?', [cutoff]).catch(() => {});
 }, 30 * 60 * 1000);
 
-// login rate limiter (in-memory)
-const fails = new Map();
+// login rate limiter (in-memory, per-IP + per-username)
+const _FAIL_MAX = 8, _FAIL_BLOCK_MS = 15 * 60 * 1000;
+const _failsIp = new Map(), _failsUser = new Map(); // key -> {count, until}
+function _failGet(map, key) {
+  const e = map.get(key);
+  if (e && e.until && e.until <= Date.now()) { map.delete(key); return null; }
+  if (map.size > 20000) map.delete(map.keys().next().value); // bound memory
+  return e || null;
+}
+function _loginName(req) {
+  return (req.body && typeof req.body.email === 'string') ? req.body.email.trim().toLowerCase() : '';
+}
 app.use('/api/login', (req, res, next) => {
-  const f = fails.get(req.ip), now = Date.now();
-  if (f && f.until > now) return res.status(429).json({ error: 'Too many attempts. Try again later.' });
-  if (f && f.until <= now) fails.delete(req.ip);
+  const now = Date.now();
+  const fe = _failGet(_failsIp, req.ip), ue = _failGet(_failsUser, _loginName(req));
+  if ((fe && fe.until > now) || (ue && ue.until > now))
+    return res.status(429).json({ error: 'Too many attempts. Try again later.' });
   next();
 });
 function noteFail(req) {
-  const f = fails.get(req.ip) || { count: 0, until: 0 };
-  f.count++;
-  if (f.count >= 8) { f.until = Date.now() + 15 * 60 * 1000; f.count = 0; }
-  fails.set(req.ip, f);
+  const u = _loginName(req);
+  for (const [map, key] of [[_failsIp, req.ip || ''], [ _failsUser, u ]]) {
+    if (!key) continue;
+    const e = map.get(key) || { count: 0, until: 0 };
+    e.count++;
+    if (e.count >= _FAIL_MAX) { e.until = Date.now() + _FAIL_BLOCK_MS; e.count = 0; }
+    map.set(key, e);
+  }
+}
+function clearFails(req) {
+  const u = _loginName(req);
+  _failsIp.delete(req.ip || ''); if (u) _failsUser.delete(u);
 }
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const pub = (u) => ({ id: u.id, name: u.name, email: u.email, role: u.role });
+const _DUMMY_HASH = 'scrypt:' + crypto.randomBytes(16).toString('hex') + ':' + crypto.randomBytes(64).toString('hex');
 const stripQ = (q) => ({ id: q.id, qnum: q.qnum, prompt: q.prompt,
   options: JSON.parse(q.options), points: q.points, hint: q.hint });
 
@@ -130,7 +159,7 @@ function featureForPath(p) {
   if (p === '/api/patients' || p.startsWith('/api/rcm/patients') || p.startsWith('/api/rcm/insurance') || p.startsWith('/api/rcm/eligibility')) return 'patients';
   if (p.startsWith('/api/rcm/charges') || p.startsWith('/api/rcm/claims')) return 'billing';
   if (p.startsWith('/api/rcm/payments') || p.startsWith('/api/rcm/ar') || p.startsWith('/api/rcm/denials') || p.startsWith('/api/rcm/reports')) return 'revenue';
-  if (p.startsWith('/api/cases') || p.startsWith('/api/attempts') || p.startsWith('/api/progress')) return 'training';
+  if (p.startsWith('/api/cases') || p.startsWith('/api/attempts') || p.startsWith('/api/progress') || p.startsWith('/api/guided')) return 'training';
   if (p.startsWith('/api/labs/')) return 'labs';
   return null;
 }
@@ -212,7 +241,7 @@ function requireFnAction(map) {
 }
 // maps an API path to a single menu item key (null = ambiguous/shared → group fallback)
 function menuItemForPath(p) {
-  if (p === '/api/dashboard') return 'dashboard';
+  if (p === '/api/dashboard' || p.startsWith('/api/rcm/overview')) return 'dashboard';
   if (p.startsWith('/api/rcm/work-queue')) return 'workqueue';
   if (p === '/api/patients' || p.startsWith('/api/rcm/patients')) return 'patients';
   if (p.startsWith('/api/rcm/insurance')) return 'insurance';
@@ -225,7 +254,7 @@ function menuItemForPath(p) {
   if (p.startsWith('/api/rcm/reports')) return 'reports';
   if (p.startsWith('/api/cases') || p.startsWith('/api/attempts')) return 'training';
   if (p.startsWith('/api/progress')) return 'progress';
-  if (p.startsWith('/api/labs/scrubber')) return 'scrubber';
+  if (p.startsWith('/api/labs/scrub')) return 'scrubber';
   if (p.startsWith('/api/labs/denials')) return 'denials';
   if (p.startsWith('/api/labs/sprints')) return 'sprints';
   if (p.startsWith('/api/labs/quiz')) return 'quiz';
@@ -359,6 +388,10 @@ app.get('/owner/', ownerPage);
 app.get('/owner/:section(analytics|accounts|announce|sessions|system|menus|activity)', ownerPage);
 app.get(ADMIN_PATH, send('admin.html'));
 app.get(ADMIN_PATH + '/', send('admin.html'));
+// owner/admin shells must NEVER leak via static serving — they are only
+// delivered through the authenticated ownerPage / ADMIN_PATH handlers.
+app.get(['/owner.html', '/admin.html'], (req, res) =>
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html')));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
 // NOTE: intentionally NO /register route anywhere.
 
@@ -376,8 +409,9 @@ app.post('/api/login', ah(async (req, res) => {
     u = await db.get('SELECT * FROM users WHERE email = ?', [c]);
     if (u) break;
   }
-  const ok = u && db.verifyPassword(password || '', u.pass_hash);
+  const ok = u ? db.verifyPassword(password || '', u.pass_hash) : db.verifyPassword(password || '', _DUMMY_HASH);
   if (!ok) { noteFail(req); logActivity(u ? u.id : null, 'login_failed', 'email=' + emailInput, req); return res.status(401).json({ error: 'Invalid email or password.' }); }
+  clearFails(req); // successful login resets brute-force counters
   req.session.regenerate((err) => {
     if (err) return res.status(500).json({ error: 'Session error.' });
     req.session.userId = u.id;
@@ -2042,7 +2076,7 @@ app.post('/api/admin/users', requireAdmin, ah(async (req, res) => {
     console.error('[admin] create user failed:', e.message);
     if (/duplicate|unique|already exists/i.test(e.message))
       return res.status(409).json({ error: 'Email already exists.' });
-    return res.status(500).json({ error: 'Server error: ' + e.message });
+    return res.status(500).json({ error: 'Server error.' });
   }
 }));
 app.delete('/api/admin/users/:id', requireAdmin, ah(async (req, res) => {
