@@ -306,7 +306,7 @@ async function killSess(id) {
 }
 async function del(id) {
   if (!confirm('Delete this account and all its attempts?')) return;
-  try { await api('/api/admin/users/' + id, { method: 'DELETE' }); boot(); }
+  try { await api('/api/admin/users/' + id, { method: 'DELETE' }); _loadedSec['accounts'] = false; await loadUsers(); }
   catch (e) { alert(e.message); }
 }
 async function loadDashboard() {
@@ -340,6 +340,10 @@ async function loadDashboard() {
 }
 async function loadSystem() {
   try {
+    const [{ cases }, { runs }] = await Promise.all([
+      api('/api/admin/cases'),
+      api('/api/admin/lab-runs'),
+    ]);
     // ---- system health: DB engine, data location, config safety ----
     try {
       const d = await api('/api/admin/diagnostics');
@@ -364,7 +368,7 @@ async function loadSystem() {
         ${warnHtml}${sqliteLine}${srcHtml}`;
     } catch (e) { document.getElementById('syshealth').innerHTML = `<h3>🖥️ System health</h3><div class="empty">${esc(e.message)}</div>`; }
 
-    const { runs } = await api('/api/admin/lab-runs');
+
     const labName = { scrubber: '🧹 Scrubber', denial: '🔍 Denial Lab', 'quiz-timed': '⏱️ Timed Quiz',
       'quiz-weakest': '🎯 Weakest', 'quiz-missed': '🔁 Missed Qs', 'quiz-mix': '🎲 Mix Quiz', 'quiz-sprint': '⚡ Sprint' };
     document.getElementById('labruns').innerHTML = runs.length ? `
@@ -382,21 +386,45 @@ async function loadSystem() {
 
   } catch (e) { document.querySelector('.main').innerHTML = `<div class="empty" style="margin-top:80px"><h2>Error</h2><p>${esc(e.message)}</p></div>`; }
 }
+const _loadedSec = {};
+async function loadOwnerSection(sec) {
+  if (_loadedSec[sec]) return; // instant on revisit — no refetch
+  _loadedSec[sec] = true;
+  if (sec === 'dashboard') await loadDashboard();
+  else if (sec === 'analytics') await loadAnalytics();
+  else if (sec === 'accounts') await loadUsers();
+  else if (sec === 'announce') await loadAnnouncements();
+  else if (sec === 'sessions') await loadSessions();
+  else if (sec === 'system') await loadSystem();
+}
+function ownerShow(sec) {
+  document.querySelectorAll('[data-sec]').forEach(el => el.style.display = el.dataset.sec === sec ? '' : 'none');
+  document.querySelectorAll('.snav a[data-sec]').forEach(a => a.classList.toggle('on', a.dataset.sec === sec));
+  window.scrollTo(0, 0);
+}
+// SPA navigation — no page refresh when clicking sidebar
+function ownerGo(sec, el) {
+  const href = el.getAttribute('href');
+  history.pushState({ sec }, '', href);
+  ownerShow(sec);
+  loadOwnerSection(sec);
+}
+window.addEventListener('popstate', (e) => {
+  const sec = (e.state && e.state.sec) || location.pathname.split('/')[2] || 'dashboard';
+  ownerShow(sec);
+  loadOwnerSection(sec);
+});
 async function boot() {
   const SEC = location.pathname.split('/')[2] || 'dashboard';
-  const KEY = { dashboard: 'owner', analytics: 'analytics', accounts: 'accounts', announce: 'announce', sessions: 'sessions', system: 'syshealth' }[SEC] || 'owner';
-  document.querySelectorAll('[data-sec]').forEach(el => el.style.display = el.dataset.sec === SEC ? '' : 'none');
   // sidebar skeleton renders instantly — no waiting for user data
   document.getElementById('sidebar').innerHTML = `<div class="skel skel-brand"></div><nav class="snav"><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div></nav>`;
   const u0 = await currentUser();
   if (!u0) return;
+  const KEY = { dashboard: 'owner', analytics: 'analytics', accounts: 'accounts', announce: 'announce', sessions: 'sessions', system: 'syshealth' }[SEC] || 'owner';
   adminShell(KEY, u0);
-  if (SEC === 'dashboard') await loadDashboard();
-  else if (SEC === 'analytics') await loadAnalytics();
-  else if (SEC === 'accounts') await loadUsers();
-  else if (SEC === 'announce') await loadAnnouncements();
-  else if (SEC === 'sessions') await loadSessions();
-  else if (SEC === 'system') await loadSystem();
+  ownerShow(SEC);
+  history.replaceState({ sec: SEC }, '', location.pathname);
+  await loadOwnerSection(SEC);
 }
 
 (async () => {
@@ -411,7 +439,7 @@ async function boot() {
         password: document.getElementById('nPass').value,
         role: document.getElementById('nRole').value } });
       ['nName', 'nEmail', 'nPass'].forEach(id => document.getElementById(id).value = '');
-      boot();
+      _loadedSec['accounts'] = false; await loadUsers();
     } catch (e) { err.textContent = e.message; err.classList.add('err'); }
   };
   document.getElementById('aPost').onclick = async () => {

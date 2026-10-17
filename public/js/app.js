@@ -129,20 +129,20 @@ function shell(active, user) {
 function adminShell(active, user) {
   const nav = [
     ['Admin', [
-      ['owner', 'Dashboard', '/owner', 'crown'],
-      ['analytics', 'Analytics', '/owner/analytics', 'chart'],
-      ['accounts', 'Accounts', '/owner/accounts', 'users'],
-      ['announce', 'Announcements', '/owner/announce', 'mega'],
-      ['sessions', 'Sessions', '/owner/sessions', 'monitor'],
-      ['syshealth', 'System health', '/owner/system', 'pulse'],
+      ['owner', 'dashboard', 'Dashboard', '/owner', 'crown'],
+      ['analytics', 'analytics', 'Analytics', '/owner/analytics', 'chart'],
+      ['accounts', 'accounts', 'Accounts', '/owner/accounts', 'users'],
+      ['announce', 'announce', 'Announcements', '/owner/announce', 'mega'],
+      ['sessions', 'sessions', 'Sessions', '/owner/sessions', 'monitor'],
+      ['syshealth', 'system', 'System health', '/owner/system', 'pulse'],
     ]],
   ]; // pure admin — no student items here
   document.getElementById('sidebar').innerHTML = `
     <div class="brand"><div class="mark">${I.crown}</div><div>MbiInventra<small>owner console</small></div></div>
     <nav class="snav">${nav.map(([g, items]) => `
       <div class="grp">${g}</div>
-      ${items.map(([k, label, href, ic]) =>
-        `<a href="${href}" class="${active === k ? 'on' : ''}"><span class="ic">${I[ic] || ''}</span><span class="lbl">${label}</span></a>`).join('')}
+      ${items.map(([k, sec, label, href, ic]) =>
+        `<a href="${href}" data-sec="${sec}" onclick="ownerGo('${sec}',this);return false;" class="${active === k ? 'on' : ''}"><span class="ic">${I[ic] || ''}</span><span class="lbl">${label}</span></a>`).join('')}
     `).join('')}</nav>
     <div class="sfoot">
       <div class="uinfo"><span class="uavatar">${esc((user.name || 'U')[0].toUpperCase())}</span><div>👤 ${esc(user.name)}<br><span class="urole">${esc(user.role)}</span></div></div>
