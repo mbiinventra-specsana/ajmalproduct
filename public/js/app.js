@@ -188,6 +188,7 @@ function shell(active, user) {
       ['statements', 'Patient Statements', '/labs/statements', 'receipt'],
       ['hipaa', 'HIPAA Training', '/labs/hipaa', 'shield'],
       ['coverage', 'LCD/NCD Checker', '/labs/coverage', 'search'],
+      ['cred', 'Credentialing Tracker', '/labs/credentialing', 'clip'],
     ]],
   ];
   if (user.role === 'admin' || user.role === 'instructor') {

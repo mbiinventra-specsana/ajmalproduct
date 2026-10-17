@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prior Authorization Lab — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+<style>
+.lab-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:26px 30px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.lab-hero::before{content:"";position:absolute;top:-60px;right:8%;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.lab-hero h1{margin:0 0 8px;font-size:24px;position:relative;z-index:1}
+.lab-hero .psub{color:#b9d4e8;margin:0;font-size:14px;position:relative;z-index:1;max-width:680px;line-height:1.6}
+.lab-hero .act-row{position:relative;z-index:1;margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 16px;font-size:13px;backdrop-filter:blur(6px);color:#dbeafe}
+.hstat b{font-size:16px;color:#5eead4}
+.eyebrow2{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#34d3bd;margin-bottom:8px;position:relative;z-index:1}
+@keyframes labIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.lab-anim{animation:labIn .45s cubic-bezier(.2,.8,.2,1) backwards}
+.pa-grid{display:grid;grid-template-columns:290px 1fr;gap:16px}
+.scard{border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:12px;cursor:pointer;background:#fff;
+  transition:all .2s;position:relative;overflow:hidden}
+.scard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent;transition:all .2s}
+.scard:hover{border-color:#0e9f8a;transform:translateX(4px);box-shadow:0 4px 14px rgba(14,159,138,.12)}
+.scard:hover::before{background:#0e9f8a}
+.scard.on{border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.18)}
+.scard.on::before{background:#0e9f8a}
+.scard b{font-size:13.5px;color:#0a1628}
+.scard .meta{font-size:11.5px;color:#64748b;margin-top:5px}
+.scard .cno{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9px;
+  background:linear-gradient(135deg,#0f2743,#1a3a5c);color:#5eead4;font-weight:800;font-size:12px;margin-right:8px}
+.scard .diff{font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px;letter-spacing:.5px}
+.diff.Beginner{background:#dcfce7;color:#166534}.diff.Intermediate{background:#fef3c7;color:#92400e}.diff.Advanced{background:#fee2e2;color:#991b1b}
+.pa-doc{background:linear-gradient(135deg,#0a1628,#0f2743);color:#e2e8f0;border-radius:14px;padding:20px;
+  font-size:13px;margin-bottom:18px;box-shadow:0 6px 20px rgba(10,22,40,.25);border:1px solid rgba(52,211,189,.15)}
+.pa-doc .eh{border-bottom:1px solid #1e293b;padding-bottom:12px;margin-bottom:12px}
+.pa-doc .eh b{color:#5eead4;font-size:14px}
+.pa-doc table{width:100%;border-collapse:collapse;font-size:12.5px}
+.pa-doc td{padding:6px 8px;border-bottom:1px solid #1e293b;color:#cbd5e1;vertical-align:top}
+.pa-doc td:first-child{color:#7c8ea8;font-weight:600;width:130px}
+.pa-doc .clin{background:rgba(52,211,189,.06);border:1px solid rgba(52,211,189,.2);border-radius:10px;
+  padding:12px 14px;margin-top:12px;color:#a7f3d0;line-height:1.6;font-size:12.5px}
+.pa-doc .clin b{color:#5eead4}
+.stepper{display:flex;gap:0;margin-bottom:18px}
+.step-tab{flex:1;text-align:center;padding:10px 6px;font-size:12px;font-weight:800;color:#94a3b8;
+  border-bottom:3px solid #e2e8f0;cursor:pointer;transition:all .2s}
+.step-tab .n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;
+  background:#e2e8f0;color:#64748b;font-size:11px;margin-right:6px}
+.step-tab.on{color:#0f2743;border-color:#0e9f8a}
+.step-tab.on .n{background:#0e9f8a;color:#fff}
+.step-tab.done{color:#0e9f8a}
+.step-tab.done .n{background:#0e9f8a;color:#fff}
+.qcard{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:20px;margin-bottom:14px}
+.qcard h4{margin:0 0 6px;font-size:14.5px;color:#0a1628}
+.qcard .step-tag{display:inline-block;background:#f0fdfa;border:1px solid #99f6e4;color:#0f766e;font-weight:800;
+  font-size:11px;padding:3px 10px;border-radius:8px;margin-bottom:12px;letter-spacing:.5px}
+.opt{display:block;width:100%;text-align:left;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e2e8f0;
+  border-radius:10px;background:#fff;font-size:13.5px;color:#0f1e33;cursor:pointer;font-family:inherit;transition:all .15s;line-height:1.5}
+.opt:hover{border-color:#0e9f8a;background:#f0fdfa}
+.opt.sel{border-color:#0e9f8a;background:#f0fdfa;box-shadow:0 0 0 3px rgba(14,159,138,.12)}
+.opt.right{border-color:#16a34a;background:#f0fdf4}
+.opt.wrong{border-color:#dc2626;background:#fef2f2}
+.step-fb{border-radius:12px;padding:12px 16px;font-size:13px;margin-top:12px;line-height:1.6;display:none}
+.step-fb.show{display:block}
+.step-fb.good{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.step-fb.bad{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.btn-grade{background:linear-gradient(135deg,#0e9f8a,#0b7d6d);color:#fff;border:none;border-radius:12px;
+  padding:13px 28px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;
+  box-shadow:0 4px 14px rgba(14,159,138,.3);transition:all .2s}
+.btn-grade:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(14,159,138,.4)}
+.btn-grade:disabled{opacity:.5;cursor:default;transform:none}
+.score-banner{border-radius:16px;padding:24px;text-align:center;margin-bottom:18px;display:none;
+  background:linear-gradient(135deg,#0f2743,#143a5e);color:#fff;border:1px solid rgba(52,211,189,.25)}
+.score-banner.show{display:block}
+.score-banner .ring{font-size:42px;font-weight:800;color:#5eead4}
+.score-banner .perf{font-size:18px;font-weight:800;margin:6px 0;color:#5eead4}
+.timeline-note{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;
+  font-size:12.5px;color:#92400e;margin-bottom:16px;line-height:1.5}
+.timeline-note b{color:#78350f}
+@media(max-width:900px){.pa-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="shell"></div>
+<main class="page">
+  <div class="lab-hero lab-anim">
+    <div class="eyebrow2">Advanced Lab · Revenue Cycle</div>
+    <h1>📋 Prior Authorization Workflow Lab</h1>
+    <p class="psub">Work real prior-auth scenarios end to end: submit the request, follow up on status, and handle the decision. Real CMS-0057-F timelines — urgent 72 hours, standard 7 days. Remember: an auth number must match the claim, or it denies CO-15.</p>
+    <div class="act-row">
+      <span class="hstat"><b id="st-total">0</b> scenarios</span>
+      <span class="hstat">Best <b id="st-best">—</b></span>
+      <span class="hstat">Completed <b id="st-done">0</b></span>
+    </div>
+  </div>
+  <div class="timeline-note lab-anim">⏱️ <b>Real timelines (CMS-0057-F):</b> urgent requests = 72-hour decision · standard requests = 7 calendar days. "Pended" means the payer needs more info — it is <b>not</b> a denial.</div>
+  <div class="pa-grid">
+    <div class="lab-anim" style="animation-delay:.05s"><div id="scen-list"></div></div>
+    <div class="lab-anim" style="animation-delay:.1s"><div id="work"></div></div>
+  </div>
+</main>
+<script src="/js/app.js"></script>
+<script>
+let SCEN = [], cur = null, sel = {};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function init() {
+  shell('priorauth');
+  try {
+    const d = await api('/api/labs/priorauth');
+    SCEN = d.scenarios || [];
+    $('st-total').textContent = SCEN.length;
+    renderList();
+    if (SCEN.length) select(SCEN[0].id);
+    loadBest();
+  } catch (e) { $('work').innerHTML = '<div class="qcard">Failed to load scenarios: ' + esc(e.message) + '</div>'; }
+}
+async function loadBest() {
+  try {
+    const b = await api('/api/labs/bests');
+    const rows = (b.bests || []).filter(x => x.lab_key === 'priorauth');
+    if (rows.length) {
+      $('st-best').textContent = Math.max(...rows.map(x => x.score)) + '%';
+      $('st-done').textContent = rows.length;
+    }
+  } catch (e) {}
+}
+function renderList() {
+  $('scen-list').innerHTML = SCEN.map((s, i) =>
+    `<div class="scard ${cur && cur.id === s.id ? 'on' : ''}" data-id="${s.id}">
+      <div><span class="cno">${i + 1}</span><b>${esc(s.title)}</b></div>
+      <div class="meta">${esc(s.payer.replace(' (Simulated)', ''))} · ${s.steps.length} steps</div>
+      <div class="meta"><span class="diff ${s.difficulty}">${s.difficulty}</span></div>
+    </div>`).join('');
+  document.querySelectorAll('.scard').forEach(c => c.onclick = () => select(c.dataset.id));
+}
+function select(id) {
+  cur = SCEN.find(s => s.id === id);
+  sel = {};
+  renderList(); renderWork();
+}
+function renderWork() {
+  const s = cur;
+  $('work').innerHTML = `
+    <div class="pa-doc">
+      <div class="eh"><b>PRIOR AUTHORIZATION REQUEST</b> · ${esc(s.payer)}</div>
+      <table>${s.snapshot.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</table>
+      <div class="clin"><b>📎 Clinical documentation:</b> ${esc(s.clinical)}</div>
+    </div>
+    <div class="stepper" id="stepper">
+      ${s.steps.map((st, i) => `<div class="step-tab" data-i="${i}"><span class="n">${i + 1}</span>Step ${i + 1}</div>`).join('')}
+    </div>
+    <div id="scorebox"></div>
+    <div id="qbox"></div>
+    <button class="btn-grade" id="gradeBtn" onclick="grade()">✅ Submit Workflow → Grade</button>`;
+  document.querySelectorAll('.step-tab').forEach(t => t.onclick = () => showStep(+t.dataset.i));
+  showStep(0);
+}
+function showStep(i) {
+  const st = cur.steps[i];
+  document.querySelectorAll('.step-tab').forEach((t, j) => {
+    t.classList.toggle('on', j === i);
+    t.classList.toggle('done', sel[j] !== undefined);
+  });
+  $('qbox').innerHTML = `
+    <div class="qcard">
+      <div class="step-tag">STEP ${i + 1} OF ${cur.steps.length}</div>
+      <h4>${esc(st.q)}</h4>
+      ${st.options.map((o, j) => `<button class="opt ${sel[i] === j ? 'sel' : ''}" data-j="${j}" onclick="pick(${i},${j})">${esc(o)}</button>`).join('')}
+      ${st.hint ? `<div style="font-size:12px;color:#94a3b8;margin-top:8px">💡 Hint: ${esc(st.hint)}</div>` : ''}
+      <div class="step-fb" id="sfb"></div>
+    </div>`;
+}
+function pick(i, j) {
+  sel[i] = j;
+  document.querySelectorAll('.opt').forEach((o, k) => o.classList.toggle('sel', k === j));
+  document.querySelectorAll('.step-tab').forEach((t, k) => t.classList.toggle('done', sel[k] !== undefined));
+}
+async function grade() {
+  const btn = $('gradeBtn'); btn.disabled = true; btn.textContent = 'Grading…';
+  const answers = cur.steps.map((_, i) => sel[i] !== undefined ? sel[i] : -1);
+  try {
+    const r = await api('/api/labs/priorauth/grade', { method: 'POST', body: { scenarioId: cur.id, answers } });
+    let html = `<div class="score-banner show"><div class="ring">${r.score}%</div>
+      <div class="perf">${r.score >= 90 ? 'Outstanding!' : r.score >= 70 ? 'Good work!' : r.score >= 50 ? 'Getting there!' : 'Review the steps!'}</div>
+      <div style="font-size:13px;color:#b9d4e8">Prior-auth workflow scored</div></div>`;
+    html += r.perStep.map(p => {
+      const st = cur.steps[p.i];
+      return `<div class="qcard"><div class="step-tag">STEP ${p.i + 1}</div><h4>${esc(st.q)}</h4>
+        ${st.options.map((o, j) => `<div class="opt ${j === p.correct ? 'right' : ''} ${j === (sel[p.i] ?? -1) && !p.ok ? 'wrong' : ''}">${esc(o)}</div>`).join('')}
+        <div class="step-fb show ${p.ok ? 'good' : 'bad'}">${p.ok ? '✅ Correct. ' : '❌ Not quite. '}${esc(p.explanation)}</div></div>`;
+    }).join('');
+    html += `<button class="btn-grade" onclick="select('${cur.id}')">🔄 Try Again</button>`;
+    $('work').innerHTML = html;
+    loadBest();
+  } catch (e) {
+    btn.disabled = false; btn.textContent = '✅ Submit Workflow → Grade';
+    alert('Grading failed: ' + e.message);
+  }
+}
+init();
+</script>
+</body>
+</html>

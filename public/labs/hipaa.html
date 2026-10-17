@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIPAA Compliance Training — MbiInventra RCM Academy</title>
+<link rel="stylesheet" href="/css/app.css">
+<style>
+/* ===== HIPAA Lab ULTRA ===== */
+.lab-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:26px 30px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.lab-hero::before{content:"";position:absolute;top:-60px;right:8%;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.lab-hero h1{margin:0 0 8px;font-size:24px;position:relative;z-index:1}
+.lab-hero .psub{color:#b9d4e8;margin:0;font-size:14px;position:relative;z-index:1;max-width:680px;line-height:1.6}
+.lab-hero .act-row{position:relative;z-index:1;margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 16px;font-size:13px;backdrop-filter:blur(6px);color:#dbeafe}
+.hstat b{font-size:16px;color:#5eead4}
+.eyebrow2{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#34d3bd;margin-bottom:8px;position:relative;z-index:1}
+@keyframes labIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.lab-anim{animation:labIn .45s cubic-bezier(.2,.8,.2,1) backwards}
+.ftabs{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:24px;border:1.5px solid #e2e8f0;
+  background:#fff;font-family:inherit;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;transition:all .2s;
+  box-shadow:0 1px 3px rgba(10,22,40,.04);margin:0 8px 8px 0}
+.ftabs:hover{border-color:#0e9f8a;color:#0f2743;transform:translateY(-1px)}
+.ftabs.on{background:linear-gradient(135deg,#0f2743,#1a3a5c);border-color:#0f2743;color:#fff;box-shadow:0 4px 14px rgba(15,39,67,.28)}
+.qcard{background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;padding:20px;margin-bottom:14px;transition:all .2s}
+.qcard.answered{border-color:#cbd5e1}
+.qcard .qtop{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.qcard .qid{font-family:ui-monospace,monospace;font-size:11px;font-weight:800;background:#0f2743;color:#5eead4;
+  padding:3px 10px;border-radius:8px}
+.qcard .qtopic{font-size:11px;font-weight:700;color:#0e9f8a;background:#f0fdfa;border:1px solid #99f6e4;
+  padding:3px 10px;border-radius:8px}
+.qcard .qdiff{font-size:11px;font-weight:700;color:#64748b;background:#f1f5f9;padding:3px 10px;border-radius:8px}
+.qcard .qq{font-size:15px;font-weight:600;color:#0a1628;margin:0 0 14px;line-height:1.6}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:12px;
+  margin-bottom:8px;cursor:pointer;font-size:14px;color:#334155;transition:all .15s;line-height:1.5}
+.opt:hover{border-color:#0e9f8a;background:#f8fafc}
+.opt .ol{font-weight:800;color:#0f2743;min-width:22px}
+.opt.picked{border-color:#0e9f8a;background:#f0fdfa}
+.opt.right{border-color:#16a34a;background:#f0fdf4}
+.opt.wrong{border-color:#dc2626;background:#fef2f2}
+.opt.dim{opacity:.55}
+.qfb{border-radius:12px;padding:12px 16px;font-size:13.5px;margin-top:12px;line-height:1.65;display:none}
+.qfb.show{display:block}
+.qfb.good{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.qfb.bad{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.qfb b{display:block;margin-bottom:4px}
+.cert{border-radius:18px;padding:32px;text-align:center;margin:20px 0;display:none;
+  background:linear-gradient(135deg,#0f2743,#143a5e);color:#fff;border:1px solid rgba(52,211,189,.3);
+  box-shadow:0 10px 34px rgba(15,39,67,.3)}
+.cert.show{display:block}
+.cert .seal{font-size:52px;margin-bottom:8px}
+.cert h2{margin:0 0 6px;color:#5eead4;font-size:22px}
+.cert .cname{font-size:19px;font-weight:800;margin:8px 0 2px}
+.cert .cdetail{color:#b9d4e8;font-size:13.5px}
+.cert.fail{background:linear-gradient(135deg,#7f1d1d,#991b1b)}
+.cert.fail h2{color:#fca5a5}
+.btn-grade{background:linear-gradient(135deg,#0e9f8a,#0b7d6d);color:#fff;border:none;border-radius:12px;
+  padding:13px 28px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;
+  box-shadow:0 4px 14px rgba(14,159,138,.3);transition:all .2s}
+.btn-grade:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(14,159,138,.4)}
+.btn-grade:disabled{opacity:.5;cursor:default;transform:none}
+.progress-wrap{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px 18px;margin-bottom:18px;
+  display:flex;align-items:center;gap:14px;position:sticky;top:12px;z-index:5;box-shadow:0 4px 14px rgba(10,22,40,.06)}
+.progress-wrap .bar{flex:1;height:10px;background:#f1f5f9;border-radius:6px;overflow:hidden}
+.progress-wrap .bar i{display:block;height:100%;background:linear-gradient(90deg,#0e9f8a,#34d3bd);border-radius:6px;transition:width .3s}
+.progress-wrap b{font-size:13px;color:#0f2743;white-space:nowrap}
+@media(max-width:700px){.lab-hero{padding:20px}.progress-wrap{top:8px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside id="sidebar"></aside>
+  <main>
+    <div class="lab-hero lab-anim">
+      <div class="eyebrow2">Advanced Labs · Compliance</div>
+      <h1>🛡️ HIPAA Compliance Training</h1>
+      <p class="psub">Work through <b style="color:#5eead4">18 real-world scenarios</b> covering the Privacy Rule, Security Rule, and Breach Notification. Answer each one — you get instant expert feedback. Score <b style="color:#5eead4">80%+</b> to earn your completion certificate.</p>
+      <div class="act-row">
+        <span class="hstat">Scenarios <b id="st-total">–</b></span>
+        <span class="hstat">Answered <b id="st-answered">0</b></span>
+        <span class="hstat">Correct <b id="st-correct">0</b></span>
+        <span class="hstat">Pass mark <b>80%</b></span>
+      </div>
+    </div>
+
+    <div id="cert" class="cert lab-anim"></div>
+
+    <div class="progress-wrap lab-anim" style="animation-delay:.05s">
+      <b id="pg-label">0 / 18 answered</b>
+      <div class="bar"><i id="pg-bar" style="width:0%"></i></div>
+      <button class="btn-grade" id="btn-finish" style="padding:10px 20px;font-size:13.5px" disabled>Finish &amp; Get Certificate</button>
+    </div>
+
+    <div id="filters" class="lab-anim" style="animation-delay:.08s;margin-bottom:14px"></div>
+    <div id="qlist" class="lab-anim" style="animation-delay:.1s"></div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+<script>
+let SCEN = [], answers = {}, revealed = {}, filter = 'all', userName = '';
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const TOPICS = ['all','Privacy Rule','Security Rule','Breach Notification','Patient Rights','Business Associates','Enforcement'];
+function topicOf(t){ return TOPICS.find(x => x !== 'all' && t.startsWith(x)) || 'Privacy Rule'; }
+
+async function init(){
+  shell('hipaa');
+  try {
+    const me = await api('/api/me'); userName = me.user?.name || me.name || 'Student';
+  } catch(e){}
+  try {
+    const d = await api('/api/labs/hipaa');
+    SCEN = d.scenarios || [];
+    $('st-total').textContent = SCEN.length;
+    renderFilters(); render();
+  } catch(e){
+    $('qlist').innerHTML = '<div class="qcard"><p style="color:#dc2626">Failed to load scenarios: '+esc(e.message)+'</p></div>';
+  }
+}
+
+function renderFilters(){
+  $('filters').innerHTML = TOPICS.map(t =>
+    '<button class="ftabs'+(filter===t?' on':'')+'" data-t="'+t+'">'+(t==='all'?'📋 All':esc(t))+'</button>').join('');
+  document.querySelectorAll('#filters .ftabs').forEach(b => b.onclick = () => { filter = b.dataset.t; renderFilters(); render(); });
+}
+
+function render(){
+  const list = SCEN.filter(h => filter === 'all' || topicOf(h.topic) === filter);
+  $('qlist').innerHTML = list.map(h => {
+    const i = h.i, ans = answers[i];
+    const opts = h.options.map((o, oi) => {
+      let cls = 'opt';
+      if (revealed[i]) {
+        if (oi === ans) cls += (oi === h.answer ? ' right' : ' wrong') + ' picked';
+        else if (oi === h.answer) cls += ' right';
+        else cls += ' dim';
+      } else if (oi === ans) cls += ' picked';
+      return '<div class="'+cls+'" data-i="'+i+'" data-oi="'+oi+'"><span class="ol">'+'ABCD'[oi]+'.</span><span>'+esc(o)+'</span></div>';
+    }).join('');
+    const fb = revealed[i] ? '<div class="qfb show '+(ans === h.answer ? 'good' : 'bad')+'"><b>'+
+      (ans === h.answer ? '✅ Correct' : '❌ Incorrect — correct answer: '+'ABCD'[h.answer])+'</b>'+esc(h.why)+'</div>' : '';
+    return '<div class="qcard'+(revealed[i]?' answered':'')+'" id="qc-'+i+'">'+
+      '<div class="qtop"><span class="qid">'+esc(h.id)+'</span><span class="qtopic">'+esc(h.topic)+'</span>'+
+      '<span class="qdiff">'+esc(h.difficulty)+'</span></div>'+
+      '<p class="qq">'+esc(h.q)+'</p>'+opts+fb+'</div>';
+  }).join('');
+  document.querySelectorAll('.opt').forEach(el => el.onclick = () => pick(+el.dataset.i, +el.dataset.oi));
+  updateProgress();
+}
+
+function pick(i, oi){
+  if (revealed[i]) return;
+  answers[i] = oi; revealed[i] = true;
+  render();
+  const el = $('qc-'+i); if (el) el.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function updateProgress(){
+  const n = Object.keys(answers).length, total = SCEN.length;
+  const correct = SCEN.filter((h,i) => answers[i] === h.answer).length;
+  $('st-answered').textContent = n; $('st-correct').textContent = correct;
+  $('pg-label').textContent = n+' / '+total+' answered';
+  $('pg-bar').style.width = (total ? 100*n/total : 0)+'%';
+  $('btn-finish').disabled = n < total;
+}
+
+$('btn-finish').onclick = async () => {
+  const btn = $('btn-finish'); btn.disabled = true; btn.textContent = 'Grading…';
+  try {
+    const r = await api('/api/labs/hipaa/submit', { method:'POST', body:{ answers: SCEN.map((h,i) => answers[i]) } });
+    const c = $('cert');
+    if (r.passed) {
+      c.className = 'cert show lab-anim';
+      c.innerHTML = '<div class="seal">🏅</div><h2>Certificate of Completion</h2>'+
+        '<div class="cname">'+esc(userName)+'</div>'+
+        '<div class="cdetail">has successfully completed<br><b>HIPAA Compliance Training</b> — MbiInventra RCM Academy</div>'+
+        '<div class="cdetail" style="margin-top:10px">Score: <b style="color:#5eead4">'+r.score+'%</b> ('+r.correct+'/'+r.total+' correct) · '+
+        new Date().toLocaleDateString()+'</div>';
+    } else {
+      c.className = 'cert show fail lab-anim';
+      c.innerHTML = '<div class="seal">📋</div><h2>Not yet — keep training</h2>'+
+        '<div class="cdetail">Score: <b>'+r.score+'%</b> ('+r.correct+'/'+r.total+'). You need '+r.passPct+'% to pass.<br>'+
+        'Review the explanations below and try again — your best score is saved.</div>';
+    }
+    c.scrollIntoView({behavior:'smooth'});
+  } catch(e){
+    alert('Submit failed: '+e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Finish & Get Certificate';
+};
+
+init();
+</script>
+</body>
+</html>
