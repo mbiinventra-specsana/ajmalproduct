@@ -237,9 +237,12 @@ async function userStats(userId) {
      FROM attempts WHERE user_id = ? AND status = 'completed'`, [userId]);
   const total = (await db.get('SELECT COUNT(*) AS n FROM cases WHERE active = 1')).n;
   const points = Number(done.pts) || 0;
+  const best = await db.get(
+    `SELECT COALESCE(MAX(100.0*score/NULLIF(max_score,0)),0) AS b FROM attempts WHERE user_id = ? AND status = 'completed'`, [userId]);
   return { points, level: db.levelFor(points),
     casesCompleted: done.c || 0, totalCases: total,
-    accuracy: Math.round((att.acc || 0) * 10) / 10, attempts: att.n || 0 };
+    accuracy: Math.round((att.acc || 0) * 10) / 10, attempts: att.n || 0,
+    bestScore: Math.round(best.b || 0) };
 }
 const ah = (fn) => (req, res, next) => fn(req, res, next).catch(next); // async handler
 

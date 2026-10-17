@@ -4,35 +4,105 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Command Center — MbiInventra RCM Academy</title>
 <link rel="stylesheet" href="/css/app.css">
+<style>
+/* ===== Command Center ULTRA ===== */
+.cc-hero{position:relative;overflow:hidden;border-radius:18px;padding:28px 30px;margin-bottom:20px;
+  background:linear-gradient(120deg,#0f2743 0%,#143a5e 45%,#0e9f8a 130%);color:#fff;
+  box-shadow:0 8px 30px rgba(15,39,67,.25)}
+.cc-hero::before{content:"";position:absolute;top:-60px;right:-40px;width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.35),transparent 70%)}
+.cc-hero::after{content:"";position:absolute;bottom:-80px;left:30%;width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.18),transparent 70%)}
+.cc-hero h1{font-size:24px;margin:0 0 6px;position:relative;z-index:1}
+.cc-hero p{margin:0;color:#b9d4e8;font-size:14px;position:relative;z-index:1;max-width:600px}
+.cc-hero-stats{display:flex;gap:14px;margin-top:18px;position:relative;z-index:1;flex-wrap:wrap}
+.cc-hstat{background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);
+  border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:10px}
+.cc-hstat .n{font-size:20px;font-weight:800}
+.cc-hstat .l{font-size:11px;color:#b9d4e8;text-transform:uppercase;letter-spacing:.8px}
+.cc-hstat .fi{font-size:22px}
+.cc-hero-cta{position:relative;z-index:1;margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.btn-hero{background:#fff;color:#0f2743;border:none;padding:11px 22px;border-radius:11px;font-weight:700;font-size:14px;
+  cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.btn-hero:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.btn-hero-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);padding:11px 22px;
+  border-radius:11px;font-weight:600;font-size:14px;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn-hero-ghost:hover{background:rgba(255,255,255,.2)}
+/* bento grid */
+.cc-bento{display:grid;grid-template-columns:1fr 340px;gap:18px;margin-bottom:18px}
+@media(max-width:1100px){.cc-bento{grid-template-columns:1fr}}
+.cc-col{display:flex;flex-direction:column;gap:18px;min-width:0}
+/* up-next smart card */
+.upnext{border-radius:16px;padding:20px;background:linear-gradient(135deg,#fff,#f0fdfa);
+  border:1px solid rgba(14,159,138,.2);box-shadow:0 4px 18px rgba(14,159,138,.08);position:relative;overflow:hidden}
+.upnext::before{content:"🤖";position:absolute;top:12px;right:16px;font-size:28px;opacity:.15}
+.upnext h3{margin:0 0 4px;font-size:15px;color:#0f2743}
+.upnext .why{font-size:12.5px;color:#64748b;margin-bottom:14px}
+/* XP level card */
+.xpcard{background:#0f2743;border-radius:16px;padding:20px;color:#fff;position:relative;overflow:hidden}
+.xpcard::before{content:"";position:absolute;top:-40px;right:-30px;width:150px;height:150px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.3),transparent 70%)}
+.xpcard h3{margin:0 0 12px;font-size:15px;position:relative}
+.xp-lvl{display:flex;align-items:center;gap:12px;position:relative;margin-bottom:12px}
+.xp-badge{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#0e9f8a,#34d3bd);
+  display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 14px rgba(14,159,138,.4)}
+.xp-meta b{font-size:15px;display:block}
+.xp-meta span{font-size:12px;color:#8fa8c4}
+.lvlbar{height:10px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden;position:relative}
+.lvlbar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#0e9f8a,#34d3bd);
+  transition:width .8s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 10px rgba(52,211,189,.5)}
+/* accuracy ring */
+.ring{position:relative;width:64px;height:64px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#0f2743}
+/* case row progress */
+.caseprog{display:flex;align-items:center;gap:8px}
+.caseprog .bar{width:70px;height:6px;border-radius:4px;background:#e8eef4;overflow:hidden}
+.caseprog .bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#0e9f8a,#34d3bd)}
+/* streak flame */
+.streak{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#fff7ed,#ffedd5);
+  border:1px solid #fed7aa;color:#c2410c;font-weight:700;font-size:13px;padding:6px 14px;border-radius:20px}
+/* section titles */
+.cc-sec-t{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cc-sec-t h3{margin:0;font-size:16px;color:#0f2743;display:flex;align-items:center;gap:8px}
+.cc-sec-t a{font-size:13px;color:#0e9f8a;font-weight:600;text-decoration:none}
+.cc-sec-t a:hover{text-decoration:underline}
+/* alert items */
+.alert-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:13px;color:#475569}
+.alert-item:last-child{border:none}
+.alert-item .ai{font-size:16px;flex:none;margin-top:1px}
+/* entrance */
+.cc-anim{animation:ccIn .45s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes ccIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+</style>
 </head>
 <body>
 <div class="shell">
   <aside class="side" id="sidebar"></aside>
   <main class="main cc">
-    <div class="cc-head">
-      <div><h1>Command Center</h1><p id="welcome">Loading your training floor…</p></div>
-      
-    </div>
     <div id="announceBar"></div>
+    <div id="hero"><div class="skel" style="height:180px;border-radius:18px"></div></div>
+    <div class="kpi-strip" id="kpis" style="margin:18px 0"><div class="skel-cards" style="grid-template-columns:repeat(4,1fr)"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div></div></div>
 
-    <div class="kpi-strip" id="kpis"><div class="skel-cards" style="grid-template-columns:repeat(6,1fr)"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div></div></div>
-
-    <div class="cc-grid">
-      <div class="panel-light">
-        <div class="pl-head"><h3>🧾 Work Queue — training cases</h3><a href="/training">Case Center →</a></div>
-        <div style="overflow-x:auto"><table class="dtable"><thead><tr>
-          <th>Case</th><th>Category</th><th>Level</th><th>Status</th><th>Best</th><th>Att.</th><th></th>
-        </tr></thead><tbody id="queue"><tr><td colspan="7"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div></td></tr></tbody></table></div>
+    <div class="cc-bento">
+      <div class="cc-col">
+        <div class="panel-light cc-anim" style="animation-delay:.1s">
+          <div class="cc-sec-t"><h3>🧾 Work Queue — training cases</h3><a href="/training">Case Center →</a></div>
+          <div style="overflow-x:auto"><table class="dtable"><thead><tr>
+            <th>Case</th><th>Level</th><th>Status</th><th>Progress</th><th></th>
+          </tr></thead><tbody id="queue"><tr><td colspan="5"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div></td></tr></tbody></table></div>
+        </div>
+        <div class="panel-light cc-anim" style="animation-delay:.2s">
+          <div class="cc-sec-t"><h3>📊 Best score by case</h3></div>
+          <div id="chart"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div></div>
+        </div>
       </div>
-      <div>
-        <div class="panel-light"><h3>🔔 Alerts</h3><div id="alerts"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line w60"></div></div></div>
-        <div class="panel-light" style="margin-top:16px"><h3>🎯 Level progress</h3><div id="lvlprog"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line w60"></div></div></div>
+      <div class="cc-col">
+        <div class="upnext cc-anim" style="animation-delay:.12s" id="upnext"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div>
+        <div class="xpcard cc-anim" style="animation-delay:.16s" id="xpcard"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div>
+        <div class="panel-light cc-anim" style="animation-delay:.2s"><h3>🔔 Alerts</h3><div id="alerts"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
+        <div class="panel-light cc-anim" style="animation-delay:.24s"><h3>🕘 Recent activity</h3><div id="recent"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
       </div>
-    </div>
-
-    <div class="cc-grid" style="margin-top:16px">
-      <div class="panel-light"><h3>📊 Best score by case</h3><div id="chart"><div class="skel-bar-row"><div class="skel skel-bl"></div><div class="skel skel-bt"></div><div class="skel skel-bv"></div></div><div id="chart"><div class="skel-bar-row"><div class="skel skel-bl"></div><div class="skel skel-bt"></div><div class="skel skel-bv"></div></div><div id="chart"><div class="skel-bar-row"><div class="skel skel-bl"></div><div class="skel skel-bt"></div><div class="skel skel-bv"></div></div></div></div>
-      <div class="panel-light"><h3>🕘 Recent activity</h3><div id="recent"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line w60"></div></div></div>
     </div>
   </main>
 </div>
@@ -40,13 +110,30 @@
 <script>
 const LEVELS = [['Beginner',0],['Junior Biller',100],['Billing Specialist',250],['Senior Biller',400],['Billing Executive',500]];
 function nextLevel(pts) {
-  for (let i = LEVELS.length - 1; i >= 0; i--) if (pts >= LEVELS[i][1]) return { cur: LEVELS[i], nxt: LEVELS[i+1] || null };
-  return { cur: LEVELS[0], nxt: LEVELS[1] };
+  for (let i = LEVELS.length - 1; i >= 0; i--) if (pts >= LEVELS[i][1]) return { cur: LEVELS[i], nxt: LEVELS[i+1] || null, idx: i };
+  return { cur: LEVELS[0], nxt: LEVELS[1], idx: 0 };
 }
+const LVL_ICON = ['🌱','📋','💼','🎖️','👑'];
 function statusPill(c) {
-  if (c.completed) return '<span class="st st-done">Completed</span>';
-  if (c.attempts > 0) return '<span class="st st-prog">In progress</span>';
-  return '<span class="st st-todo">Not started</span>';
+  if (c.completed) return '<span class="bdg green"><span class="dot"></span>Completed</span>';
+  if (c.attempts > 0) return '<span class="bdg amber"><span class="dot"></span>In progress</span>';
+  return '<span class="bdg slate"><span class="dot"></span>Not started</span>';
+}
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+function ring(pct, size) {
+  const r = (size - 8) / 2, c = 2 * Math.PI * r;
+  const col = pct >= 80 ? '#0e9f8a' : pct >= 60 ? '#f59e0b' : '#e2e8f0';
+  return `<div class="ring" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#e8eef4" stroke-width="7"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="7"
+      stroke-dasharray="${c}" stroke-dashoffset="${c - c * pct / 100}" stroke-linecap="round"
+      style="transition:stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1)"/></svg>
+    <span class="pct">${pct}%</span></div>`;
 }
 (async () => {
   document.getElementById('sidebar').innerHTML = `<div class="skel skel-brand"></div><nav class="snav"><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div></nav>`;
@@ -55,72 +142,120 @@ function statusPill(c) {
   if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
   shell('dashboard', u);
   if (!guardFeature(u, 'dashboard', 'Command Center')) return;
-  // owner announcements + dashboard + cases — all in parallel
-  const [annRes, dash, cases] = await Promise.all([
+  const [annRes, dash, cases, insights] = await Promise.all([
     api('/api/announcements?placement=home').catch(() => ({ announcements: [] })),
     api('/api/dashboard'),
     api('/api/cases'),
+    api('/api/student-insights').catch(() => null),
   ]);
   try {
     const announcements = annRes.announcements || [];
     if (announcements.length) {
       document.getElementById('announceBar').innerHTML = announcements.map(a => `
-        <div class="alert info" style="margin:0 0 12px">📢 <b>${esc(a.title)}</b>${a.body ? ' — ' + esc(a.body) : ''}</div>`).join('');
-      // read receipts (fire-and-forget)
+        <div class="alert info" style="margin:0 0 16px">📢 <b>${esc(a.title)}</b>${a.body ? ' — ' + esc(a.body) : ''}</div>`).join('');
       announcements.forEach(a => api('/api/announcements/' + a.id + '/view', { method: 'POST' }).catch(() => {}));
     }
   } catch {}
-  document.getElementById('welcome').textContent =
-    `Welcome back, ${u.name.split(' ')[0]} — here's your training floor for today.`;
   const s = dash.stats, cs = cases.cases;
+  const first = u.name.split(' ')[0];
+  const { cur, nxt, idx } = nextLevel(s.points);
+  const xpPct = nxt ? Math.min(100, Math.round(100 * (s.points - cur[1]) / (nxt[1] - cur[1]))) : 100;
+  const streak = insights && insights.streak ? insights.streak : 0;
+  const mastered = cs.filter(c => c.completed).length;
 
+  // smart "up next": weakest in-progress > unstarted > lowest best
+  const inProg = cs.filter(c => !c.completed && c.attempts > 0)
+    .sort((a, b) => (a.best ?? 1e9) - (b.best ?? 1e9))[0];
+  const unstarted = cs.filter(c => c.attempts === 0)[0];
+  const lowBest = cs.filter(c => c.completed)
+    .sort((a, b) => (a.best / a.points) - (b.best / b.points))[0];
+  const next = inProg || unstarted || lowBest;
+  const nextWhy = inProg ? 'Continue where you left off — finish what you started.'
+    : unstarted ? 'Fresh territory — build your foundation case by case.'
+    : 'Push your mastery higher — beat your best score.';
+
+  // HERO
+  document.getElementById('hero').innerHTML = `
+    <div class="cc-hero cc-anim">
+      <h1>${greeting()}, ${esc(first)} 👋</h1>
+      <p>Here's your training floor for today — ${mastered} of ${cs.length} cases mastered, ${s.points} points earned. ${next ? 'Your next move: <b>' + esc(next.code) + '</b>.' : 'All cases complete — legendary!'}</p>
+      <div class="cc-hero-stats">
+        <div class="cc-hstat"><span class="fi">🔥</span><div><div class="n">${streak}</div><div class="l">day streak</div></div></div>
+        <div class="cc-hstat"><span class="fi">${LVL_ICON[idx]}</span><div><div class="n" style="font-size:15px">${esc(cur[0])}</div><div class="l">current level</div></div></div>
+        <div class="cc-hstat"><span class="fi">⭐</span><div><div class="n">${s.points}</div><div class="l">points</div></div></div>
+        <div class="cc-hstat"><span class="fi">🎯</span><div><div class="n">${s.accuracy}%</div><div class="l">accuracy</div></div></div>
+      </div>
+      <div class="cc-hero-cta">
+        ${next ? `<a class="btn-hero" href="/play?caseId=${next.id}">${inProg ? 'Continue' : 'Start'} ${esc(next.code)} →</a>` : ''}
+        <a class="btn-hero-ghost" href="/training">Browse all cases</a>
+      </div>
+    </div>`;
+
+  // KPI CARDS
   document.getElementById('kpis').innerHTML = `
-    <div class="kpi hot"><span>Accuracy</span><b>${s.accuracy}%</b><div class="sub">clean-claim equivalent</div></div>
-    <div class="kpi"><span>Cases done</span><b>${s.casesCompleted}/${s.totalCases}</b><div class="sub">training cases</div></div>
-    <div class="kpi"><span>Points</span><b>${s.points}</b><div class="sub">${s.level}</div></div>
-    <div class="kpi"><span>Attempts</span><b>${s.attempts}</b><div class="sub">total runs</div></div>
-    <div class="kpi"><span>Mastered</span><b>${cs.filter(c=>c.completed).length}/${cs.length}</b><div class="sub">cases completed</div></div>
-    <div class="kpi"><span>Level</span><b style="font-size:16px;line-height:1.6">${s.level}</b><div class="sub">keep climbing</div></div>`;
+    <div class="kpi cc-anim" style="animation-delay:.05s"><div class="krow" style="display:flex;align-items:center;gap:12px">
+      ${ring(s.accuracy, 64)}<div><span>Accuracy</span><div class="sub">clean-claim equivalent</div></div></div></div>
+    <div class="kpi cc-anim" style="animation-delay:.08s"><span>📚 Cases mastered</span><b>${mastered}/${cs.length}</b><div class="sub">${cs.length - mastered} remaining</div></div>
+    <div class="kpi cc-anim" style="animation-delay:.11s"><span>⚡ Total attempts</span><b>${s.attempts}</b><div class="sub">practice runs</div></div>
+    <div class="kpi hot cc-anim" style="animation-delay:.14s"><span>🏆 Best score</span><b>${s.bestScore != null ? s.bestScore + '%' : '—'}</b><div class="sub">personal record</div></div>`;
 
-  document.getElementById('queue').innerHTML = cs.map(c => {
-    const pct = c.best != null ? Math.round(100 * c.best / c.points) : null;
+  // UP NEXT
+  document.getElementById('upnext').innerHTML = next ? `
+    <h3>🤖 Up next for you</h3><div class="why">${nextWhy}</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div style="font-size:26px">${inProg ? '▶️' : unstarted ? '🚀' : '💪'}</div>
+      <div><b style="font-size:15px">${esc(next.code)}</b><br>
+      <span style="font-size:12.5px;color:#64748b">${esc(next.title)}</span></div>
+    </div>
+    <a class="btn btn-teal btn-sm" style="width:100%;justify-content:center" href="/play?caseId=${next.id}">${inProg ? 'Continue training →' : unstarted ? 'Start case →' : 'Beat your best →'}</a>`
+    : `<h3>🎉 All cases complete!</h3><div class="why">You've mastered every case. Try the Advanced Labs to push further.</div>
+       <a class="btn btn-teal btn-sm" style="width:100%;justify-content:center" href="/labs/quiz">Quiz Arena →</a>`;
+
+  // XP CARD
+  document.getElementById('xpcard').innerHTML = `
+    <h3>🎯 Level progress</h3>
+    <div class="xp-lvl"><div class="xp-badge">${LVL_ICON[idx]}</div>
+      <div class="xp-meta"><b>${esc(cur[0])}</b><span>${nxt ? esc(nxt[0]) + ' at ' + nxt[1] + ' pts' : 'Max level reached 👑'}</span></div></div>
+    <div class="lvlbar"><i style="width:${xpPct}%"></i></div>
+    <div style="font-size:12.5px;color:#8fa8c4;margin-top:8px;position:relative">${s.points} pts${nxt ? ' · <b style="color:#34d3bd">' + (nxt[1] - s.points) + ' to go</b>' : ''}</div>`;
+
+  // WORK QUEUE
+  document.getElementById('queue').innerHTML = cs.map((c, i) => {
+    const pct = c.best != null ? Math.round(100 * c.best / c.points) : 0;
     return `
-    <tr><td><b>${esc(c.code)}</b><br><span style="font-size:12px;color:#64748b">${esc(c.title)}</span></td>
-      <td style="font-size:12.5px;color:#64748b">${esc(c.category)}</td>
+    <tr class="cc-anim" style="animation-delay:${.05 * i}s">
+      <td><b>${esc(c.code)}</b><br><span style="font-size:12px;color:#64748b">${esc(c.title)}</span></td>
       <td><span class="pill p-${c.difficulty.toLowerCase()}">${esc(c.difficulty)}</span></td>
       <td>${statusPill(c)}</td>
-      <td><b>${pct != null ? pct + '%' : '—'}</b></td>
-      <td>${c.attempts}</td>
-      <td><a class="btn ${c.completed ? 'btn-line' : 'btn-teal'} btn-sm" href="/play?caseId=${c.id}">${c.completed ? 'Retry' : c.attempts ? 'Continue' : 'Start'}</a></td>
+      <td><div class="caseprog"><div class="bar"><i style="width:${pct}%"></i></div><span style="font-size:12px;font-weight:700">${c.best != null ? pct + '%' : '—'}</span></div></td>
+      <td style="text-align:right"><a class="btn ${c.completed ? 'btn-line' : 'btn-teal'} btn-sm" href="/play?caseId=${c.id}">${c.completed ? 'Retry' : c.attempts ? 'Continue' : 'Start'}</a></td>
     </tr>`; }).join('');
 
+  // ALERTS
   const alerts = [];
-  cs.filter(c => c.attempts === 0).slice(0, 3).forEach(c =>
-    alerts.push(`<div class="alert-item"><span class="ai">⚪</span><div><b>${esc(c.code)}</b> not started yet — begin with the fundamentals.</div></div>`));
-  cs.filter(c => c.best != null && Math.round(100 * c.best / c.points) < 70).slice(0, 3).forEach(c =>
-    alerts.push(`<div class="alert-item"><span class="ai">🟡</span><div><b>${esc(c.code)}</b> best ${Math.round(100 * c.best / c.points)}% — review recommended before moving on.</div></div>`));
+  cs.filter(c => c.attempts === 0).slice(0, 2).forEach(c =>
+    alerts.push(`<div class="alert-item"><span class="ai">💡</span><div><b>${esc(c.code)}</b> not started yet — begin with the fundamentals.</div></div>`));
+  cs.filter(c => c.best != null && Math.round(100 * c.best / c.points) < 70).slice(0, 2).forEach(c =>
+    alerts.push(`<div class="alert-item"><span class="ai">⚠️</span><div><b>${esc(c.code)}</b> best ${Math.round(100 * c.best / c.points)}% — review before moving on.</div></div>`));
+  if (insights && insights.nudges && insights.nudges.length)
+    alerts.push(`<div class="alert-item"><span class="ai">🎯</span><div>${esc(insights.nudges[0])}</div></div>`);
   if (!alerts.length) alerts.push(`<div class="alert-item"><span class="ai">✅</span><div>All clear — every case attempted. Push your best scores higher.</div></div>`);
   document.getElementById('alerts').innerHTML = alerts.join('');
 
-  const { cur, nxt } = nextLevel(s.points);
-  const pct = nxt ? Math.min(100, Math.round(100 * (s.points - cur[1]) / (nxt[1] - cur[1]))) : 100;
-  document.getElementById('lvlprog').innerHTML = `
-    <div style="font-size:13.5px"><b>${esc(cur[0])}</b>${nxt ? ` <span style="color:#64748b">→ ${esc(nxt[0])} at ${nxt[1]} pts</span>` : ' <span style="color:#64748b">— max level reached</span>'}</div>
-    <div class="lvlbar"><i style="width:${pct}%"></i></div>
-    <div style="font-size:12.5px;color:#64748b">${s.points} pts · ${nxt ? (nxt[1] - s.points) + ' to go' : 'top of the ladder'}</div>`;
-
+  // CHART
   document.getElementById('chart').innerHTML = cs.map(c => {
     const pct = c.best != null ? Math.round(100 * c.best / c.points) : null;
-    return `
-    <div class="bar-row"><div class="bl">${esc(c.code)}</div>
-      <div class="bt"><i style="width:${pct || 0}%"></i></div>
+    const col = pct == null ? '#e2e8f0' : pct >= 80 ? 'linear-gradient(90deg,#0e9f8a,#34d3bd)' : pct >= 60 ? 'linear-gradient(90deg,#f59e0b,#fbbf24)' : 'linear-gradient(90deg,#ef4444,#f87171)';
+    return `<div class="bar-row"><div class="bl">${esc(c.code)}</div>
+      <div class="bt"><i style="width:${pct || 0}%;background:${col}"></i></div>
       <div class="bv">${pct != null ? pct + '%' : '—'}</div></div>`; }).join('');
 
+  // RECENT
   document.getElementById('recent').innerHTML = dash.recent.length ? `
-    <table class="dtable"><tr><th>Case</th><th>Score</th><th>Date</th></tr>
+    <table class="dtable"><thead><tr><th>Case</th><th>Score</th><th>Date</th></tr></thead><tbody>
     ${dash.recent.map(r => `<tr><td><b>${esc(r.code)}</b></td><td><b>${r.score}/${r.max_score}</b></td>
-      <td style="color:#64748b">${esc((r.completed_at || '').slice(0, 10))}</td></tr>`).join('')}</table>`
-    : `<div class="empty">No attempts yet — your activity will appear here.</div>`;
+      <td style="color:#64748b;font-size:12.5px">${esc((r.completed_at || '').slice(0, 10))}</td></tr>`).join('')}</tbody></table>`
+    : `<div class="empty"><div class="empty-ic">🕘</div><h4>No activity yet</h4><p>Your training runs will appear here.</p></div>`;
 })();
 </script>
 </body>
