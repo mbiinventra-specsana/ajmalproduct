@@ -1,29 +1,89 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Patients — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<title>Patients — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css">
+<style>
+/* ===== Patients ULTRA ===== */
+.pt-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:24px 28px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.pt-hero::before{content:"";position:absolute;top:-50px;right:10%;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.pt-hero h1{margin:0 0 6px;font-size:22px;position:relative}
+.pt-hero .psub{color:#b9d4e8;margin:0;font-size:13.5px;position:relative}
+.pt-hero .act-row{position:relative;margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pt-hero .hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 14px;font-size:13px;backdrop-filter:blur(6px)}
+.pt-hero .hstat b{font-size:16px}
+.pav{width:40px;height:40px;border-radius:12px;color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.pfilters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.pf{padding:8px 15px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;font-size:12.5px;font-weight:600;
+  color:#64748b;cursor:pointer;transition:all .16s}
+.pf:hover{border-color:#0e9f8a;color:#0f2743}
+.pf.on{background:#0f2743;color:#fff;border-color:#0f2743}
+.ptabs{display:flex;gap:4px;border-bottom:2px solid #eef2f7;margin-bottom:16px}
+.ptab{padding:10px 16px;font-size:13.5px;font-weight:600;color:#64748b;cursor:pointer;border:none;background:none;
+  border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .16s}
+.ptab:hover{color:#0f2743}
+.ptab.on{color:#0e9f8a;border-bottom-color:#0e9f8a}
+.tl{position:relative;padding-left:26px}
+.tl::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:#e8eef4;border-radius:2px}
+.tl-ev{position:relative;padding:0 0 16px}
+.tl-ev::before{content:"";position:absolute;left:-24px;top:4px;width:12px;height:12px;border-radius:50%;
+  background:#fff;border:2.5px solid #0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.12)}
+.tl-ev .tl-t{font-size:12px;color:#94a3b8;font-weight:600}
+.qact{display:flex;gap:6px}
+.qact .btn{padding:6px 10px;font-size:12px}
+.kv-card{background:#f8fafc;border-radius:12px;padding:6px 14px}
+.kv{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #eef2f7;font-size:13px}
+.kv:last-child{border:none}
+.kv span{color:#64748b}
+.cov-card{display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border:1px solid #eef2f7;
+  border-radius:12px;padding:12px 16px;margin-bottom:10px;transition:all .16s}
+.cov-card:hover{border-color:#0e9f8a;box-shadow:0 2px 10px rgba(14,159,138,.08)}
+@keyframes ccIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pt-anim{animation:ccIn .4s cubic-bezier(.2,.8,.2,1) backwards}
+</style></head>
 <body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
-  <div class="phead"><div>
-    <div class="eyebrow2">Patient Management</div><h1>Patients</h1>
-    <p class="psub">Patient records used across charge entry, claims and eligibility training.</p>
-  </div><button class="btn btn-teal btn-sm" id="addBtn">+ Add Patient</button></div>
-  <div id="kpiSk" class="skel-cards" style="margin-bottom:14px"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr);display:none"></div>
-  <div class="panel"><div class="prow"><h3 style="margin:0">Patient Records</h3>
-    <input class="search" id="q" placeholder="Search name, ID, phone, DOB…"></div>
-    <div id="tblSk"><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div></div>
-    <div class="twrap" id="twrap" style="display:none"><table><thead><tr>
-      <th>Patient</th><th>DOB · Age</th><th>Gender</th><th>Phone</th><th>Status</th><th>Coverage</th><th></th>
-    </tr></thead><tbody id="rows"></tbody></table></div>
-    <div class="empty" id="empty" style="display:none">No patients match your search. 🔍</div>
+  <div class="pt-hero pt-anim">
+    <div class="eyebrow2" style="color:#34d3bd">Patient Management</div>
+    <h1>👥 Patients</h1>
+    <p class="psub">Every claim starts with a patient — manage demographics, coverage and visit history.</p>
+    <div class="act-row">
+      <button class="btn-hero" id="addBtn" style="padding:9px 18px;font-size:13px">+ Add Patient</button>
+      <span class="hstat">Total <b id="hTotal">—</b></span>
+      <span class="hstat">With coverage <b id="hCov" style="color:#5eead4">—</b></span>
+      <span class="hstat" id="hDupW" style="display:none">⚠ Duplicates <b id="hDup" style="color:#fbbf24">—</b></span>
+    </div>
   </div>
-  <div class="info-panel">🔒 <b>Training data only:</b> all records here are for training purposes only. Never real patient information.</div>
+
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
+
+  <div class="panel pt-anim" style="animation-delay:.08s">
+    <div class="prow"><h3 style="margin:0">Patient Records</h3>
+      <input class="search" id="q" placeholder="Search name, ID, phone, DOB…"></div>
+    <div class="pfilters" id="pfilters">
+      <button class="pf on" data-f="all">All</button>
+      <button class="pf" data-f="active">Active</button>
+      <button class="pf" data-f="coverage">With coverage</button>
+      <button class="pf" data-f="nocov">No coverage</button>
+      <button class="pf" data-f="dups">⚠ Duplicates</button>
+    </div>
+    <div id="tblSk"><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div></div>
+    <div class="twrap" id="twrap" style="display:none"><table class="wq-table"><thead><tr>
+      <th>Patient</th><th>DOB · Age</th><th>Contact</th><th>Status</th><th>Coverage</th><th style="text-align:right">Actions</th>
+    </tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="empty" id="empty" style="display:none"><div class="empty-ic">🔍</div><h4>No patients found</h4><p>Try a different search or filter.</p></div>
+  </div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
-let pts = [], q = '', covBy = {}, covList = [];
+let pts = [], q = '', qf = 'all', covBy = {}, covList = [];
 const age = dob => { const d = new Date(dob + 'T00:00:00'); if (isNaN(d)) return '—'; let a = new Date().getFullYear() - d.getFullYear(); const m = new Date().getMonth() - d.getMonth(); if (m < 0 || (m === 0 && new Date().getDate() < d.getDate())) a--; return a; };
 const initials = n => n.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-const avColor = code => ['#0e9f8a', '#6366f1', '#d946ef', '#f59e0b', '#0ea5e9'][String(code).charCodeAt(3) % 5];
+const AVC = ['linear-gradient(135deg,#0e9f8a,#34d3bd)','linear-gradient(135deg,#6366f1,#a5b4fc)','linear-gradient(135deg,#d946ef,#f0abfc)','linear-gradient(135deg,#f59e0b,#fcd34d)','linear-gradient(135deg,#0ea5e9,#7dd3fc)'];
+const avBg = code => AVC[String(code).charCodeAt(3) % 5];
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('patients', u);
@@ -32,77 +92,109 @@ async function load() {
   pts = d.patients; covList = ins.insurance;
   covBy = {};
   covList.forEach(r => { (covBy[r.patient_code] = covBy[r.patient_code] || []).push(r); });
-  // duplicate detection: same phone or same name+dob
   const seen = {}, dups = new Set();
   pts.forEach(p => {
-    const k1 = p.phone.replace(/\D/g, ''), k2 = p.name.toLowerCase() + '|' + p.dob;
-    [k1, k2].forEach(k => { if (seen[k]) { dups.add(seen[k]); dups.add(p.code); } else seen[k] = p.code; });
+    const k1 = (p.phone || '').replace(/\D/g, ''), k2 = p.name.toLowerCase() + '|' + p.dob;
+    [k1, k2].forEach(k => { if (k && seen[k]) { dups.add(seen[k]); dups.add(p.code); } else if (k) seen[k] = p.code; });
   });
   window._dups = dups;
-  document.getElementById('kpiSk').style.display = 'none';
-  const kp = document.getElementById('kpis'); kp.style.display = 'grid';
-  kp.innerHTML = [
-    ['Patients', pts.length, 'In database'],
-    ['With coverage', Object.keys(covBy).length, 'Insurance on file'],
-    ['Active', pts.filter(p => p.status === 'Active').length, 'Status active'],
-    ['Possible duplicates', dups.size, dups.size ? 'Review needed' : 'All clean'],
-  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  const withCov = Object.keys(covBy).length, act = pts.filter(p => p.status === 'Active').length;
+  document.getElementById('hTotal').textContent = pts.length;
+  document.getElementById('hCov').textContent = withCov;
+  if (dups.size) { document.getElementById('hDupW').style.display = ''; document.getElementById('hDup').textContent = dups.size; }
+  document.getElementById('kpis').innerHTML = [
+    ['👥', 'Total patients', pts.length, 'In database'],
+    ['🛡️', 'With coverage', withCov, pts.length ? Math.round(100*withCov/pts.length) + '% covered' : 'Add insurance'],
+    ['✅', 'Active', act, 'Ready for billing'],
+    ['⚠️', 'Duplicates', dups.size, dups.size ? 'Review needed' : 'All clean'],
+  ].map(([ic, l, v, s], i) => `<div class="kpi pt-anim" style="animation-delay:${.04*i}s"><span class="kic">${ic}</span><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
   document.getElementById('tblSk').style.display = 'none';
   document.getElementById('twrap').style.display = 'block';
   render();
 }
+function filtered() {
+  return pts.filter(p => {
+    if (!(p.code + ' ' + p.name + ' ' + (p.phone||'') + ' ' + p.dob).toLowerCase().includes(q)) return false;
+    const cov = (covBy[p.code] || []).length > 0, dup = (window._dups || new Set()).has(p.code);
+    if (qf === 'active') return p.status === 'Active';
+    if (qf === 'coverage') return cov;
+    if (qf === 'nocov') return !cov;
+    if (qf === 'dups') return dup;
+    return true;
+  });
+}
 function render() {
-  const rows = pts.filter(p => (p.code + ' ' + p.name + ' ' + p.phone + ' ' + p.dob).toLowerCase().includes(q));
+  const rows = filtered();
   document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
-  document.getElementById('rows').innerHTML = rows.map(p => {
+  document.getElementById('twrap').style.display = rows.length ? 'block' : 'none';
+  document.getElementById('rows').innerHTML = rows.map((p, ix) => {
     const cov = covBy[p.code] || [];
     const dup = (window._dups || new Set()).has(p.code);
-    return `<tr>
-    <td><div style="display:flex;align-items:center;gap:10px"><span style="width:36px;height:36px;border-radius:50%;background:${avColor(p.code)};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none">${esc(initials(p.name))}</span>
-    <div><b>${esc(p.code)}</b>${dup ? ' <span class="bdg b-amber" title="Possible duplicate">⚠ dup</span>' : ''}<br><span style="font-size:13px">${esc(p.name)}</span></div></div></td>
-    <td>${esc(p.dob)}<br><span style="color:#64748b;font-size:12px">Age ${age(p.dob)}</span></td>
-    <td>${esc(p.gender)}</td><td>${esc(p.phone)}</td>
-    <td><span class="bdg ${p.status === 'Active' ? 'b-green' : 'b-red'}">${esc(p.status || 'Active')}</span></td>
-    <td>${cov.length ? `<span class="bdg b-green">${cov.length} plan${cov.length > 1 ? 's' : ''}</span><br><span style="font-size:12px;color:#64748b">${esc(cov[0].payer)}</span>` : '<span class="bdg b-red">No coverage</span>'}</td>
-    <td style="white-space:nowrap"><button class="btn btn-line btn-sm" onclick="viewPt('${p.code}')">Profile</button>
-    <button class="btn btn-ghost btn-sm" onclick="editPt('${p.code}')">Edit</button></td></tr>`;
+    return `<tr class="pt-anim" style="animation-delay:${Math.min(ix * .03, .3)}s">
+    <td><div style="display:flex;align-items:center;gap:12px">
+      <span class="pav" style="background:${avBg(p.code)}">${esc(initials(p.name))}</span>
+      <div><b>${esc(p.code)}</b>${dup ? ' <span class="bdg b-amber" title="Possible duplicate record">⚠</span>' : ''}<br>
+      <span style="font-size:13.5px;font-weight:600">${esc(p.name)}</span></div></div></td>
+    <td><b>${esc(p.dob)}</b><br><span style="color:#64748b;font-size:12px">Age ${age(p.dob)} · ${esc(p.gender)}</span></td>
+    <td style="font-size:12.5px">📞 ${esc(p.phone || '—')}<br><span style="color:#64748b">✉️ ${esc(p.email || '—')}</span></td>
+    <td><span class="bdg ${p.status === 'Active' ? 'b-green' : 'b-red'}"><span class="dot"></span>${esc(p.status || 'Active')}</span></td>
+    <td>${cov.length ? `<span class="bdg b-green"><span class="dot"></span>${cov.length} plan${cov.length > 1 ? 's' : ''}</span><br><span style="font-size:12px;color:#64748b">${esc(cov[0].payer)}</span>` : '<span class="bdg b-red"><span class="dot"></span>No coverage</span>'}</td>
+    <td style="text-align:right;white-space:nowrap"><div class="qact" style="justify-content:flex-end">
+      <button class="btn btn-teal btn-sm" onclick="viewPt('${p.code}')">Profile</button>
+      <button class="btn btn-line btn-sm" onclick="editPt('${p.code}')">Edit</button>
+    </div></td></tr>`;
   }).join('');
 }
+let _ptab = 'ov';
 async function viewPt(code) {
   const p = pts.find(x => x.code === code), cov = covBy[code] || [];
-  openModal('Patient Profile — ' + code, `<div class="skel skel-line w80"></div><div class="skel skel-line"></div>`);
+  _ptab = 'ov';
+  openModal(`<div style="display:flex;align-items:center;gap:12px"><span class="pav" style="background:${avBg(p.code)}">${esc(initials(p.name))}</span><div><b style="font-size:16px">${esc(p.name)}</b><br><span style="color:#64748b;font-size:12px">${esc(p.code)}</span></div></div>`,
+    `<div class="skel skel-line w80"></div><div class="skel skel-line"></div>`);
   let hist = [];
   try { hist = (await api('/api/rcm/patients/' + code + '/history')).events; } catch {}
-  const prioBadge = pr => `<span class="bdg ${pr === 'primary' ? 'b-green' : pr === 'secondary' ? 'b-amber' : 'b-blue'}">${esc(pr)}</span>`;
+  window._pshow = t => { _ptab = t; paintTabs(p, cov, hist); };
+  paintTabs(p, cov, hist);
+}
+function paintTabs(p, cov, hist) {
+  const prioBadge = pr => `<span class="bdg ${pr === 'primary' ? 'b-green' : pr === 'secondary' ? 'b-amber' : 'b-blue'}">${esc(pr || 'primary')}</span>`;
   const evIcon = t => t === 'charge' ? '🧾' : t === 'claim' ? '📄' : '🏥';
-  openModal('Patient Profile — ' + code, `
-    <div class="frow">
-      <div class="fld"><label>Demographics</label><div style="background:#f8fafc;border-radius:10px;padding:12px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="width:44px;height:44px;border-radius:50%;background:${avColor(p.code)};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700">${esc(initials(p.name))}</span>
-        <div><b style="font-size:16px">${esc(p.name)}</b><br><span style="color:#64748b;font-size:12px">${esc(p.code)}</span></div></div>
-        <div style="font-size:13px;line-height:1.9">🎂 ${esc(p.dob)} (Age ${age(p.dob)})<br>⚧ ${esc(p.gender)}<br><span class="bdg ${p.status === 'Active' ? 'b-green' : 'b-red'}">${esc(p.status || 'Active')}</span></div></div></div>
-      <div class="fld"><label>Contact</label><div style="background:#f8fafc;border-radius:10px;padding:12px;font-size:13px;line-height:2">
-        📞 ${esc(p.phone)}<br>✉️ ${esc(p.email || '—')}<br>📍 ${esc(p.address || '—')}</div></div>
-    </div>
-    <div class="fld"><label>Coverage (${cov.length})</label>
-      ${cov.length ? cov.map(c => `<div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:6px">
-        <div><b>${esc(c.payer)}</b> <span style="color:#64748b;font-size:12px">${esc(c.plan)} · ${esc(c.type)}</span><br><code style="font-size:12px">${esc(c.member_id)}</code></div>
-        <div style="text-align:right">${prioBadge(c.priority || 'primary')}<br><span class="bdg ${c.status === 'ACTIVE' ? 'b-green' : 'b-red'}" style="margin-top:4px;display:inline-block">${esc(c.status)}</span></div></div>`).join('')
-      : '<div class="empty">No insurance on file.</div>'}</div>
-    <div class="fld"><label>Visit &amp; Claim Timeline</label>
-      ${hist.length ? `<div style="max-height:260px;overflow:auto">${hist.map(e => `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #eef2f7;font-size:13px">
-        <span style="font-size:16px">${evIcon(e.t)}</span>
-        <div><b>${e.t === 'charge' ? 'Charge ' + esc(e.cpt) + ' · ' + money(e.amount) : e.t === 'claim' ? 'Claim ' + esc(e.claim_no) + ' · ' + esc(e.status) : 'Eligibility · ' + esc(e.result)}</b><br>
-        <span style="color:#64748b">${esc(e.d || '')}${e.payer ? ' · ' + esc(e.payer) : ''}</span></div></div>`).join('')}</div>`
-      : '<div class="empty">No activity yet — charges, claims and eligibility checks will appear here.</div>'}</div>
-    <div class="mfoot" style="padding:14px 0 0;border:0;display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btn-ghost btn-sm" onclick="editPt('${p.code}')">Edit</button>
-      <a class="btn btn-teal btn-sm" href="/eligibility?patient=${p.code}">Verify eligibility →</a></div>`);
+  let body = `<div class="ptabs">
+      <button class="ptab ${_ptab === 'ov' ? 'on' : ''}" onclick="_pshow('ov')">Overview</button>
+      <button class="ptab ${_ptab === 'cov' ? 'on' : ''}" onclick="_pshow('cov')">Coverage (${cov.length})</button>
+      <button class="ptab ${_ptab === 'tl' ? 'on' : ''}" onclick="_pshow('tl')">Timeline (${hist.length})</button></div>`;
+  if (_ptab === 'ov') body += `
+    <div class="frow"><div class="fld"><label>Demographics</label><div class="kv-card">
+      <div class="kv"><span>🎂 Date of birth</span><b>${esc(p.dob)} (Age ${age(p.dob)})</b></div>
+      <div class="kv"><span>⚧ Gender</span><b>${esc(p.gender)}</b></div>
+      <div class="kv"><span>Status</span><span class="bdg ${p.status === 'Active' ? 'b-green' : 'b-red'}"><span class="dot"></span>${esc(p.status || 'Active')}</span></div></div></div>
+    <div class="fld"><label>Contact</label><div class="kv-card">
+      <div class="kv"><span>📞 Phone</span><b>${esc(p.phone || '—')}</b></div>
+      <div class="kv"><span>✉️ Email</span><b>${esc(p.email || '—')}</b></div>
+      <div class="kv"><span>📍 Address</span><b>${esc(p.address || '—')}</b></div></div></div></div>`;
+  if (_ptab === 'cov') body += cov.length ? cov.map(c => `
+    <div class="cov-card"><div><b style="font-size:14px">${esc(c.payer)}</b><br>
+      <span style="font-size:12.5px;color:#64748b">${esc(c.plan)} · ${esc(c.type)}</span><br>
+      <code style="font-size:12px;background:#f1f5f9;padding:2px 8px;border-radius:6px">${esc(c.member_id)}</code></div>
+      <div style="text-align:right">${prioBadge(c.priority)}<br>
+      <span class="bdg ${c.status === 'ACTIVE' ? 'b-green' : 'b-red'}" style="margin-top:6px;display:inline-block"><span class="dot"></span>${esc(c.status)}</span></div></div>`).join('')
+    : `<div class="empty"><div class="empty-ic">🛡️</div><h4>No coverage</h4><p>Add insurance for this patient to enable billing.</p></div>`;
+  if (_ptab === 'tl') body += hist.length ? `<div class="tl">${hist.map(e => `
+    <div class="tl-ev"><div class="tl-t">${esc((e.d || '').slice(0, 10))}</div>
+      <div style="font-size:13.5px"><span style="font-size:15px">${evIcon(e.t)}</span> <b>${e.t === 'charge' ? 'Charge ' + esc(e.cpt) + ' · ' + money(e.amount) : e.t === 'claim' ? 'Claim ' + esc(e.claim_no) + ' · ' + esc(e.status) : 'Eligibility · ' + esc(e.result)}</b><br>
+      <span style="color:#64748b;font-size:12.5px">${e.payer ? esc(e.payer) + ' · ' : ''}${esc(e.d || '').slice(11)}</span></div></div>`).join('')}</div>`
+    : `<div class="empty"><div class="empty-ic">📋</div><h4>No activity yet</h4><p>Charges, claims and eligibility checks will appear here.</p></div>`;
+  body += `<div class="mfoot" style="padding:14px 0 0;border:0;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="editPt('${p.code}')">✏️ Edit</button>
+      <a class="btn btn-line btn-sm" href="/charges">+ Charge</a>
+      <a class="btn btn-teal btn-sm" href="/eligibility?patient=${p.code}">Verify eligibility →</a></div>`;
+  const mb = document.querySelector('.modal-body');
+  if (mb) mb.innerHTML = body;
 }
 function editPt(code) {
   const p = pts.find(x => x.code === code);
   openModal('Edit Patient — ' + code, `
-    <div class="fld"><label>Full name</label><div><b>${esc(p.name)}</b> <span style="color:#64748b;font-size:12px">(name &amp; DOB are locked for training integrity)</span></div></div>
+    <div class="fld"><label>Full name</label><div><b>${esc(p.name)}</b> <span style="color:#64748b;font-size:12px">(name &amp; DOB locked for training integrity)</span></div></div>
     <div class="frow"><div class="fld"><label>Phone</label><input id="e_phone" value="${esc(p.phone)}"></div>
     <div class="fld"><label>Email</label><input id="e_email" value="${esc(p.email || '')}" placeholder="patient@example.com"></div></div>
     <div class="fld"><label>Address</label><input id="e_addr" value="${esc(p.address || '')}" placeholder="Street, City, ST ZIP"></div>
@@ -135,10 +227,8 @@ document.getElementById('addBtn').onclick = () => {
     w.querySelector('#asave').onclick = async (ev, force) => {
       const body = { name: g('#a_fn') + ' ' + g('#a_ln'), dob: g('#a_dob'), gender: g('#a_g'), phone: g('#a_ph'), email: g('#a_em'), address: g('#a_ad'), force: !!force };
       if (!g('#a_fn') || !g('#a_ln') || !g('#a_dob') || !g('#a_ph')) { alert('First name, last name, DOB and phone are required.'); return; }
-      try {
-        const r = await api('/api/rcm/patients', { method: 'POST', body });
-        closeModal(); load();
-      } catch (e) {
+      try { await api('/api/rcm/patients', { method: 'POST', body }); closeModal(); load(); }
+      catch (e) {
         if (e.status === 409 && e.duplicates) {
           w.querySelector('#dupWarn').innerHTML = `<div class="info-panel" style="border-color:#f59e0b;background:#fffbeb;margin:12px 0">
             ⚠️ <b>Possible duplicate:</b> ${e.duplicates.map(d => `${esc(d.code)} — ${esc(d.name)} (${esc(d.dob)})`).join('; ')}<br>
@@ -150,5 +240,10 @@ document.getElementById('addBtn').onclick = () => {
   });
 };
 document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
+document.querySelectorAll('.pf').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.pf').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); qf = b.dataset.f; render();
+});
 load();
-</script></body></html>
+</script>
+</body></html>
