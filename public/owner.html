@@ -991,7 +991,12 @@ const _loadedSec = {};
 async function loadOwnerSection(sec) {
   if (_loadedSec[sec]) return; // instant on revisit — no refetch
   _loadedSec[sec] = true;
-  if (sec === 'dashboard') { await Promise.all([loadDashboard(), loadInsights()]); }
+  if (sec === 'dashboard') {
+    await Promise.all([
+      loadDashboard().catch(e => console.error('dashboard:', e)),
+      loadInsights().catch(e => { console.error('insights:', e); document.getElementById('aiInsights').innerHTML = ''; }),
+    ]);
+  }
   else if (sec === 'analytics') await loadAnalytics();
   else if (sec === 'accounts') await loadUsers();
   else if (sec === 'announce') await loadAnnouncements();
