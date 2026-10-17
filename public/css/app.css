@@ -103,15 +103,24 @@ footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-
 .snav{flex:1;overflow:auto;padding:4px 12px 12px}
 .snav .grp{font-size:10.5px;font-weight:700;letter-spacing:1.8px;color:#5f7390;padding:16px 12px 7px;text-transform:uppercase}
 .snav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:500;
-  color:#a9bdd6;text-decoration:none;transition:all .15s ease;position:relative;margin-bottom:2px}
-.snav a:hover{background:rgba(255,255,255,.05);color:#fff;transform:translateX(2px)}
-.snav a.on{background:linear-gradient(90deg,rgba(14,159,138,.22),rgba(14,159,138,.08));color:#fff;font-weight:600}
+  color:#a9bdd6;text-decoration:none;transition:background .18s ease,color .18s ease,transform .18s ease,box-shadow .18s ease;position:relative;margin-bottom:2px;cursor:pointer}
+.snav a:hover{background:rgba(255,255,255,.07);color:#fff;transform:translateX(3px)}
+.snav a:hover .ic{opacity:1;color:#7ee8d8;transform:scale(1.08)}
+.snav a:active{transform:translateX(3px) scale(.98)}
+.snav a.on{background:linear-gradient(90deg,rgba(14,159,138,.28),rgba(14,159,138,.10));color:#fff;font-weight:600;box-shadow:inset 0 0 0 1px rgba(14,159,138,.25)}
 .snav a.on::before{content:"";position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:3px;
-  background:linear-gradient(180deg,#0e9f8a,#34d3bd);box-shadow:0 0 8px rgba(14,159,138,.6)}
-.snav a .ic{width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center;opacity:.85}
+  background:linear-gradient(180deg,#0e9f8a,#34d3bd);box-shadow:0 0 10px rgba(14,159,138,.7)}
+.snav a .ic{width:22px;height:22px;flex:none;display:flex;align-items:center;justify-content:center;opacity:.8;transition:all .18s ease}
 .snav a .ic svg{width:19px;height:19px}
 .snav a.on .ic{opacity:1;color:#34d3bd}
 .snav a .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snav .grp{animation:fadeSlideIn .3s ease}
+/* SPA page-transition loading bar */
+body.spa-loading::before{content:"";position:fixed;top:0;left:0;right:0;height:3px;z-index:9999;
+  background:linear-gradient(90deg,#0e9f8a,#34d3bd,#0e9f8a);background-size:200% 100%;animation:spaBar 1s linear infinite}
+@keyframes spaBar{to{background-position:-200% 0}}
+main.main{transition:opacity .22s ease,transform .22s ease}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
 .sfoot{padding:16px;border-top:1px solid rgba(255,255,255,.08);font-size:13px}
 .sfoot .uinfo{display:flex;align-items:center;gap:10px;margin-bottom:10px;color:#dbe6f5}
 .sfoot .uavatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0e9f8a,#34d3bd);

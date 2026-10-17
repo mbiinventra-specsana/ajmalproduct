@@ -10,7 +10,8 @@ async function api(path, opts = {}) {
   return data;
 }
 async function currentUser() {
-  try { const u = (await api('/api/me')).user; window._fnUser = u; return u; }
+  if (window._cu) return window._cu;
+  try { const u = (await api('/api/me')).user; window._fnUser = u; window._cu = u; return u; }
   catch { return null; }
 }
 async function requireLogin() {
@@ -20,6 +21,7 @@ async function requireLogin() {
 }
 async function logout() {
   try { await api('/api/logout', { method: 'POST' }); } catch {}
+  window._cu = null; window._fnUser = null;
   location.href = '/';
 }
 // page-level feature gate: accepts a menu ITEM key (granular) or a group key (legacy)
@@ -130,6 +132,15 @@ function applyFnGates(user) {
   else start();
 })();
 function shell(active, user) {
+  window._cu = window._cu || user; window._fnUser = user;
+  const sb0 = document.getElementById('sidebar');
+  if (sb0 && sb0.querySelector('.snav a')) {
+    // SPA mode: sidebar already built — just update active link + re-apply gates
+    const path = location.pathname;
+    sb0.querySelectorAll('.snav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === path));
+    applyFnGates(user);
+    return;
+  }
   const off = new Set(user.disabledFeatures || []); // per-student feature gates
   const nav = [
     ['workspace', 'Workspace', [
@@ -212,3 +223,67 @@ function adminShell(active, user) {
       <div style="margin-top:10px"><span class="badge-fict">TRAINING MODE · fictional data</span></div>
     </div>`;
 }
+
+// ===== SPA navigation (student side): menu clicks load without full refresh =====
+let _spaBusy = false;
+async function spaGo(href, push = true) {
+  if (_spaBusy || !href || href === location.pathname) return;
+  // only same-origin student pages
+  if (!href.startsWith('/')) { location.href = href; return; }
+  if (href.startsWith('/owner') || href.startsWith('/login') || href === '/') { location.href = href; return; }
+  _spaBusy = true;
+  document.body.classList.add('spa-loading');
+  const main = document.querySelector('main.main');
+  try {
+    const res = await fetch(href, { credentials: 'same-origin' });
+    if (!res.ok) throw 0;
+    const html = await res.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const newMain = doc.querySelector('main.main');
+    if (!newMain) throw 0;
+    // fade out, swap, fade in
+    if (main) { main.style.opacity = '0'; main.style.transform = 'translateY(8px)'; }
+    await new Promise(r => setTimeout(r, 140));
+    if (main) main.replaceWith(newMain);
+    // update title
+    const t = doc.querySelector('title');
+    if (t) document.title = t.textContent;
+    // update sidebar active
+    document.querySelectorAll('.snav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === href));
+    if (push) history.pushState({ spa: 1 }, '', href);
+    window.scrollTo({ top: 0 });
+    // execute the page's inline script in a block scope (avoids const redeclare on revisit)
+    const sc = doc.querySelector('main.main') ? null : null;
+    doc.querySelectorAll('script').forEach(scr => {
+      if (scr.src) return; // app.js already loaded
+      const code = scr.textContent || '';
+      if (!code.trim()) return;
+      try { (0, eval)('{ ' + code + ' }'); }
+      catch (e) { console.warn('spa script', e); }
+    });
+    const nm = document.querySelector('main.main');
+    if (nm) { nm.style.opacity = '0'; nm.style.transform = 'translateY(8px)'; requestAnimationFrame(() => { nm.style.transition = 'opacity .22s ease, transform .22s ease'; nm.style.opacity = '1'; nm.style.transform = 'none'; }); }
+  } catch {
+    location.href = href; // fallback to full load
+  } finally {
+    document.body.classList.remove('spa-loading');
+    _spaBusy = false;
+  }
+}
+// intercept sidebar + in-page student nav clicks
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href]');
+  if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const href = a.getAttribute('href');
+  if (!href || href.startsWith('#') || href.startsWith('http') || a.target === '_blank') return;
+  // only intercept sidebar nav for SPA; in-page links keep working via normal nav
+  // (sidebar has .snav; also intercept .cc-grid "Case Center →" style shortcuts)
+  if (a.closest('.snav')) { e.preventDefault(); spaGo(href); }
+});
+// browser back/forward
+window.addEventListener('popstate', e => {
+  if (e.state && e.state.spa) spaGo(location.pathname, false);
+  else if (document.querySelector('.snav a')) spaGo(location.pathname, false);
+});
+// mark initial load for popstate
+if (document.querySelector('.snav a')) history.replaceState({ spa: 1 }, '', location.pathname);
