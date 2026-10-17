@@ -247,7 +247,18 @@ function gfinish() {
 }
 async function bootGuided(u, caseId) {
   try {
-    const g = await api('/api/guided/' + caseId);
+    let g = await api('/api/guided/' + caseId);
+    // auto-start: if no run exists, start one silently so Continue works immediately
+    if (!g.run) {
+      try { await api('/api/guided/' + caseId + '/start', { method: 'POST' }); }
+      catch (e) {
+        // prereq lock — show friendly message
+        stage.innerHTML = `<div class="gcard"><h2>🔒 Locked</h2><p style="color:#5b6b85">${esc(e.message || 'Complete the prerequisite cases first.')}</p>
+          <div style="margin-top:18px"><a class="btn btn-teal" href="/training">← Case Center</a></div></div>`;
+        return;
+      }
+      g = await api('/api/guided/' + caseId);
+    }
     G = { caseId, code: g.case.code, title: g.case.title, steps: g.steps, idx: 0, ctx: {}, points: 0 };
     if (g.run && g.run.status !== 'completed') { G.idx = g.run.step_idx; G.points = g.run.points; }
     if (g.run && g.run.status === 'completed') {
