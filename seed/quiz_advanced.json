@@ -1,0 +1,504 @@
+[
+ {
+  "category": "QUIZ",
+  "code": "QUIZ-CODE",
+  "description": "Type exact CPT/ICD-10 codes like the CCA exam. Decimals and laterality required.",
+  "difficulty": "Advanced",
+  "points": 100,
+  "questions": [
+   {
+    "answer_text": "G90.522",
+    "explanation": "G90.522 \u2014 Disorders of the autonomic nervous system, causalgia of lower limb. The 5th/6th characters specify laterality and limb.",
+    "hint": "G90.5 category \u2014 needs 6 characters with decimal.",
+    "points": 10,
+    "q": "Type the ICD-10-CM code for: Reflex sympathetic dystrophy of the lower limb",
+    "qtype": "code_entry"
+   },
+   {
+    "answer_text": "64520-LT",
+    "explanation": "64520 is the injection code; -LT specifies left side. Laterality modifiers are required \u2014 without it the claim denies.",
+    "hint": "5-digit CPT + -LT modifier.",
+    "points": 10,
+    "q": "Type the CPT code (with laterality modifier) for: Paravertebral sympathetic nerve injection, left side, single level",
+    "qtype": "code_entry"
+   },
+   {
+    "answer_text": "77003",
+    "explanation": "77003 \u2014 fluoroscopic guidance for needle placement is separately reportable with 64520 per CPT Assistant.",
+    "hint": "77xxx radiology guidance code.",
+    "points": 10,
+    "q": "Type the CPT code for: Fluoroscopic guidance for needle placement (e.g., with 64520)",
+    "qtype": "code_entry"
+   },
+   {
+    "answer_text": "99213",
+    "explanation": "99213 \u2014 office/outpatient visit, established patient, low MDM. The most common E/M code in billing.",
+    "hint": "9921x series.",
+    "points": 10,
+    "q": "Type the CPT code for: Established patient office visit, low complexity (the workhorse E/M)",
+    "qtype": "code_entry"
+   },
+   {
+    "answer_text": "11102",
+    "explanation": "11102 \u2014 tangential biopsy of skin, single lesion. (11100 was deleted; 11102/11103 replaced it.)",
+    "hint": "1110x series.",
+    "points": 10,
+    "q": "Type the CPT code for: Skin biopsy, single lesion (tangential/shave)",
+    "qtype": "code_entry"
+   },
+   {
+    "answer_text": "36415",
+    "explanation": "36415 \u2014 collection of venous blood by venipuncture. Bundled into E/M under NCCI unless separately identifiable.",
+    "hint": "364xx series.",
+    "points": 10,
+    "q": "Type the CPT code for: Venipuncture \u2014 routine blood draw",
+    "qtype": "code_entry"
+   },
+   {
+    "answer_text": "20610",
+    "explanation": "20610 \u2014 arthrocentesis, aspiration and/or injection of a major joint (knee, shoulder, hip).",
+    "hint": "206xx series.",
+    "points": 10,
+    "q": "Type the CPT code for: Major joint injection \u2014 knee arthrocentesis with steroid",
+    "qtype": "code_entry"
+   },
+   {
+    "answer_text": "J1956",
+    "explanation": "J1956 \u2014 levofloxacin injection, 250 mg. 500 mg administered = 2 units on the claim line.",
+    "hint": "J-code, 4 digits + letter.",
+    "points": 10,
+    "q": "Type the HCPCS code for: Levofloxacin injection, per 250 mg (physician gave 500 mg)",
+    "qtype": "code_entry"
+   },
+   {
+    "answer_text": "99213-95",
+    "explanation": "99213-95 \u2014 the -95 modifier flags synchronous telehealth. POS 02 is also required on the claim.",
+    "hint": "E/M code + -95 modifier.",
+    "points": 10,
+    "q": "Type the CPT code (with modifier) for: Telehealth office visit, established patient, low complexity",
+    "qtype": "code_entry"
+   },
+   {
+    "answer_text": "E11.42",
+    "explanation": "E11.42 \u2014 Type 2 diabetes with diabetic polyneuropathy. Combination code; do not code neuropathy separately.",
+    "hint": "E11.4x \u2014 decimal required.",
+    "points": 10,
+    "q": "Type the ICD-10-CM code for: Type 2 diabetes mellitus with diabetic neuropathy",
+    "qtype": "code_entry"
+   }
+  ],
+  "sort": 999,
+  "title": "Code Entry Drills"
+ },
+ {
+  "category": "QUIZ",
+  "code": "QUIZ-EOB",
+  "description": "Read real EOB/ERA lines. Calculate adjustments, patient responsibility, and next steps.",
+  "difficulty": "Advanced",
+  "points": 80,
+  "questions": [
+   {
+    "answer": 1,
+    "explanation": "Contractual adjustment = Billed \u2212 Allowed = $150 \u2212 $100 = $50 (CO-45). The $20 copay (PR-3) is patient responsibility; the payer paid $80.",
+    "hint": "CO-45 is always Billed minus Allowed.",
+    "options": [
+     "$70",
+     "$50",
+     "$20",
+     "$30"
+    ],
+    "points": 10,
+    "q": "EOB line: CPT 99213, Billed $150, Allowed $100, Paid $80, codes: PR-3, CO-45 \u2014 see EOB below. What is the contractual adjustment?",
+    "qtype": "eob_math",
+    "eob": {
+     "cpt": "99213",
+     "billed": "$150",
+     "allowed": "$100",
+     "paid": "$80",
+     "codes": "PR-3, CO-45"
+    }
+   },
+   {
+    "answer": 2,
+    "explanation": "Patient owes the $20 copay (PR-3). The $50 (CO-45) is a contractual write-off \u2014 never bill the patient for CO amounts.",
+    "hint": "PR = patient responsibility. Which PR code is shown?",
+    "options": [
+     "$50",
+     "$70",
+     "$20",
+     "$0"
+    ],
+    "points": 10,
+    "q": "EOB line: CPT 99213, Billed $150, Allowed $100, Paid $80, codes: PR-3, CO-45. How much does the patient owe?",
+    "qtype": "eob_math",
+    "eob": {
+     "cpt": "99213",
+     "billed": "$150",
+     "allowed": "$100",
+     "paid": "$80",
+     "codes": "PR-3, CO-45"
+    }
+   },
+   {
+    "answer": 2,
+    "explanation": "CO-50 (medical necessity) is NOT a routine contractual adjustment. The $60 shortfall needs review \u2014 it may be appealable with documentation. Writing it off blindly loses revenue.",
+    "hint": "CO-50 is never an automatic write-off.",
+    "options": [
+     "Write off the $60 difference as contractual",
+     "Bill the patient for the $60 balance",
+     "Flag as possible underpayment / medical-necessity denial \u2014 review before writing off",
+     "Resubmit the claim immediately"
+    ],
+    "points": 10,
+    "q": "ERA line: CPT 20610, Billed $200, Allowed $120, Paid $60, codes: CO-50 \u2014 see EOB below. What is the correct next step?",
+    "qtype": "eob_math",
+    "eob": {
+     "cpt": "20610",
+     "billed": "$200",
+     "allowed": "$120",
+     "paid": "$60",
+     "codes": "CO-50"
+    }
+   },
+   {
+    "answer": 1,
+    "explanation": "CO-97 + M15 = bundled into another service (the E/M). The $25 is absorbed \u2014 do not bill the patient. Only appeal if a valid modifier (e.g., -59) was warranted.",
+    "hint": "M15 means 'separately billed services combined.'",
+    "options": [
+     "The claim was denied for timely filing",
+     "The venipuncture was bundled into the E/M \u2014 $0 is correct, do not bill the patient",
+     "The patient owes the full $25",
+     "The payer made an error \u2014 appeal immediately"
+    ],
+    "points": 10,
+    "q": "EOB line: CPT 36415, Billed $25, Allowed $25, Paid $0, codes: CO-97, M15 \u2014 see EOB below. What happened?",
+    "qtype": "eob_math",
+    "eob": {
+     "cpt": "36415",
+     "billed": "$25",
+     "allowed": "$25",
+     "paid": "$0",
+     "codes": "CO-97, M15"
+    }
+   },
+   {
+    "answer": 1,
+    "explanation": "$28 \u00f7 $140 allowed = 20% coinsurance (PR-2). The payer paid 80% ($112). Math always runs on the ALLOWED amount, not billed.",
+    "hint": "PR-2 \u00f7 Allowed amount.",
+    "options": [
+     "10%",
+     "20%",
+     "28%",
+     "30%"
+    ],
+    "points": 10,
+    "q": "ERA line: CPT 11102, Billed $180, Allowed $140, Paid $112, codes: PR-2 ($28) \u2014 see EOB below. What is the coinsurance percentage?",
+    "qtype": "eob_math",
+    "eob": {
+     "cpt": "11102",
+     "billed": "$180",
+     "allowed": "$140",
+     "paid": "$112",
+     "codes": "PR-2 ($28)"
+    }
+   },
+   {
+    "answer": 1,
+    "explanation": "Only the $20 copay (PR-3) is patient responsibility. The bundled 36415 (CO-97, $0 allowed) is absorbed by the provider. Total patient owes: $20.",
+    "hint": "CO amounts are never patient responsibility.",
+    "options": [
+     "$45",
+     "$20",
+     "$25",
+     "$70"
+    ],
+    "points": 10,
+    "q": "EOB: Two lines. Line 1: 99213, Billed $150, Allowed $100, Paid $80 (PR-3 $20). Line 2: 36415, Billed $25, Allowed $0, Paid $0 (CO-97) \u2014 see EOB below. What is the total patient responsibility?",
+    "qtype": "eob_math",
+    "eob": {
+     "lines": [
+      {
+       "cpt": "99213",
+       "billed": "$150",
+       "allowed": "$100",
+       "paid": "$80",
+       "codes": "PR-3 $20"
+      },
+      {
+       "cpt": "36415",
+       "billed": "$25",
+       "allowed": "$0",
+       "paid": "$0",
+       "codes": "CO-97"
+      }
+     ]
+    }
+   },
+   {
+    "answer": 1,
+    "explanation": "Paid = Allowed ($160) with no PR codes means the payer covered everything. $40 ($200\u2212$160) is the contractual write-off. Zero patient balance \u2014 close the account.",
+    "hint": "No PR codes = no patient share.",
+    "options": [
+     "The patient still owes a copay",
+     "Paid in full \u2014 $40 contractual adjustment, zero patient balance",
+     "The claim is underpaid \u2014 appeal",
+     "The deductible was applied"
+    ],
+    "points": 10,
+    "q": "ERA line: CPT 99214, Billed $200, Allowed $160, Paid $160, no PR codes \u2014 see EOB below. What does this tell you?",
+    "qtype": "eob_math",
+    "eob": {
+     "cpt": "99214",
+     "billed": "$200",
+     "allowed": "$160",
+     "paid": "$160",
+     "codes": "\u2014"
+    }
+   },
+   {
+    "answer": 0,
+    "explanation": "J1956 = 250 mg per unit. 500 mg \u00f7 250 = 2 units. Correct. (And PR-2 $18 = 20% of $90 allowed \u2014 the math checks out.)",
+    "hint": "J1956 descriptor: per 250 mg.",
+    "options": [
+     "Yes \u2014 2 units is correct for 500 mg",
+     "No \u2014 should be 1 unit",
+     "No \u2014 should be 4 units",
+     "Cannot tell from the EOB"
+    ],
+    "points": 10,
+    "q": "EOB line: CPT J1956 x2 units, Billed $120, Allowed $90, Paid $72, codes: PR-2 ($18). The physician actually gave 500 mg. Is the unit count correct?",
+    "qtype": "eob_math",
+    "eob": {
+     "cpt": "J1956 x2",
+     "billed": "$120",
+     "allowed": "$90",
+     "paid": "$72",
+     "codes": "PR-2 ($18)"
+    }
+   }
+  ],
+  "sort": 999,
+  "title": "EOB Math Drills"
+ },
+ {
+  "category": "QUIZ",
+  "code": "QUIZ-TRIAGE",
+  "description": "A denied line hits your queue. Pick the correct NEXT ACTION \u2014 like a real biller.",
+  "difficulty": "Advanced",
+  "points": 100,
+  "questions": [
+   {
+    "answer": 3,
+    "explanation": "CO-29 with no proof of timely filing = write-off. Appeals without proof are rarely overturned. Calendar payer limits to prevent this.",
+    "hint": "No proof of timely filing = ?",
+    "options": [
+     "Corrected Claim",
+     "New Claim",
+     "Appeal",
+     "Write-off",
+     "Bill Patient",
+     "Do Not Resubmit"
+    ],
+    "points": 10,
+    "q": "Denied line: CPT 99213, CO-29 \u2014 'Time limit for filing has expired.' DOS was 14 months ago, payer is Aetna commercial (120-day limit). No proof of timely filing exists. Next action?",
+    "qtype": "denial_triage",
+    "denial": {
+     "cpt": "99213",
+     "code": "CO-29",
+     "reason": "Time limit for filing has expired"
+    }
+   },
+   {
+    "answer": 0,
+    "explanation": "CO-16 + N286 is a fixable data error \u2014 add the referring NPI and send a CORRECTED claim. Never appeal a data error; appeals are for medical-necessity disputes.",
+    "hint": "Data error = correct, don't appeal.",
+    "options": [
+     "Corrected Claim",
+     "New Claim",
+     "Appeal",
+     "Write-off",
+     "Bill Patient",
+     "Do Not Resubmit"
+    ],
+    "points": 10,
+    "q": "Denied line: CPT 20610, CO-16 + N286 \u2014 'Missing/invalid referring provider identifier.' The referral was on file but the NPI was left off the claim. Next action?",
+    "qtype": "denial_triage",
+    "denial": {
+     "cpt": "20610",
+     "code": "CO-16 + N286",
+     "reason": "Missing/invalid referring provider identifier"
+    }
+   },
+   {
+    "answer": 3,
+    "explanation": "Routine venipuncture bundled into the E/M with no distinct-service justification = legitimate bundling. Write it off; do not bill the patient for CO-97.",
+    "hint": "Was the draw separately identifiable? No.",
+    "options": [
+     "Corrected Claim",
+     "New Claim",
+     "Appeal",
+     "Write-off",
+     "Bill Patient",
+     "Do Not Resubmit"
+    ],
+    "points": 10,
+    "q": "Denied line: CPT 36415, CO-97 \u2014 'Payment included in another service.' Billed with 99213 same DOS, no modifier. The blood draw was a routine part of the visit. Next action?",
+    "qtype": "denial_triage",
+    "denial": {
+     "cpt": "36415",
+     "code": "CO-97",
+     "reason": "Payment included in another service"
+    }
+   },
+   {
+    "answer": 5,
+    "explanation": "CO-18 with the original still processing = do NOT resubmit. Resubmitting creates another duplicate. Wait for the original to adjudicate, then work the outcome.",
+    "hint": "Original still processing \u2014 what happens if you resubmit?",
+    "options": [
+     "Corrected Claim",
+     "New Claim",
+     "Appeal",
+     "Write-off",
+     "Bill Patient",
+     "Do Not Resubmit"
+    ],
+    "points": 10,
+    "q": "Denied line: CPT 99213, CO-18 \u2014 'Duplicate claim.' You check and the original claim from last month is still in 'processing' status. Next action?",
+    "qtype": "denial_triage",
+    "denial": {
+     "cpt": "99213",
+     "code": "CO-18",
+     "reason": "Duplicate claim"
+    }
+   },
+   {
+    "answer": 2,
+    "explanation": "CO-197 \u2014 obtain the retro authorization NOW (within the 30-day window), then appeal with the auth number. Speed matters; after 30 days this becomes a write-off.",
+    "hint": "Retro auth window is still open.",
+    "options": [
+     "Corrected Claim",
+     "New Claim",
+     "Appeal",
+     "Write-off",
+     "Bill Patient",
+     "Do Not Resubmit"
+    ],
+    "points": 10,
+    "q": "Denied line: CPT 47562, CO-197 \u2014 'Precertification/authorization absent.' The surgery was elective and no auth was obtained. The payer allows retro auth within 30 days; DOS was 10 days ago. Next action?",
+    "qtype": "denial_triage",
+    "denial": {
+     "cpt": "47562",
+     "code": "CO-197",
+     "reason": "Precertification/authorization absent"
+    }
+   },
+   {
+    "answer": 1,
+    "explanation": "MA130 = unprocessable, NOT a denial. It was never adjudicated, so there is nothing to appeal or correct \u2014 submit a brand NEW claim with the DOB included.",
+    "hint": "MA130 is not appealable \u2014 what does that leave?",
+    "options": [
+     "Corrected Claim",
+     "New Claim",
+     "Appeal",
+     "Write-off",
+     "Bill Patient",
+     "Do Not Resubmit"
+    ],
+    "points": 10,
+    "q": "Rejected line: CPT 99213, MA130 \u2014 'Claim unprocessable.' The claim is missing the patient's date of birth entirely. Next action?",
+    "qtype": "denial_triage",
+    "denial": {
+     "cpt": "99213",
+     "code": "MA130",
+     "reason": "Claim unprocessable \u2014 missing DOB"
+    }
+   },
+   {
+    "answer": 0,
+    "explanation": "CO-22 = COB order error. Bill the PRIMARY (BCBS employer plan) first with a corrected claim, then send the balance to Medicare secondary. Wrong order always denies.",
+    "hint": "Which payer is primary for a working-aged patient?",
+    "options": [
+     "Corrected Claim",
+     "New Claim",
+     "Appeal",
+     "Write-off",
+     "Bill Patient",
+     "Do Not Resubmit"
+    ],
+    "points": 10,
+    "q": "Denied line: CPT 99213, CO-22 \u2014 'May be covered by another payer.' Patient has BCBS primary through employer and Medicare. You billed Medicare first. Next action?",
+    "qtype": "denial_triage",
+    "denial": {
+     "cpt": "99213",
+     "code": "CO-22",
+     "reason": "May be covered by another payer"
+    }
+   },
+   {
+    "answer": 3,
+    "explanation": "CO-50 with documentation that genuinely does not support medical necessity = write-off. An appeal without supporting documentation will fail and waste the appeal window.",
+    "hint": "Does the documentation support the service? No.",
+    "options": [
+     "Corrected Claim",
+     "New Claim",
+     "Appeal",
+     "Write-off",
+     "Bill Patient",
+     "Do Not Resubmit"
+    ],
+    "points": 10,
+    "q": "Denied line: CPT 95811, CO-50 \u2014 'Not medically necessary.' The sleep study was ordered for simple snoring with no documented apnea symptoms or comorbidities. Next action?",
+    "qtype": "denial_triage",
+    "denial": {
+     "cpt": "95811",
+     "code": "CO-50",
+     "reason": "Not medically necessary"
+    }
+   },
+   {
+    "answer": 0,
+    "explanation": "CO-11 here is a coding error \u2014 the lesion diagnosis (e.g., D48.5) was in the note but Z00.00 was coded. Fix the diagnosis and send a corrected claim.",
+    "hint": "The right diagnosis is in the note \u2014 what kind of fix is that?",
+    "options": [
+     "Corrected Claim",
+     "New Claim",
+     "Appeal",
+     "Write-off",
+     "Bill Patient",
+     "Do Not Resubmit"
+    ],
+    "points": 10,
+    "q": "Denied line: CPT 11102, CO-11 \u2014 'Diagnosis inconsistent with procedure.' Claim billed with Z00.00 (routine exam) but the note documents a suspicious lesion that was biopsied. Next action?",
+    "qtype": "denial_triage",
+    "denial": {
+     "cpt": "11102",
+     "code": "CO-11",
+     "reason": "Diagnosis inconsistent with procedure"
+    }
+   },
+   {
+    "answer": 0,
+    "explanation": "CO-4 = modifier error. -25 belongs ONLY on the E/M (99213), never on a procedure. Move the modifier and send a corrected claim.",
+    "hint": "-25 goes on which code type?",
+    "options": [
+     "Corrected Claim",
+     "New Claim",
+     "Appeal",
+     "Write-off",
+     "Bill Patient",
+     "Do Not Resubmit"
+    ],
+    "points": 10,
+    "q": "Denied line: CPT 99213-25 + 20610, CO-4 \u2014 'Procedure inconsistent with modifier.' The -25 was appended to 20610 (the injection) instead of 99213 (the E/M). The documentation supports both services. Next action?",
+    "qtype": "denial_triage",
+    "denial": {
+     "cpt": "99213-25 + 20610",
+     "code": "CO-4",
+     "reason": "Procedure inconsistent with modifier"
+    }
+   }
+  ],
+  "sort": 999,
+  "title": "Denial Triage Drills"
+ }
+]

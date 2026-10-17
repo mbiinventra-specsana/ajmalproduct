@@ -30,6 +30,29 @@
 .gdone{text-align:center;padding:40px 20px}
 .gdone .ring{width:110px;height:110px;margin:0 auto 18px}
 @media(max-width:640px){.gcard{padding:18px}.grail{overflow-x:auto;flex-wrap:nowrap}}
+/* ===== CHART PACKET: document tabs (EHR-style) ===== */
+.doc-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0;background:#0f2743;border-radius:14px 14px 0 0;padding:12px 14px 0}
+.doc-tab{padding:9px 16px;border-radius:10px 10px 0 0;background:rgba(255,255,255,.08);color:#b9d4e8;
+  font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.doc-tab:hover{background:rgba(255,255,255,.16);color:#fff}
+.doc-tab.on{background:#fff;color:#0f2743;box-shadow:0 -2px 8px rgba(0,0,0,.1)}
+.doc-viewer{background:#fff;border-radius:0 0 14px 14px;padding:20px 22px;margin-bottom:18px;
+  box-shadow:0 2px 14px rgba(15,39,67,.06);border:1px solid #eef2f7;border-top:none}
+.doc-viewer pre{white-space:pre-wrap;font-family:'Courier New',monospace;font-size:12.5px;line-height:1.65;
+  color:#334155;margin:0;background:#f8fafc;border-radius:10px;padding:16px;max-height:320px;overflow:auto}
+.doc-tag{display:inline-block;background:#0e9f8a;color:#fff;font-size:11px;font-weight:800;letter-spacing:1px;
+  padding:4px 12px;border-radius:20px;margin-bottom:12px;text-transform:uppercase}
+/* ===== RCM THREAD: timeline ===== */
+.rcm-timeline{position:relative;margin:0 0 18px;padding:0;list-style:none}
+.rcm-timeline::before{content:"";position:absolute;left:14px;top:8px;bottom:8px;width:3px;
+  background:linear-gradient(#0e9f8a,#34d3bd,#0f2743);border-radius:2px}
+.rcm-timeline li{position:relative;padding:0 0 18px 44px}
+.rcm-timeline li:last-child{padding-bottom:0}
+.rcm-timeline .tl-dot{position:absolute;left:6px;top:2px;width:20px;height:20px;border-radius:50%;
+  background:#0e9f8a;border:3px solid #fff;box-shadow:0 2px 8px rgba(14,159,138,.4)}
+.rcm-timeline .tl-day{font-size:11px;font-weight:800;color:#0e9f8a;letter-spacing:1px;text-transform:uppercase}
+.rcm-timeline .tl-event{font-weight:700;color:#0f2743;font-size:14px;margin:2px 0}
+.rcm-timeline .tl-det{font-size:13px;color:#64748b;line-height:1.55}
 /* ===== REAL-SOFTWARE CASE PLAYER ===== */
 .player{max-width:860px;margin:0 auto}
 .rc-head{background:linear-gradient(120deg,#0f2743,#143a5e 70%,#0e6f62);border-radius:18px;padding:26px 30px;color:#fff;
@@ -97,11 +120,31 @@
 let S = null; // {attemptId, questions, idx, score, max, caseTitle, caseCode}
 const stage = document.getElementById('stage');
 
+function renderDocs() {
+  if (!S.documents || !S.documents.length) return '';
+  const tabs = S.documents.map((d, i) =>
+    `<button class="doc-tab ${i === S.docTab ? 'on' : ''}" data-t="${i}">${esc(d.tab)}</button>`).join('');
+  const doc = S.documents[S.docTab || 0];
+  return `<div style="margin-bottom:18px">
+    <div class="doc-tabs">${tabs}</div>
+    <div class="doc-viewer"><span class="doc-tag">📋 Chart Packet — read before answering</span>
+      <pre>${esc(doc.content)}</pre></div></div>`;
+}
+function renderTimeline() {
+  if (!S.timeline || !S.timeline.length) return '';
+  const items = S.timeline.map(t => `<li><span class="tl-dot"></span>
+    <div class="tl-day">Day ${t.day}</div><div class="tl-event">${esc(t.event)}</div>
+    <div class="tl-det">${esc(t.details)}</div></li>`).join('');
+  return `<div class="rc-card"><h3><span class="rc-n">◷</span> Full RCM Thread — this case plays out over ${S.timeline[S.timeline.length-1].day} days</h3>
+    <ul class="rcm-timeline">${items}</ul></div>`;
+}
 function renderQ() {
   const q = S.questions[S.idx];
   const pct = Math.round(100 * S.idx / S.questions.length);
+  const showPacket = S.idx === 0; // show docs + timeline on first question
   stage.innerHTML = `
     <div class="pbar"><i style="width:${pct}%"></i></div>
+    ${showPacket ? renderTimeline() + renderDocs() : ''}
     <div class="qcard">
       <div class="qmeta"><span>${esc(S.caseCode)} · Question ${S.idx + 1} of ${S.questions.length}</span><span>Score: <b>${S.score}</b></span></div>
       <h2>${esc(q.prompt)}</h2>
@@ -117,6 +160,7 @@ function renderQ() {
     </div>`;
   document.getElementById('hintBtn').onclick = () => document.getElementById('hint').classList.add('show');
   stage.querySelectorAll('.opt').forEach(b => b.onclick = () => answer(q, +b.dataset.i));
+  stage.querySelectorAll('.doc-tab').forEach(t => t.onclick = () => { S.docTab = +t.dataset.t; renderQ(); });
 }
 
 async function answer(q, chosen) {
@@ -1387,7 +1431,8 @@ async function bootGuided(u, caseId) {
     const meta = await api('/api/cases/' + caseId);
     const a = await api('/api/attempts', { method: 'POST', body: { caseId: +caseId } });
     S = { attemptId: a.attemptId, questions: a.questions, idx: 0, score: 0,
-          caseCode: meta.code, caseTitle: meta.title };
+          caseCode: meta.code, caseTitle: meta.title,
+          documents: meta.documents || [], timeline: meta.timeline || [], docTab: 0 };
     renderQ();
   } catch (e) {
     stage.innerHTML = `<div class="empty">Could not load case: ${esc(e.message)}<br><a href="/training" style="color:#0e9f8a">← back</a></div>`;

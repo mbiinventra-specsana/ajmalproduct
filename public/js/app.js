@@ -78,6 +78,7 @@ const I = {
   zap: _svg('<path d="M13 2 3 14h8l-1 8 10-12h-8z"/>'),
   help: _svg('<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.6-3 4"/><circle cx="12" cy="17.5" r=".5" fill="currentColor"/>'),
   crown: _svg('<path d="m3 8 4 4 5-6 5 6 4-4-1.5 10h-15z"/><path d="M5 21h14"/>'),
+  doc: _svg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/>'),
   mega: _svg('<path d="m3 11 18-7-7 18-2.5-7.5z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'),
   monitor: _svg('<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>'),
   pulse: _svg('<path d="M22 12h-4l-3 8-6-16-3 8H2"/>'),
@@ -174,6 +175,7 @@ function shell(active, user) {
       ['denials', 'Denial Crime-Scene', '/labs/denials', 'search'],
       ['sprints', 'Coding Sprints', '/labs/sprints', 'zap'],
       ['quiz', 'Quiz Arena', '/labs/quiz', 'help'],
+      ['era', 'ERA Posting Sim', '/labs/era', 'doc'],
     ]],
   ];
   if (user.role === 'admin' || user.role === 'instructor') {

@@ -155,6 +155,7 @@ const MENU_ITEMS = [
   ['denials', 'Denial Crime-Scene', 'labs', 'search'],
   ['sprints', 'Coding Sprints', 'labs', 'zap'],
   ['quiz', 'Quiz Arena', 'labs', 'help'],
+  ['era', 'ERA Posting Sim', 'labs', 'doc'],
 ];
 const MENU_ITEM_KEYS = MENU_ITEMS.map(m => m[0]);
 // per-function catalog: [fnKey, label] — actions inside pages, toggleable per student
@@ -220,6 +221,7 @@ function menuItemForPath(p) {
   if (p.startsWith('/api/labs/denials')) return 'denials';
   if (p.startsWith('/api/labs/sprints')) return 'sprints';
   if (p.startsWith('/api/labs/quiz')) return 'quiz';
+  if (p.startsWith('/api/labs/era')) return 'era';
   return null;
 }
 async function requireAdmin(req, res, next) {
@@ -307,6 +309,7 @@ app.get('/labs/scrubber', send('labs/scrubber.html'));
 app.get('/labs/denials', send('labs/denials.html'));
 app.get('/labs/sprints', send('labs/sprints.html'));
 app.get('/labs/quiz', send('labs/quiz.html'));
+app.get('/labs/era', send('labs/era-posting.html'));
 app.get('/work-queue', send('work-queue.html'));
 app.get('/patients', send('patients.html'));
 app.get('/insurance', send('insurance.html'));
@@ -403,7 +406,7 @@ app.get('/api/dashboard', requireAuth, ah(cached('stu-dash', 30000, async (req) 
 app.get('/api/cases', requireAuth, ah(cached('stu-cases', 300000, async (req) => {
   const cases = await db.all(
     `SELECT c.*, (SELECT COUNT(*) FROM questions q WHERE q.case_id = c.id) AS qcount
-     FROM cases c WHERE c.active = 1 ORDER BY c.sort`);
+     FROM cases c WHERE c.active = 1 AND c.code NOT LIKE 'QUIZ-%' ORDER BY c.sort`);
   const prog = await db.all(
     `SELECT case_id, COUNT(*) AS attempts, MAX(score) AS best, SUM(status='completed') AS done
      FROM attempts WHERE user_id = ? GROUP BY case_id`, [req.session.userId]);
@@ -420,8 +423,12 @@ app.get('/api/cases/:id', requireAuth, ah(async (req, res) => {
   const c = await db.get('SELECT * FROM cases WHERE id = ? AND active = 1', [req.params.id]);
   if (!c) return res.status(404).json({ error: 'Case not found.' });
   const qs = await db.all('SELECT * FROM questions WHERE case_id = ? ORDER BY qnum', [c.id]);
+  let documents = [], timeline = [];
+  try { documents = JSON.parse(c.documents || '[]'); } catch (e) {}
+  try { timeline = JSON.parse(c.timeline || '[]'); } catch (e) {}
   res.json({ id: c.id, code: c.code, title: c.title, description: c.description,
     difficulty: c.difficulty, category: c.category, points: c.points,
+    documents, timeline,
     questions: qs.map(stripQ) });
 }));
 
@@ -785,7 +792,7 @@ app.post('/api/guided/:caseId/step/:idx', requireAuth, ah(async (req, res) => {
 }));
 
 app.post('/api/attempts', requireAuth, ah(async (req, res) => {
-  const c = await db.get('SELECT * FROM cases WHERE id = ? AND active = 1', [req.body?.caseId]);
+  const c = await db.get("SELECT * FROM cases WHERE id = ? AND active = 1 AND code NOT LIKE 'QUIZ-%'", [req.body?.caseId]);
   if (!c) return res.status(404).json({ error: 'Case not found.' });
   const max = (await db.get('SELECT COALESCE(SUM(points),0) AS m FROM questions WHERE case_id = ?', [c.id])).m;
   await db.run(`UPDATE attempts SET status='abandoned' WHERE user_id=? AND case_id=? AND status='started'`,
@@ -889,7 +896,39 @@ app.post('/api/labs/denials/grade', requireAuth, requireFn('lab-run'), ah(async 
     correct: { di: ci(d.diagnosisOptions), fi: ci(d.fixOptions), ci: ci(d.decisionOptions) } });
 }));
 
-const QUIZ_MODES = ['timed', 'weakest', 'missed', 'mix', 'sprint'];
+// ---------- ERA posting simulator ----------
+const stripEra = (e) => ({
+  id: e.id, title: e.title, difficulty: e.difficulty, payer: e.payer,
+  checkNo: e.checkNo, payDate: e.payDate, payee: e.payee, npi: e.npi,
+  patient: e.patient, claimNo: e.claimNo, dos: e.dos,
+  lines: e.lines.map((l, i) => ({ i, cpt: l.cpt, desc: l.desc, billed: l.billed,
+    allowed: l.allowed, paid: l.paid, carc: l.carc, carcLabel: l.carcLabel,
+    rarc: l.rarc, rarcLabel: l.rarcLabel, prCode: l.prCode, prLabel: l.prLabel, prAmt: l.prAmt })),
+});
+app.get('/api/labs/era', requireAuth, ah(async (req, res) => {
+  res.json({ fictional: true, actions: labData.ERA_ACTIONS, scenarios: labData.ERA.map(stripEra) });
+}));
+app.post('/api/labs/era/grade', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
+  const e = labData.ERA.find(x => x.id === req.body.scenarioId);
+  if (!e) return res.status(404).json({ error: 'Scenario not found.' });
+  const answers = req.body.lines || [];
+  const perLine = e.lines.map((l, i) => {
+    const a = answers[i] || {};
+    const adjOk = Math.abs(parseFloat(a.adj) - l.correctAdj) < 0.005;
+    const balOk = Math.abs(parseFloat(a.bal) - l.correctPtBal) < 0.005;
+    const actOk = a.action === l.correctAction;
+    return { i, adjOk, balOk, actOk,
+      correctAdj: l.correctAdj, correctPtBal: l.correctPtBal,
+      correctAction: l.correctAction, why: l.why };
+  });
+  const pts = perLine.reduce((t, r) => t + (r.adjOk ? 35 : 0) + (r.balOk ? 35 : 0) + (r.actOk ? 30 : 0), 0);
+  const max = e.lines.length * 100;
+  const score = Math.round(100 * pts / max);
+  await logLab(req.session.userId, 'era', score, 100, { scenario: e.id, lines: e.lines.length });
+  res.json({ score, max: 100, perLine });
+}));
+
+const QUIZ_MODES = ['timed', 'weakest', 'missed', 'mix', 'sprint', 'cpc'];
 app.get('/api/labs/quiz', requireAuth, ah(async (req, res) => {
   const mode = QUIZ_MODES.includes(req.query.mode) ? req.query.mode : 'mix';
   const n = Math.min(30, Math.max(5, parseInt(req.query.n, 10) || 15));
@@ -909,7 +948,7 @@ app.get('/api/labs/quiz', requireAuth, ah(async (req, res) => {
       WHERE at.user_id = ? AND a.correct = 0`, [uid]);
     caseWrong.forEach(r => seen.add(r.id));
     const ids = [...seen].slice(0, n);
-    qs = ids.length ? await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, c.code AS caseCode
+    qs = ids.length ? await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, q.qtype, c.code AS caseCode
       FROM questions q JOIN cases c ON c.id = q.case_id WHERE q.id IN (${ids.map(() => '?').join(',')})`, ids) : [];
   } else if (mode === 'weakest') {
     const prog = await db.all(`SELECT c.id, c.points,
@@ -918,33 +957,52 @@ app.get('/api/labs/quiz', requireAuth, ah(async (req, res) => {
       WHERE c.active = 1 GROUP BY c.id`, [uid]);
     prog.sort((a, b) => (a.best / a.points) - (b.best / b.points));
     const ids = prog.slice(0, 2).map(p => p.id);
-    qs = ids.length ? await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, c.code AS caseCode
+    qs = ids.length ? await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, q.qtype, c.code AS caseCode
       FROM questions q JOIN cases c ON c.id = q.case_id WHERE q.case_id IN (${ids.map(() => '?').join(',')})
       ORDER BY ${RF} LIMIT ${n}`, ids) : [];
   } else {
-    qs = await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, c.code AS caseCode
+    qs = await db.all(`SELECT q.id, q.qnum, q.prompt, q.options, q.hint, q.qtype, c.code AS caseCode
       FROM questions q JOIN cases c ON c.id = q.case_id WHERE c.active = 1
       ORDER BY ${RF} LIMIT ${n}`);
   }
   if (!qs.length) return res.json({ mode, questions: [], note: 'No questions available for this mode yet.' });
   res.json({ mode, questions: qs.map(q => ({ id: q.id, caseCode: q.caseCode, qnum: q.qnum,
-    prompt: q.prompt, options: JSON.parse(q.options), hint: q.hint })) });
+    prompt: q.prompt, options: JSON.parse(q.options || '[]'), hint: q.hint, qtype: q.qtype || 'mcq' })) });
 }));
 
+// normalize a typed code for grading: uppercase, trim, collapse spaces, strip trailing periods
+function normCode(v) { return String(v || '').toUpperCase().trim().replace(/\s+/g, '').replace(/\.+$/, ''); }
+// partial credit: base code right but modifier wrong/laterality wrong -> half points
+function gradeCodeEntry(expected, typed) {
+  const e = normCode(expected), t = normCode(typed);
+  if (!t) return { earned: 0, verdict: 'blank' };
+  if (t === e) return { earned: 1, verdict: 'exact' };
+  const base = c => c.split('-')[0];
+  if (base(t) === base(e) && base(t).length >= 4) return { earned: 0.5, verdict: 'partial' };
+  return { earned: 0, verdict: 'wrong' };
+}
 app.post('/api/labs/quiz/submit', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
   const mode = QUIZ_MODES.includes(req.body.mode) ? req.body.mode : 'mix';
   const answers = Array.isArray(req.body.answers) ? req.body.answers.slice(0, 30) : [];
   if (!answers.length) return res.status(400).json({ error: 'No answers submitted.' });
   const ids = answers.map(a => parseInt(a.questionId, 10)).filter(Number.isInteger);
-  const rows = await db.all(`SELECT id, answer_idx, points, explanation FROM questions WHERE id IN (${ids.map(() => '?').join(',')})`, ids);
+  const rows = await db.all(`SELECT id, answer_idx, points, explanation, qtype, answer_text FROM questions WHERE id IN (${ids.map(() => '?').join(',')})`, ids);
   const byId = Object.fromEntries(rows.map(r => [r.id, r]));
   let score = 0, max = 0;
   const feedback = answers.map(a => {
     const q = byId[a.questionId];
     if (!q) return null;
+    max += q.points;
+    if ((q.qtype || 'mcq') === 'code_entry') {
+      const g = gradeCodeEntry(q.answer_text, a.text);
+      const pts = Math.round(q.points * g.earned);
+      score += pts;
+      return { questionId: q.id, correct: g.earned === 1, partial: g.earned === 0.5,
+        typed: String(a.text || '').slice(0, 40), expected: g.earned === 1 ? undefined : q.answer_text,
+        explanation: q.explanation, pointsEarned: pts };
+    }
     const correct = parseInt(a.chosen, 10) === q.answer_idx;
     if (correct) score += q.points;
-    max += q.points;
     return { questionId: q.id, correct, explanation: q.explanation };
   }).filter(Boolean);
   if (!req.body.quiet) {

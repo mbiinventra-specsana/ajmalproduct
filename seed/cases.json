@@ -32,7 +32,7 @@
         "answer": 1,
         "points": 10,
         "explanation": "Active coverage only means the plan is in force on that date. Payment still depends on medical necessity, covered services, correct coding, and benefits like deductibles. Active coverage is necessary but never sufficient on its own.",
-        "hint": "Active coverage answers 'is the plan on?' — not 'will they pay?'"
+        "hint": "Active coverage answers 'is the plan on?' \u2014 not 'will they pay?'"
       },
       {
         "q": "The 271 response shows: copay $30, deductible $1,000 (met $200), coinsurance 20%. What is the patient's cost share?",
@@ -45,20 +45,20 @@
         "answer": 1,
         "points": 10,
         "explanation": "Cost share stacks in order: the copay is collected at the visit, then the remaining deductible ($1,000 minus $200 met = $800) must be satisfied, and only then does the 20% coinsurance apply to the allowed amount. Getting this order right prevents surprise patient bills.",
-        "hint": "Deductible comes before coinsurance — do the subtraction."
+        "hint": "Deductible comes before coinsurance \u2014 do the subtraction."
       },
       {
         "q": "What is COB, and why must it be checked?",
         "options": [
-          "Coordination of Benefits — it determines which payer is primary when a patient has two plans",
-          "Cost of Billing — the fee the clearinghouse charges per claim",
-          "Change of Beneficiary — updating the patient's mailing address",
-          "Claim Override Batch — a method for resubmitting denied claims"
+          "Coordination of Benefits \u2014 it determines which payer is primary when a patient has two plans",
+          "Cost of Billing \u2014 the fee the clearinghouse charges per claim",
+          "Change of Beneficiary \u2014 updating the patient's mailing address",
+          "Claim Override Batch \u2014 a method for resubmitting denied claims"
         ],
         "answer": 0,
         "points": 10,
         "explanation": "COB (Coordination of Benefits) establishes the primary payer when a patient carries more than one plan. Billing the wrong payer first causes denials and rework, because the secondary payer only processes a claim after the primary has adjudicated it.",
-        "hint": "Two insurance cards in the wallet — which one goes first?"
+        "hint": "Two insurance cards in the wallet \u2014 which one goes first?"
       },
       {
         "q": "The 271 response flags 'prior authorization required' for an MRI. What should happen next?",
@@ -73,12 +73,39 @@
         "explanation": "When the payer requires prior authorization, approval must be secured before the service happens, or the claim will deny as non-covered. Billing the patient to dodge it or swapping in different codes is wrong and can cross into fraud.",
         "hint": "The word 'prior' tells you the timing."
       }
+    ],
+    "timeline": [
+      {
+        "day": 0,
+        "event": "Eligibility Verification",
+        "details": "270 inquiry sent to payer. 271 response: ACTIVE coverage, $2,500 deductible ($1,800 met), $40 copay for office visits. Prior auth: not required for this service."
+      },
+      {
+        "day": 1,
+        "event": "Charge Entry",
+        "details": "CPT 99213 entered with diagnosis. Charge amount: $180. Claim created and scrubbed \u2014 13 rules passed."
+      },
+      {
+        "day": 3,
+        "event": "Clearinghouse Response",
+        "details": "Claim accepted by clearinghouse. Forwarded to payer. No rejections \u2014 clean claim."
+      },
+      {
+        "day": 20,
+        "event": "ERA Posting",
+        "details": "835 ERA received: Billed $180, Allowed $120, Paid $80, Patient responsibility $40 (PR-3 copay). Contractual adjustment: $60 (CO-45)."
+      },
+      {
+        "day": 35,
+        "event": "Patient Balance",
+        "details": "$40 copay balance moved to patient statement. Statement sent. This is where YOUR training continues \u2014 work the A/R!"
+      }
     ]
   },
   {
     "code": "CASE-009",
     "title": "Patient Registration",
-    "description": "Register a new patient with complete, accurate demographics — the foundation of every clean claim.",
+    "description": "Register a new patient with complete, accurate demographics \u2014 the foundation of every clean claim.",
     "difficulty": "Beginner",
     "category": "PATIENT_REGISTRATION",
     "points": 50,
@@ -100,7 +127,7 @@
       {
         "q": "A patient's name is spelled 'Jon' on the ID but 'John' in your system. What should you do?",
         "options": [
-          "Leave it — close enough",
+          "Leave it \u2014 close enough",
           "Correct it to match the photo ID exactly",
           "Delete the record and start over",
           "Ask the patient to change their ID"
@@ -120,33 +147,33 @@
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "DOB is a key identity verifier — payers match name + DOB + member ID. Wrong DOB means the 270 eligibility check fails and the claim denies as CO-16 (missing/invalid information).",
+        "explanation": "DOB is a key identity verifier \u2014 payers match name + DOB + member ID. Wrong DOB means the 270 eligibility check fails and the claim denies as CO-16 (missing/invalid information).",
         "hint": "Which transaction needs name + DOB?"
       },
       {
         "q": "A duplicate patient record is created (same person, two charts). What's the risk?",
         "options": [
-          "No risk — more records are better",
+          "No risk \u2014 more records are better",
           "Split clinical history, billing errors, and compliance issues",
           "It speeds up check-in",
           "It lowers the patient's deductible"
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "Duplicates split the clinical and billing history across two charts — charges go to the wrong record, eligibility checks fail, and it creates HIPAA/compliance risk. Always search before creating.",
+        "explanation": "Duplicates split the clinical and billing history across two charts \u2014 charges go to the wrong record, eligibility checks fail, and it creates HIPAA/compliance risk. Always search before creating.",
         "hint": "What happens to the patient's history?"
       },
       {
         "q": "When should you verify a returning patient's demographics?",
         "options": [
-          "Never — they were verified once",
+          "Never \u2014 they were verified once",
           "At every visit, before the encounter",
           "Only when they complain",
           "Once per year"
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "Verify at every visit. People move, change numbers, and get new insurance constantly. Stale demographics are the #1 cause of front-end denials — a 30-second check prevents a denied claim.",
+        "explanation": "Verify at every visit. People move, change numbers, and get new insurance constantly. Stale demographics are the #1 cause of front-end denials \u2014 a 30-second check prevents a denied claim.",
         "hint": "How often do phone numbers and addresses change?"
       }
     ]
@@ -161,16 +188,16 @@
     "sort": 3,
     "questions": [
       {
-        "q": "A patient's insurance card shows an effective date of 01/01/2026 and today's visit is 10/17/2026. The plan is…",
+        "q": "A patient's insurance card shows an effective date of 01/01/2026 and today's visit is 10/17/2026. The plan is\u2026",
         "options": [
-          "Active — the effective date has passed",
-          "Inactive — cards expire yearly",
+          "Active \u2014 the effective date has passed",
+          "Inactive \u2014 cards expire yearly",
           "Active only for emergencies",
           "Cannot be determined from the card"
         ],
         "answer": 0,
         "points": 10,
-        "explanation": "A passed effective date with no termination date means the plan is active. But the card alone isn't enough — always run the 270 to confirm, since coverage can terminate mid-year.",
+        "explanation": "A passed effective date with no termination date means the plan is active. But the card alone isn't enough \u2014 always run the 270 to confirm, since coverage can terminate mid-year.",
         "hint": "Effective date passed + no end date = ?"
       },
       {
@@ -178,12 +205,12 @@
         "options": [
           "Bill the visit anyway",
           "Tell the patient and collect self-pay or reschedule",
-          "Ignore it — the card looked fine",
+          "Ignore it \u2014 the card looked fine",
           "Change the status to active in the system"
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "INACTIVE means no coverage — billing it guarantees a denial. Tell the patient upfront, offer self-pay options or reschedule. Never alter payer data to force a claim through.",
+        "explanation": "INACTIVE means no coverage \u2014 billing it guarantees a denial. Tell the patient upfront, offer self-pay options or reschedule. Never alter payer data to force a claim through.",
         "hint": "What happens if you bill inactive coverage?"
       },
       {
@@ -196,7 +223,7 @@
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "The member ID is unique to the patient (like an account number). The group number identifies the employer's plan with the payer. Both go on the claim — wrong group number routes to the wrong benefits.",
+        "explanation": "The member ID is unique to the patient (like an account number). The group number identifies the employer's plan with the payer. Both go on the claim \u2014 wrong group number routes to the wrong benefits.",
         "hint": "Which one is unique to the person vs the employer?"
       },
       {
@@ -216,13 +243,13 @@
         "q": "The insurance card says 'Referral required for specialist'. The patient is seeing a specialist today without one. What happens?",
         "options": [
           "The claim will pay normally",
-          "The claim will likely deny — obtain the referral first",
+          "The claim will likely deny \u2014 obtain the referral first",
           "The copay is waived",
           "It only matters for surgeries"
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "HMO-style plans require referrals before specialist visits. Without one, the claim denies. Check referral requirements during verification — it's part of the 271 benefits, not just the card.",
+        "explanation": "HMO-style plans require referrals before specialist visits. Without one, the claim denies. Check referral requirements during verification \u2014 it's part of the 271 benefits, not just the card.",
         "hint": "What does 'referral required' mean for payment?"
       }
     ]
@@ -247,7 +274,7 @@
         "answer": 1,
         "points": 12,
         "explanation": "The form follows the biller, not the service. The physician's professional services go on the CMS-1500 (837P electronic), while the hospital's facility services go on the UB-04 (837I). One visit can legitimately produce two claims from two billers.",
-        "hint": "Ask who is billing — the doctor or the facility?"
+        "hint": "Ask who is billing \u2014 the doctor or the facility?"
       },
       {
         "q": "Which set of fields is required and high-impact when creating a claim?",
@@ -273,15 +300,15 @@
         "answer": 0,
         "points": 12,
         "explanation": "Every charge entered must land on exactly one claim. Poor linking causes lost revenue (charges never billed) or compliance risk (charges billed twice). Charge entry and claim creation must reconcile with each other.",
-        "hint": "One charge, one claim — no orphans, no duplicates."
+        "hint": "One charge, one claim \u2014 no orphans, no duplicates."
       },
       {
         "q": "A charge is entered for CPT 99214 with a date of service after the patient's discharge date. What is the most likely outcome?",
         "options": [
           "It will be paid normally",
-          "It will be rejected or denied — the date of service does not make sense",
+          "It will be rejected or denied \u2014 the date of service does not make sense",
           "The payer will double the payment as a courtesy",
-          "Nothing — dates of service do not matter"
+          "Nothing \u2014 dates of service do not matter"
         ],
         "answer": 1,
         "points": 12,
@@ -291,8 +318,8 @@
       {
         "q": "Why is it risky to copy last month's charge entry as a template for this month's visit?",
         "options": [
-          "There is no risk — it is faster and always accurate",
-          "The diagnosis, procedures, and payer rules may have changed — copying creates coding errors and denials",
+          "There is no risk \u2014 it is faster and always accurate",
+          "The diagnosis, procedures, and payer rules may have changed \u2014 copying creates coding errors and denials",
           "Using templates is illegal in all states",
           "The system deletes templates automatically each month"
         ],
@@ -335,7 +362,7 @@
         ],
         "answer": 0,
         "points": 10,
-        "explanation": "I20.9 is the unspecified chest-pain code. The fracture and neoplasm codes describe entirely different conditions, and Z00.00 is for a routine exam — using it for a symptomatic visit would misrepresent the encounter.",
+        "explanation": "I20.9 is the unspecified chest-pain code. The fracture and neoplasm codes describe entirely different conditions, and Z00.00 is for a routine exam \u2014 using it for a symptomatic visit would misrepresent the encounter.",
         "hint": "Pick the code that names the symptom the patient reported."
       },
       {
@@ -348,7 +375,7 @@
         ],
         "answer": 0,
         "points": 10,
-        "explanation": "99213 is the standard code for a moderate established-patient office visit. 90837 is a timed psychotherapy code, A4232 is a supply code, and 99281 belongs to the emergency department — the setting and service must match the code.",
+        "explanation": "99213 is the standard code for a moderate established-patient office visit. 90837 is a timed psychotherapy code, A4232 is a supply code, and 99281 belongs to the emergency department \u2014 the setting and service must match the code.",
         "hint": "Office visit, established patient, moderate complexity."
       },
       {
@@ -367,14 +394,14 @@
       {
         "q": "A claim denies with CO-50 (medical necessity). The CPT was for a knee MRI, but the linked ICD-10-CM was for a routine physical. What went wrong?",
         "options": [
-          "The codes do not support each other — the diagnosis does not justify the procedure",
+          "The codes do not support each other \u2014 the diagnosis does not justify the procedure",
           "The claim was filed too late",
           "The payer's system was down that day",
           "The patient's copay was not collected"
         ],
         "answer": 0,
         "points": 10,
-        "explanation": "CO-50 means the payer found no medical necessity: a routine-physical diagnosis does not justify a knee MRI. The fix is accurate coding that reflects the true clinical reason — never changing codes just to chase payment.",
+        "explanation": "CO-50 means the payer found no medical necessity: a routine-physical diagnosis does not justify a knee MRI. The fix is accurate coding that reflects the true clinical reason \u2014 never changing codes just to chase payment.",
         "hint": "Read the denial literally: not medically necessary."
       }
     ]
@@ -382,7 +409,7 @@
   {
     "code": "CASE-011",
     "title": "Claim Creation",
-    "description": "Build a professional CMS-1500 claim from a completed charge — the bridge from clinical to billing.",
+    "description": "Build a professional CMS-1500 claim from a completed charge \u2014 the bridge from clinical to billing.",
     "difficulty": "Intermediate",
     "category": "CLAIMS",
     "points": 50,
@@ -398,20 +425,20 @@
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "The CMS-1500 (837P electronic) is for professional claims — physician offices, clinics, suppliers. Hospitals use the UB-04 (837I). Using the wrong form guarantees rejection.",
+        "explanation": "The CMS-1500 (837P electronic) is for professional claims \u2014 physician offices, clinics, suppliers. Hospitals use the UB-04 (837I). Using the wrong form guarantees rejection.",
         "hint": "1500 = professional, UB-04 = institutional"
       },
       {
         "q": "A charge must be in what status before you can create a claim from it?",
         "options": [
           "Any status works",
-          "READY — completed and unlinked",
+          "READY \u2014 completed and unlinked",
           "Already linked to another claim",
           "Deleted"
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "Only READY charges (completed, not yet claimed) can become claims. Creating two claims from one charge is duplicate billing — a compliance violation.",
+        "explanation": "Only READY charges (completed, not yet claimed) can become claims. Creating two claims from one charge is duplicate billing \u2014 a compliance violation.",
         "hint": "Can one charge become two claims?"
       },
       {
@@ -424,11 +451,11 @@
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "Each service line carries diagnosis pointers referencing the diagnosis codes (1-4). This tells the payer WHY each procedure was done — wrong pointers cause medical-necessity denials.",
+        "explanation": "Each service line carries diagnosis pointers referencing the diagnosis codes (1-4). This tells the payer WHY each procedure was done \u2014 wrong pointers cause medical-necessity denials.",
         "hint": "How does the payer know which diagnosis justifies which procedure?"
       },
       {
-        "q": "The charge has CPT 99213 and ICD E11.9. When creating the claim, you should…",
+        "q": "The charge has CPT 99213 and ICD E11.9. When creating the claim, you should\u2026",
         "options": [
           "Change the codes to get paid more",
           "Carry the codes exactly as documented",
@@ -444,7 +471,7 @@
         "q": "After creating a claim, what status should it have before submission?",
         "options": [
           "PAID",
-          "DRAFT — validated but not yet sent",
+          "DRAFT \u2014 validated but not yet sent",
           "DENIED",
           "Written off"
         ],
@@ -474,7 +501,7 @@
         ],
         "answer": 1,
         "points": 12,
-        "explanation": "The clearinghouse scrubs the electronic 837 claim for format and data errors, translates it into the payer's required format, and forwards it. It does not set payment amounts — that is the payer's adjudication step.",
+        "explanation": "The clearinghouse scrubs the electronic 837 claim for format and data errors, translates it into the payer's required format, and forwards it. It does not set payment amounts \u2014 that is the payer's adjudication step.",
         "hint": "'Scrub' means clean the claim before the payer sees it."
       },
       {
@@ -487,7 +514,7 @@
         ],
         "answer": 1,
         "points": 12,
-        "explanation": "This is the classic trainee confusion. A rejection means the claim bounced before adjudication — fix the data and resubmit. A denial means the payer adjudicated it and said no — it needs a correction, an appeal, or a write-off. The workflows are completely different.",
+        "explanation": "This is the classic trainee confusion. A rejection means the claim bounced before adjudication \u2014 fix the data and resubmit. A denial means the payer adjudicated it and said no \u2014 it needs a correction, an appeal, or a write-off. The workflows are completely different.",
         "hint": "Rejection happens before the payer decides; denial IS the payer's decision."
       },
       {
@@ -501,7 +528,7 @@
         "answer": 1,
         "points": 12,
         "explanation": "NCCI edits are CMS rules that prevent providers from billing separately for services that should be bundled together (unbundling). Scrubbers check claims against these edits before submission.",
-        "hint": "'Correct Coding' is in the name — they enforce coding correctness."
+        "hint": "'Correct Coding' is in the name \u2014 they enforce coding correctness."
       },
       {
         "q": "A commercial payer requires claims within 90 days of service. A claim is submitted on day 120. What happens?",
@@ -519,7 +546,7 @@
       {
         "q": "Before submitting, the scrubber flags 'missing diagnosis pointer on line 2.' What should the biller do?",
         "options": [
-          "Submit anyway — the payer will figure it out",
+          "Submit anyway \u2014 the payer will figure it out",
           "Fix the pointer so line 2 links to a valid diagnosis, then resubmit",
           "Delete line 2 to make the error go away",
           "Change the diagnosis to one the payer prefers"
@@ -527,14 +554,14 @@
         "answer": 1,
         "points": 12,
         "explanation": "A missing diagnosis pointer means the payer cannot establish medical necessity for that line, so it will deny. The correct action is to link the proper diagnosis from the documentation. Deleting the line loses revenue; changing the diagnosis to please the payer is falsification.",
-        "hint": "Fix the data — don't hide it and don't fake it."
+        "hint": "Fix the data \u2014 don't hide it and don't fake it."
       }
     ]
   },
   {
     "code": "CASE-012",
     "title": "Claim Submission",
-    "description": "Scrub, validate, and transmit the 837P to the payer — then read the adjudication result.",
+    "description": "Scrub, validate, and transmit the 837P to the payer \u2014 then read the adjudication result.",
     "difficulty": "Intermediate",
     "category": "CLAIMS",
     "points": 50,
@@ -550,11 +577,11 @@
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "The scrubber runs the same edits the payer will — demographics match, valid CPT/ICD, diagnosis pointers, NPI, place of service, duplicates, timely filing. Catching errors here prevents denials.",
+        "explanation": "The scrubber runs the same edits the payer will \u2014 demographics match, valid CPT/ICD, diagnosis pointers, NPI, place of service, duplicates, timely filing. Catching errors here prevents denials.",
         "hint": "What would the payer check?"
       },
       {
-        "q": "The scrubber flags an error. You should…",
+        "q": "The scrubber flags an error. You should\u2026",
         "options": [
           "Submit anyway and hope",
           "Fix the error, re-validate, then submit",
@@ -563,7 +590,7 @@
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "Fix → re-validate → submit. Submitting a flagged claim guarantees a denial or rejection. The scrubber exists to catch what humans miss.",
+        "explanation": "Fix \u2192 re-validate \u2192 submit. Submitting a flagged claim guarantees a denial or rejection. The scrubber exists to catch what humans miss.",
         "hint": "What's the point of the scrubber?"
       },
       {
@@ -577,13 +604,13 @@
         "answer": 1,
         "points": 10,
         "explanation": "837P = electronic professional claim (the digital CMS-1500). 837I is institutional. 835 is the remittance/payment, 270/271 is eligibility.",
-        "hint": "837P… P = ?"
+        "hint": "837P\u2026 P = ?"
       },
       {
         "q": "After submission, the payer returns 'PAID'. What does this mean?",
         "options": [
           "The full billed amount was paid",
-          "The claim adjudicated — check allowed, paid, adjustment, and patient responsibility",
+          "The claim adjudicated \u2014 check allowed, paid, adjustment, and patient responsibility",
           "No further action is ever needed",
           "The patient owes nothing"
         ],
@@ -602,7 +629,7 @@
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "CO-16 = missing/invalid information. Read what exactly is missing, correct it, and rebill. Most CO-16 denials are fixable — writing off without trying loses revenue.",
+        "explanation": "CO-16 = missing/invalid information. Read what exactly is missing, correct it, and rebill. Most CO-16 denials are fixable \u2014 writing off without trying loses revenue.",
         "hint": "What does CO-16 tell you?"
       }
     ]
@@ -619,15 +646,15 @@
       {
         "q": "Worked example: CPT 90837 billed $200, allowed $140. What is the contractual adjustment, and why?",
         "options": [
-          "$60 — the difference between billed and allowed, written off per the payer contract (CO-45)",
-          "$28 — the patient's coinsurance amount",
-          "$112 — the payer's payment amount",
-          "$200 — the full billed amount is written off"
+          "$60 \u2014 the difference between billed and allowed, written off per the payer contract (CO-45)",
+          "$28 \u2014 the patient's coinsurance amount",
+          "$112 \u2014 the payer's payment amount",
+          "$200 \u2014 the full billed amount is written off"
         ],
         "answer": 0,
         "points": 14,
         "explanation": "The contractual adjustment is billed minus allowed: $200 minus $140 = $60, coded CO-45. The provider agreed to this rate in the payer contract, so it can never be billed to the patient. The $28 is patient coinsurance and the $112 is the payer's check.",
-        "hint": "The contract says 'we pay $140 for this code' — the rest is the adjustment."
+        "hint": "The contract says 'we pay $140 for this code' \u2014 the rest is the adjustment."
       },
       {
         "q": "Same example (billed $200, allowed $140, coinsurance $28). How much does the payer actually pay, and what is patient responsibility?",
@@ -653,20 +680,20 @@
         "answer": 1,
         "points": 14,
         "explanation": "The ERA (835 transaction) is the machine-readable file the billing system auto-posts from. The EOB is the human-readable statement, often sent to the patient. Posting from an EOB by hand is slow and error-prone; the ERA is the posting source of truth.",
-        "hint": "'Electronic' is in the name — which one would a computer read?"
+        "hint": "'Electronic' is in the name \u2014 which one would a computer read?"
       },
       {
         "q": "A claim shows $0 payment but no denial code. What is the most likely explanation?",
         "options": [
           "It must be a denial",
-          "Zero pay does not always mean denial — the payment may have applied entirely to the deductible, or the remit has not fully processed",
+          "Zero pay does not always mean denial \u2014 the payment may have applied entirely to the deductible, or the remit has not fully processed",
           "The payer lost the claim",
           "The patient already paid everything"
         ],
         "answer": 1,
         "points": 14,
-        "explanation": "Zero pay does not equal denial — this is a core poster skill. If the allowed amount went entirely to the patient's unmet deductible, the payer correctly pays $0 and the balance is patient responsibility. Always read the remark codes before assuming a denial.",
-        "hint": "Who pays first when a deductible is unmet? The patient — so the payer's check can be $0."
+        "explanation": "Zero pay does not equal denial \u2014 this is a core poster skill. If the allowed amount went entirely to the patient's unmet deductible, the payer correctly pays $0 and the balance is patient responsibility. Always read the remark codes before assuming a denial.",
+        "hint": "Who pays first when a deductible is unmet? The patient \u2014 so the payer's check can be $0."
       },
       {
         "q": "The payer's remit shows an allowed amount LOWER than the contracted rate for that CPT. What should the poster do?",
@@ -678,8 +705,8 @@
         ],
         "answer": 1,
         "points": 14,
-        "explanation": "Underpayment detection is a core payment-posting skill: compare the allowed amount against the contracted fee schedule. If the payer shorted the contracted rate, that is the payer's error to pursue — never shift it to the patient or falsify the posting.",
-        "hint": "The contract is the referee — check the payer's number against it."
+        "explanation": "Underpayment detection is a core payment-posting skill: compare the allowed amount against the contracted fee schedule. If the payer shorted the contracted rate, that is the payer's error to pursue \u2014 never shift it to the patient or falsify the posting.",
+        "hint": "The contract is the referee \u2014 check the payer's number against it."
       }
     ]
   },
@@ -695,7 +722,7 @@
       {
         "q": "Claims sit in aging buckets: 0-30, 31-60, 61-90, 91+ days. A claim is 75 days old with no payer response. What does that tell you?",
         "options": [
-          "It is fine — payers routinely take 75 days",
+          "It is fine \u2014 payers routinely take 75 days",
           "It sits in the 61-90 bucket and needs active follow-up now, before it slides into 91+ where collectability drops",
           "It should be written off immediately",
           "Aging buckets are only for management reports"
@@ -703,7 +730,7 @@
         "answer": 1,
         "points": 16,
         "explanation": "Aging buckets prioritize work because older balances are harder and less likely to collect. A 75-day claim with no response is stuck and needs a status call or appeal now. Waiting turns a follow-up task into a write-off.",
-        "hint": "Money gets colder with age — work the warmest old claims first."
+        "hint": "Money gets colder with age \u2014 work the warmest old claims first."
       },
       {
         "q": "How is 'days in A/R' calculated?",
@@ -715,21 +742,21 @@
         ],
         "answer": 0,
         "points": 16,
-        "explanation": "Days in A/R equals total accounts receivable divided by average daily charges. It answers: how many days of revenue are sitting uncollected? Lower is better — best-in-class is under 40 days, with top performers under 35.",
+        "explanation": "Days in A/R equals total accounts receivable divided by average daily charges. It answers: how many days of revenue are sitting uncollected? Lower is better \u2014 best-in-class is under 40 days, with top performers under 35.",
         "hint": "It is a 'how long until we are paid' number."
       },
       {
         "q": "Your practice shows: clean claim rate 88%, denial rate 9%, days in A/R 55. Benchmarks are >95-98% clean, <5% denials, <40 days in A/R. What is the right read?",
         "options": [
           "Everything is performing fine",
-          "All three miss benchmark — revenue leaks at submission (low clean rate), adjudication (high denials), and collection (slow A/R); fix upstream first",
+          "All three miss benchmark \u2014 revenue leaks at submission (low clean rate), adjudication (high denials), and collection (slow A/R); fix upstream first",
           "Only the denial rate matters",
           "Benchmarks do not apply to smaller practices"
         ],
         "answer": 1,
         "points": 16,
-        "explanation": "The three KPIs tell one story: claims go out dirty (88% clean), get denied (9%), and sit unpaid (55 days). Because most denials originate upstream, the highest-leverage fix is front-end quality — registration, eligibility, coding — which lifts all three numbers together.",
-        "hint": "Three red lights, one engine — start where claims are born."
+        "explanation": "The three KPIs tell one story: claims go out dirty (88% clean), get denied (9%), and sit unpaid (55 days). Because most denials originate upstream, the highest-leverage fix is front-end quality \u2014 registration, eligibility, coding \u2014 which lifts all three numbers together.",
+        "hint": "Three red lights, one engine \u2014 start where claims are born."
       },
       {
         "q": "You have one hour for A/R follow-up. Which claims do you work first?",
@@ -778,7 +805,7 @@
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "Group codes decide who owns the balance. CO means the provider is contractually obligated to absorb it — billing the patient would violate the payer contract. PR means the balance legitimately belongs to the patient (deductible, coinsurance, or properly-noticed non-covered services).",
+        "explanation": "Group codes decide who owns the balance. CO means the provider is contractually obligated to absorb it \u2014 billing the patient would violate the payer contract. PR means the balance legitimately belongs to the patient (deductible, coinsurance, or properly-noticed non-covered services).",
         "hint": "C is contractual (the provider's problem); P is the patient's."
       },
       {
@@ -792,7 +819,7 @@
         "answer": 1,
         "points": 10,
         "explanation": "Both are 'non-covered,' but the group code changes everything. PR-96 is only valid when the patient was properly notified in advance (for example an ABN) or the service is statutorily excluded (GY modifier). Without that, it stays CO-96 and the provider absorbs it.",
-        "hint": "Same CARC, different owner — what paperwork lets you bill the patient?"
+        "hint": "Same CARC, different owner \u2014 what paperwork lets you bill the patient?"
       },
       {
         "q": "A claim denies CO-97 (bundling). The biller used modifier -59. The NCCI modifier indicator for this edit is '1'. What is the best next step?",
@@ -804,8 +831,8 @@
         ],
         "answer": 1,
         "points": 15,
-        "explanation": "CO-97 means the payer bundled the services per NCCI. Modifier -59 is the vague 'distinct service' flag; payers prefer the specific X{EPSU} modifiers — but only when documentation truly supports distinct services. Appending modifiers to force payment is upcoding risk.",
-        "hint": "Specific beats vague — but the documentation must earn the modifier."
+        "explanation": "CO-97 means the payer bundled the services per NCCI. Modifier -59 is the vague 'distinct service' flag; payers prefer the specific X{EPSU} modifiers \u2014 but only when documentation truly supports distinct services. Appending modifiers to force payment is upcoding risk.",
+        "hint": "Specific beats vague \u2014 but the documentation must earn the modifier."
       },
       {
         "q": "A denial needs fixing. When do you send a corrected claim (frequency 7) versus filing a formal appeal?",
@@ -823,14 +850,14 @@
       {
         "q": "A denial letter arrives 60 days after the remit date. The payer's appeal window is 90 days from the remit date. What must happen?",
         "options": [
-          "Nothing — there is still plenty of time",
-          "The appeal must be filed within the 90-day window (30 days remain) — track deadlines per payer, because missing them forfeits the money",
+          "Nothing \u2014 there is still plenty of time",
+          "The appeal must be filed within the 90-day window (30 days remain) \u2014 track deadlines per payer, because missing them forfeits the money",
           "Appeal windows reset whenever you call the payer",
           "Appeal windows only apply to Medicare"
         ],
         "answer": 1,
         "points": 15,
-        "explanation": "Appeal windows (typically 30 to 90 days, payer-specific) are hard deadlines measured from the remit date, not from when you noticed the denial. Strong teams overturn most well-built appeals — but only when filed on time. Calendar every denial.",
+        "explanation": "Appeal windows (typically 30 to 90 days, payer-specific) are hard deadlines measured from the remit date, not from when you noticed the denial. Strong teams overturn most well-built appeals \u2014 but only when filed on time. Calendar every denial.",
         "hint": "The clock started at the remit, not at your desk."
       },
       {
@@ -851,32 +878,32 @@
   {
     "code": "CASE-008",
     "title": "Full-Cycle Clean Claim Challenge",
-    "description": "Follow fictional patient Sarah Johnson from registration through payment and A/R — including a denial twist.",
+    "description": "Follow fictional patient Sarah Johnson from registration through payment and A/R \u2014 including a denial twist.",
     "difficulty": "Advanced",
     "category": "FULL_CYCLE",
     "points": 100,
     "sort": 12,
     "questions": [
       {
-        "q": "Stage 1 — Registration: at check-in, the front desk copies Sarah Johnson's insurance card but does not verify eligibility. What is the risk?",
+        "q": "Stage 1 \u2014 Registration: at check-in, the front desk copies Sarah Johnson's insurance card but does not verify eligibility. What is the risk?",
         "options": [
-          "No risk — the insurance card is sufficient proof",
+          "No risk \u2014 the insurance card is sufficient proof",
           "The card may be expired or the plan may have changed; without a 270/271 check, the visit may be uninsured and the claim denied",
           "Verification is only needed for surgeries",
           "The payer verifies eligibility automatically on claim receipt"
         ],
         "answer": 1,
         "points": 20,
-        "explanation": "A card is a snapshot, not proof — coverage can lapse or change between visits. The 271 response confirms active-on-date-of-service, benefits, and authorization flags. Skipping eligibility verification is the number one beginner mistake and a top source of denials.",
+        "explanation": "A card is a snapshot, not proof \u2014 coverage can lapse or change between visits. The 271 response confirms active-on-date-of-service, benefits, and authorization flags. Skipping eligibility verification is the number one beginner mistake and a top source of denials.",
         "hint": "Cards expire; eligibility is checked live."
       },
       {
-        "q": "Stage 2 — Coding: Sarah is seen for right ankle pain after a fall. The coder links CPT 99213 to ICD-10-CM S82.41XA (fracture of right lower leg, initial encounter). Is this sound?",
+        "q": "Stage 2 \u2014 Coding: Sarah is seen for right ankle pain after a fall. The coder links CPT 99213 to ICD-10-CM S82.41XA (fracture of right lower leg, initial encounter). Is this sound?",
         "options": [
-          "Yes — the diagnosis supports the visit, and the 7th character 'A' correctly marks an initial encounter",
-          "No — ankle pain can never be coded",
+          "Yes \u2014 the diagnosis supports the visit, and the 7th character 'A' correctly marks an initial encounter",
+          "No \u2014 ankle pain can never be coded",
           "Yes, but the 7th character does not matter",
-          "No — fractures can never be initial encounters"
+          "No \u2014 fractures can never be initial encounters"
         ],
         "answer": 0,
         "points": 20,
@@ -884,23 +911,23 @@
         "hint": "Does the 'why' support the 'what'? Yes."
       },
       {
-        "q": "Stage 3 — Claim: the claim goes out on a CMS-1500 (837P). Why is that the right form?",
+        "q": "Stage 3 \u2014 Claim: the claim goes out on a CMS-1500 (837P). Why is that the right form?",
         "options": [
           "It is the only claim form that exists",
-          "The physician's professional services are billed by the provider on the professional claim form — the form follows the biller",
+          "The physician's professional services are billed by the provider on the professional claim form \u2014 the form follows the biller",
           "The UB-04 is the form used by physicians",
           "Claim forms do not matter as long as the amounts are right"
         ],
         "answer": 1,
         "points": 20,
         "explanation": "The physician's professional services belong on the CMS-1500/837P. If a hospital facility were billing for the same encounter's facility costs, that would go on the UB-04/837I. The form follows the biller, not the service.",
-        "hint": "Who is billing — the physician or the facility?"
+        "hint": "Who is billing \u2014 the physician or the facility?"
       },
       {
-        "q": "Stage 4 — Denial twist: the payer denies one line with CO-97 (bundling). The two procedures were a single ankle X-ray interpretation bundled into the visit per NCCI, with modifier indicator '0'. What is the right move?",
+        "q": "Stage 4 \u2014 Denial twist: the payer denies one line with CO-97 (bundling). The two procedures were a single ankle X-ray interpretation bundled into the visit per NCCI, with modifier indicator '0'. What is the right move?",
         "options": [
           "Append modifier -59 and rebill to force payment",
-          "Accept the bundling — indicator '0' means no modifier can override the edit, and the documentation does not support separate payment",
+          "Accept the bundling \u2014 indicator '0' means no modifier can override the edit, and the documentation does not support separate payment",
           "Bill Sarah Johnson for the X-ray interpretation",
           "Resubmit the identical claim every week"
         ],
@@ -910,17 +937,290 @@
         "hint": "Indicator 0 means the edit always wins."
       },
       {
-        "q": "Stage 5 — Payment & A/R: the remit arrives — billed $180, allowed $150, CO-45 $30 write-off, patient coinsurance PR-2 $30, payer pays $120. Sarah's $30 balance sits in A/R at 35 days with no payment. What is the right action?",
+        "q": "Stage 5 \u2014 Payment & A/R: the remit arrives \u2014 billed $180, allowed $150, CO-45 $30 write-off, patient coinsurance PR-2 $30, payer pays $120. Sarah's $30 balance sits in A/R at 35 days with no payment. What is the right action?",
         "options": [
           "Write off the $30 immediately",
-          "Verify the math ($30 + $30 + $120 = $180), confirm the balance is truly patient responsibility, then send the patient statement and follow up — it is in the 31-60 bucket",
+          "Verify the math ($30 + $30 + $120 = $180), confirm the balance is truly patient responsibility, then send the patient statement and follow up \u2014 it is in the 31-60 bucket",
           "Resubmit the claim to the payer",
           "Dispute that the balance exists"
         ],
         "answer": 1,
         "points": 20,
-        "explanation": "First verify posting accuracy: $180 equals the $30 write-off plus $30 patient share plus $120 payer payment. The $30 is legitimate patient responsibility (PR-2), not a payer error, so the claim does not go back to the payer — it goes to patient collections with statements and follow-up in the 31-60 bucket.",
+        "explanation": "First verify posting accuracy: $180 equals the $30 write-off plus $30 patient share plus $120 payer payment. The $30 is legitimate patient responsibility (PR-2), not a payer error, so the claim does not go back to the payer \u2014 it goes to patient collections with statements and follow-up in the 31-60 bucket.",
         "hint": "PR on the remit means the next stop is the patient, not the payer."
+      }
+    ]
+  },
+  {
+    "code": "CASE-013",
+    "title": "ED Chest Pain \u2014 Documentation Gap Detection",
+    "description": "Read a 5-document ED chart packet. The CT was read, but did the ED note support the exam level? Spot documentation gaps that cost revenue.",
+    "difficulty": "Intermediate",
+    "category": "CODING",
+    "points": 80,
+    "sort": 13,
+    "documents": [
+      {
+        "tab": "Triage Note",
+        "content": "TRIAGE NOTE \u2014 03/14/2026 08:42\n45-year-old male presents with chest pain x 2 hours.\nPain: substernal, pressure-like, 7/10, radiates to left arm.\nAssociated: mild diaphoresis, no SOB.\nVitals: BP 150/95, HR 102, RR 18, SpO2 98% RA, Temp 98.6F\nPMH: HTN, hyperlipidemia. NKDA.\nESI: 2 \u2014 placed in monitored bed, ECG ordered stat."
+      },
+      {
+        "tab": "ED Provider Note",
+        "content": "ED PROVIDER NOTE \u2014 03/14/2026 09:15 \u2014 Dr. R. Patel\nCHIEF COMPLAINT: Chest pain.\nHPI: 45yo M with HTN/hyperlipidemia, acute substernal chest pressure x2hrs, 7/10, radiating to L arm, with diaphoresis. No SOB, no syncope. Similar episode 6 months ago \u2014 negative workup at that time.\nEXAM: Brief exam performed. Patient alert, in no acute distress. Heart regular rhythm. Lungs clear.\nMDM: ECG shows NSR, no ST changes. Troponin pending. CT chest ordered to rule out PE given tachycardia. Will observe.\nPLAN: Serial troponins, cardiology consult if positive. Disposition pending results."
+      },
+      {
+        "tab": "CT Chest Report",
+        "content": "CT CHEST WITH CONTRAST \u2014 03/14/2026 10:03\nINDICATION: Chest pain, tachycardia \u2014 rule out pulmonary embolism.\nTECHNIQUE: Axial images with IV contrast.\nFINDINGS: No filling defect in pulmonary arteries. No PE identified. Lungs clear, no infiltrate. No pleural effusion. Cardiac silhouette normal.\nIMPRESSION: Negative CT chest \u2014 no evidence of pulmonary embolism.\nElectronically signed: Dr. S. Morrison, Radiology \u2014 10:47"
+      },
+      {
+        "tab": "Lab Panel",
+        "content": "LABORATORY \u2014 03/14/2026\nTroponin I (08:55): 0.02 ng/mL [ref <0.04] \u2014 NORMAL\nTroponin I (11:55): 0.03 ng/mL [ref <0.04] \u2014 NORMAL\nCBC: WBC 7.2, Hgb 14.1, Plt 245 \u2014 all normal\nBMP: Na 140, K 4.1, Cr 0.9, Glu 102 \u2014 normal\nLipid panel: Total 228 (H), LDL 148 (H)\nECG (09:00): Normal sinus rhythm, no ST elevation/depression, no T-wave abnormality."
+      },
+      {
+        "tab": "Discharge Summary",
+        "content": "ED DISCHARGE SUMMARY \u2014 03/14/2026 13:20\nDIAGNOSES: Chest pain, unspecified (R07.89); Hypertension (I10); Hyperlipidemia (E78.5)\nCOURSE: Serial troponins negative x2, ECG non-ischemic, CT negative for PE. Cardiology not consulted \u2014 low suspicion for ACS after negative workup.\nDISPOSITION: Discharged home in stable condition.\nINSTRUCTIONS: Return for worsening pain, SOB, syncope. Follow up with PCP in 3-5 days. Aspirin 81mg daily started."
+      }
+    ],
+    "questions": [
+      {
+        "q": "Based on the ED Provider Note tab, what level of exam was documented?",
+        "options": [
+          "Comprehensive exam",
+          "Detailed exam",
+          "Brief/problem-focused exam",
+          "No exam documented"
+        ],
+        "answer": 2,
+        "points": 15,
+        "explanation": "The note literally states 'Brief exam performed' with only 2-3 systems noted. This supports only a problem-focused exam level \u2014 a documentation gap, since the MDM was moderate-to-high complexity (CT ordered, PE workup, serial troponins).",
+        "hint": "Read the EXAM section of the ED Provider Note carefully."
+      },
+      {
+        "q": "The CT chest was ordered and read (see CT Chest Report tab). What is the coding/documentation concern here?",
+        "options": [
+          "CT was not medically necessary",
+          "The ED note's exam level doesn't support the MDM complexity \u2014 revenue is left on the table",
+          "CT reports can't be billed from the ED",
+          "There is no concern"
+        ],
+        "answer": 1,
+        "points": 15,
+        "explanation": "The MDM involved independent interpretation discussions, PE workup, and serial testing \u2014 but the exam was documented as 'brief.' Better exam documentation would support a higher E/M level (99284/99285 vs 99283). This is the classic documentation gap.",
+        "hint": "Compare the EXAM section against the MDM/PLAN complexity."
+      },
+      {
+        "q": "Based on the Discharge Summary tab, what is the correct primary diagnosis code?",
+        "options": [
+          "I10 (Hypertension)",
+          "E78.5 (Hyperlipidemia)",
+          "R07.89 (Chest pain, unspecified)",
+          "I25.10 (Coronary artery disease)"
+        ],
+        "answer": 2,
+        "points": 15,
+        "explanation": "R07.89 is listed first \u2014 the chest pain was the reason for the encounter. Never code suspected/rule-out conditions (like ACS or PE) as if they were confirmed; the workup was negative.",
+        "hint": "Which diagnosis was the reason for the visit?"
+      },
+      {
+        "q": "The troponins were negative x2 and the CT was negative for PE. How should the 'rule-out PE' and 'rule-out MI' be coded?",
+        "options": [
+          "Code I26.99 (PE) and I21.9 (MI) since they were considered",
+          "Code only confirmed diagnoses \u2014 R07.89, I10, E78.5",
+          "Code Z03.89 (observation for suspected condition)",
+          "Code R07.89 plus I26.99 as secondary"
+        ],
+        "answer": 1,
+        "points": 15,
+        "explanation": "Rule-out, suspected, and probable conditions are NOT coded in the ED/outpatient setting. Code only what is confirmed: chest pain (R07.89), HTN, hyperlipidemia.",
+        "hint": "Were PE or MI confirmed by the workup?"
+      },
+      {
+        "q": "What is the single most valuable documentation improvement the provider could make for this encounter?",
+        "options": [
+          "Add more HPI elements",
+          "Document a detailed exam matching the MDM complexity",
+          "Order more tests",
+          "Add a longer discharge summary"
+        ],
+        "answer": 1,
+        "points": 20,
+        "explanation": "The MDM clearly supports moderate-high complexity (independent test interpretation, PE workup, serial troponins). A detailed exam would support 99284 instead of 99283 \u2014 roughly $100+ in additional legitimate revenue per visit.",
+        "hint": "Where is the mismatch between work done and work documented?"
+      }
+    ]
+  },
+  {
+    "code": "CASE-014",
+    "title": "Laparoscopic Cholecystectomy \u2014 Op Report Coding",
+    "description": "Code from a real-style operative report. Intraoperative cholangiogram was performed \u2014 does that change the CPT? Avoid the classic 47562/47600 trap.",
+    "difficulty": "Advanced",
+    "category": "CODING",
+    "points": 80,
+    "sort": 14,
+    "documents": [
+      {
+        "tab": "H&P",
+        "content": "HISTORY & PHYSICAL \u2014 03/10/2026 \u2014 Dr. L. Chen\n38-year-old female with 3-month history of episodic RUQ pain after fatty meals, radiating to right shoulder. Ultrasound 03/05: cholelithiasis, gallbladder wall 4mm, no CBD dilation, no pericholecystic fluid.\nPMH: None. PSH: None. Allergies: PCN (rash).\nASSESSMENT: Symptomatic cholelithiasis.\nPLAN: Laparoscopic cholecystectomy, possible intraoperative cholangiogram."
+      },
+      {
+        "tab": "Operative Report",
+        "content": "OPERATIVE REPORT \u2014 03/12/2026 \u2014 Dr. L. Chen, Surgeon\nPREOPERATIVE DIAGNOSIS: Symptomatic cholelithiasis.\nPOSTOPERATIVE DIAGNOSIS: Cholelithiasis with chronic cholecystitis.\nPROCEDURE: Laparoscopic cholecystectomy with intraoperative cholangiogram.\nANESTHESIA: General endotracheal.\nFINDINGS: Gallbladder moderately inflamed with adhesions to omentum. Cystic duct and artery identified. No CBD stones on cholangiogram.\nDESCRIPTION: Four-port laparoscopic technique. Pneumoperitoneum established. Adhesiolysis performed. Critical view of safety obtained. Cystic duct cannulated; intraoperative cholangiogram performed \u2014 contrast flowed freely into duodenum, no filling defects. Cystic duct and artery clipped and divided. Gallbladder dissected from liver bed and removed via umbilical port. Hemostasis achieved. Ports closed.\nSPECIMEN: Gallbladder to pathology.\nCOMPLICATIONS: None. EBL: 25 mL."
+      },
+      {
+        "tab": "Pathology Report",
+        "content": "SURGICAL PATHOLOGY \u2014 03/14/2026\nSPECIMEN: Gallbladder.\nGROSS: Gallbladder 8.5 cm, wall thickened to 4mm, multiple black calculi 3-8mm.\nMICROSCOPIC: Chronic cholecystitis with cholelithiasis. No dysplasia or malignancy.\nDIAGNOSIS: Chronic cholecystitis with cholelithiasis (K81.1, K80.20)."
+      },
+      {
+        "tab": "Anesthesia Record",
+        "content": "ANESTHESIA RECORD \u2014 03/12/2026\nType: General endotracheal anesthesia. ASA II.\nInduction: Propofol, fentanyl, rocuronium. Maintenance: Sevoflurane.\nDuration: 95 minutes. No complications."
+      },
+      {
+        "tab": "Discharge Summary",
+        "content": "DISCHARGE SUMMARY \u2014 03/13/2026\nPROCEDURE: Laparoscopic cholecystectomy with IOC.\nCOURSE: Tolerated procedure well. Diet advanced. Pain controlled.\nDISCHARGE DIAGNOSES: Chronic cholecystitis with cholelithiasis (K81.1).\nDISPOSITION: Home, POD 1. Follow up in 2 weeks."
+      }
+    ],
+    "questions": [
+      {
+        "q": "Based on the Operative Report tab, what is the correct CPT for the cholecystectomy?",
+        "options": [
+          "47562 (lap chole without cholangiography)",
+          "47563 (lap chole with cholangiography)",
+          "47600 (open cholecystectomy)",
+          "47610 (open cholecystectomy with cholangiography)"
+        ],
+        "answer": 1,
+        "points": 20,
+        "explanation": "47563 \u2014 laparoscopic cholecystectomy WITH cholangiography. The op report explicitly states intraoperative cholangiogram was performed with contrast flowing to duodenum. 47600/47610 are OPEN procedures \u2014 wrong approach.",
+        "hint": "Was the procedure laparoscopic or open? Was cholangiography performed?"
+      },
+      {
+        "q": "Can the intraoperative cholangiogram be coded separately in addition to 47563?",
+        "options": [
+          "Yes, add 74300",
+          "Yes, add 47563-59",
+          "No \u2014 cholangiography is bundled into 47563",
+          "Yes, with modifier -51"
+        ],
+        "answer": 2,
+        "points": 15,
+        "explanation": "No. CPT 47563 by definition includes the cholangiography. Coding it separately would be unbundling.",
+        "hint": "Read the CPT descriptor for 47563 carefully."
+      },
+      {
+        "q": "Based on the Pathology Report tab, what ICD-10-CM codes are supported?",
+        "options": [
+          "K80.20 only",
+          "K81.1 (chronic cholecystitis) + K80.20 (calculus of gallbladder)",
+          "K81.0 (acute cholecystitis)",
+          "K82.8 (other gallbladder disease)"
+        ],
+        "answer": 1,
+        "points": 15,
+        "explanation": "Pathology confirms chronic cholecystitis (K81.1) with cholelithiasis/calculi (K80.20). The H&P showed no acute findings \u2014 don't code acute cholecystitis.",
+        "hint": "What did pathology actually find \u2014 acute or chronic?"
+      },
+      {
+        "q": "The surgeon performed adhesiolysis to mobilize the gallbladder. Can this be coded separately?",
+        "options": [
+          "Yes, add 44180",
+          "Yes, with modifier -59",
+          "No \u2014 adhesiolysis to access the surgical site is bundled",
+          "Yes, add 44005"
+        ],
+        "answer": 2,
+        "points": 15,
+        "explanation": "Lysis of adhesions performed to gain access to the operative site is inherent to the primary procedure and not separately reportable.",
+        "hint": "Was the adhesiolysis the purpose of surgery or just access?"
+      },
+      {
+        "q": "A coder submits 47600 for this case. What is the compliance risk?",
+        "options": [
+          "None \u2014 codes are interchangeable",
+          "Upcoding: billing an open procedure when laparoscopic was performed = overpayment + audit risk",
+          "Downcoding: the facility loses money",
+          "Only a typo, no consequence"
+        ],
+        "answer": 1,
+        "points": 15,
+        "explanation": "47600 (open) pays significantly more than 47562/47563 (laparoscopic). Billing the higher-paying open code for a laparoscopic procedure is upcoding \u2014 a False Claims Act exposure.",
+        "hint": "Compare the payment and approach of 47600 vs 47563."
+      }
+    ]
+  },
+  {
+    "code": "CASE-015",
+    "title": "Office Visit + Biopsy \u2014 Modifier 25",
+    "description": "A separately identifiable E/M on the same day as a skin biopsy. When does modifier -25 apply \u2014 and when is it fraud to use it?",
+    "difficulty": "Intermediate",
+    "category": "CODING",
+    "points": 70,
+    "sort": 15,
+    "documents": [
+      {
+        "tab": "Office Note",
+        "content": "OFFICE NOTE \u2014 03/18/2026 \u2014 Dr. A. Williams, Dermatology\nCHIEF COMPLAINT: Changing mole on back; also here for 6-month skin check.\nHPI: 52yo F notes a dark mole on upper back enlarging over 3 months, occasional itching. Also requests full skin exam \u2014 history of atypical nevi.\nEXAM: Full skin exam performed. Upper back: 8mm asymmetric dark brown papule with irregular borders \u2014 suspicious for dysplastic nevus vs melanoma. Remainder of skin: 3 benign-appearing nevi, no other suspicious lesions.\nASSESSMENT: 1) Atypical nevus, upper back \u2014 biopsy recommended. 2) Skin check \u2014 no other concerning lesions.\nPLAN: Shave biopsy of back lesion today (separate procedure note). Routine skin surveillance q6 months. Patient counseled on ABCDE warning signs."
+      },
+      {
+        "tab": "Procedure Note",
+        "content": "PROCEDURE NOTE \u2014 03/18/2026 \u2014 Dr. A. Williams\nPROCEDURE: Shave biopsy, upper back lesion.\nINDICATION: 8mm atypical pigmented lesion, rule out dysplasia/melanoma.\nTECHNIQUE: Area prepped with chloraprep, anesthetized with 1% lidocaine. Shave biopsy performed at dermal level. Hemostasis with aluminum chloride. Petrolatum + bandage applied.\nSPECIMEN: To pathology, labeled 'back lesion.'\nCOMPLICATIONS: None. Patient tolerated well."
+      },
+      {
+        "tab": "Pathology Report",
+        "content": "DERMATOPATHOLOGY \u2014 03/21/2026\nSPECIMEN: Shave biopsy, upper back.\nDIAGNOSIS: Dysplastic nevus, moderate atypia. Margins involved \u2014 recommend re-excision.\nNote: No melanoma identified."
+      }
+    ],
+    "questions": [
+      {
+        "q": "Based on the Office Note tab, was a separately identifiable E/M performed?",
+        "options": [
+          "No \u2014 the visit was only for the biopsy",
+          "Yes \u2014 full skin exam + counseling beyond the biopsy decision",
+          "No \u2014 same-day E/M is never billable with a procedure",
+          "Yes, but only if the patient is new"
+        ],
+        "answer": 1,
+        "points": 15,
+        "explanation": "Yes. The provider performed a full skin exam, evaluated 3 other nevi, and counseled on surveillance \u2014 work significantly beyond the biopsy decision itself. This supports 99213-25.",
+        "hint": "Did the provider do work beyond deciding to biopsy?"
+      },
+      {
+        "q": "What is the correct coding for this encounter?",
+        "options": [
+          "11100 only",
+          "99213 only",
+          "99213-25 + 11100",
+          "99213-59 + 11100"
+        ],
+        "answer": 2,
+        "points": 20,
+        "explanation": "99213-25 (separately identifiable E/M) + 11100 (biopsy). Modifier -25 goes on the E/M, never on the procedure. -59 on an E/M is always wrong.",
+        "hint": "Which code gets the -25?"
+      },
+      {
+        "q": "A coder appends modifier -59 to the E/M instead of -25. Why is this wrong?",
+        "options": [
+          "-59 pays less than -25",
+          "Modifier -59 is for procedures only \u2014 never on E/M codes",
+          "-59 requires a different diagnosis",
+          "It is actually correct"
+        ],
+        "answer": 1,
+        "points": 15,
+        "explanation": "Modifier -59 (distinct procedural service) is defined for procedure codes only. Appending it to an E/M is a coding error that will deny or trigger audit. -25 is the E/M modifier.",
+        "hint": "What code type does -59 belong to?"
+      },
+      {
+        "q": "Based on the Pathology Report tab, what diagnosis supports the biopsy (11100)?",
+        "options": [
+          "D22.5 (benign nevus of trunk)",
+          "D48.5 (neoplasm of uncertain behavior of skin)",
+          "C43.59 (melanoma of trunk)",
+          "L98.9 (skin disorder, unspecified)"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "D48.5 \u2014 neoplasm of uncertain behavior. At the time of biopsy the lesion was suspicious (atypical, rule out melanoma). Don't code melanoma (not confirmed) or benign nevus (contradicted by atypia).",
+        "hint": "Was melanoma confirmed? Was the lesion clearly benign?"
       }
     ]
   }

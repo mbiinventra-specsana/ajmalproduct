@@ -5,7 +5,7 @@
 <title>Quiz Arena — MbiInventra RCM Academy</title>
 <link rel="stylesheet" href="/css/app.css">
 <style>
-/* ===== Quiz Arena ULTRA ===== */
+/* ===== Quiz Arena ULTRA + Advanced Types ===== */
 .lab-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:26px 30px;color:#fff;
   margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
 .lab-hero::before{content:"";position:absolute;top:-60px;right:8%;width:260px;height:260px;border-radius:50%;
@@ -40,22 +40,53 @@
   cursor:pointer;color:#1e293b;transition:background .15s;border:1.5px solid transparent;margin-bottom:6px}
 .qq label:hover{background:#f0fdfa;border-color:#99f6e4}
 .qq label input{margin-top:3px;accent-color:#0e9f8a}
+.qq .stem{font-size:14.5px;color:#0f1e33;margin-bottom:4px;line-height:1.6}
+.qq .meta{font-size:11.5px;color:#64748b;margin-bottom:10px}
 .qq .fb{font-size:13px;margin-top:10px;padding:10px 14px;border-radius:10px;display:none;line-height:1.55}
 .qq .fb.ok{display:block;background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#166534;border:1px solid #86efac}
 .qq .fb.no{display:block;background:linear-gradient(135deg,#fee2e2,#fecaca);color:#991b1b;border:1px solid #fca5a5}
+.qq .fb.part{display:block;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border:1px solid #fcd34d}
+.code-inp{width:100%;max-width:340px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:17px;font-weight:700;
+  letter-spacing:1px;padding:12px 16px;border:2px solid #cbd5e1;border-radius:12px;color:#0f2743;
+  text-transform:uppercase;transition:border-color .15s,box-shadow .15s;margin:10px 0 4px}
+.code-inp:focus{outline:none;border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.15)}
+.code-inp::placeholder{text-transform:none;font-weight:400;letter-spacing:0}
+.qtype-tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+  padding:3px 10px;border-radius:20px;margin-bottom:8px}
+.qt-code{background:#ede9fe;color:#5b21b6}
+.qt-eob{background:#dbeafe;color:#1e40af}
+.qt-triage{background:#fee2e2;color:#991b1b}
+.qt-mcq{background:#f1f5f9;color:#475569}
+.eob-panel{background:#0f2743;color:#e2e8f0;border-radius:12px;padding:16px 18px;margin:10px 0 14px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.8}
+.eob-panel .erow{display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,.12);padding:3px 0}
+.eob-panel .erow:last-child{border:none}
+.eob-panel .ek{color:#94a3b8}.eob-panel .ev{color:#fff;font-weight:700}
+.eob-panel .ev.hl{color:#5eead4}
+.denial-panel{background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1.5px solid #fca5a5;border-radius:12px;
+  padding:16px 18px;margin:10px 0 14px;font-size:13.5px}
+.denial-panel .dcode{font-family:ui-monospace,Menlo,monospace;font-weight:800;color:#991b1b;font-size:15px}
 .timerbar{position:sticky;top:0;z-index:5;background:linear-gradient(135deg,#0a1628,#0f2743);color:#fff;border-radius:14px;
-  padding:14px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;
+  padding:14px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap;
   box-shadow:0 6px 20px rgba(10,22,40,.25)}
-.qq{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px;margin-bottom:12px}
-.qq .stem{font-size:14.5px;color:#0f1e33;margin-bottom:4px}
-.qq .meta{font-size:11.5px;color:#64748b;margin-bottom:10px}
-.qq label{display:block;font-size:13.5px;padding:8px 10px;border-radius:8px;cursor:pointer;color:#1e293b}
-.qq label:hover{background:#f8fafc}
-.qq .fb{font-size:13px;margin-top:8px;padding:8px 12px;border-radius:8px;display:none}
-.qq .fb.ok{display:block;background:#dcfce7;color:#166534}
-.qq .fb.no{display:block;background:#fee2e2;color:#991b1b}
-.timerbar{position:sticky;top:0;z-index:5;background:#0a1628;color:#fff;border-radius:12px;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .timerbar .t{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.timerbar .t.warn{color:#fbbf24}.timerbar .t.crit{color:#f87171;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.5}}
+.pace{font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:20px}
+.pace.good{background:rgba(52,211,189,.18);color:#5eead4}
+.pace.bad{background:rgba(248,113,113,.18);color:#fca5a5}
+.mark-btn{background:none;border:1.5px solid #cbd5e1;color:#64748b;font-size:12px;font-weight:700;
+  padding:6px 14px;border-radius:20px;cursor:pointer;transition:all .15s;margin-top:10px}
+.mark-btn:hover{border-color:#f59e0b;color:#d97706}
+.mark-btn.marked{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+.qhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.review-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;margin:14px 0}
+.rev-cell{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;
+  font-size:14px;cursor:pointer;border:2px solid #e2e8f0;background:#f8fafc;color:#64748b;transition:all .15s}
+.rev-cell.answered{background:#dcfce7;border-color:#86efac;color:#166534}
+.rev-cell.marked{border-color:#f59e0b;color:#92400e;background:#fef3c7}
+.rev-cell.marked.answered{background:#fde68a}
+.rev-cell:hover{transform:scale(1.08)}
 @media(max-width:800px){.mode-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -68,9 +99,10 @@
       <h1>🎲 Quiz Arena</h1>
       <p class="psub">Adaptive drill modes. Train your weakest links like the pros do — <b style="color:#5eead4">targeted practice beats random repetition</b>.</p>
       <div class="act-row">
-        <span class="hstat">🎮 <b>4</b> game modes</span>
-        <span class="hstat">🎯 Weakest-link targeting</span>
-        <span class="hstat">🔁 Missed-question drills</span>
+        <span class="hstat">🎮 <b>5</b> game modes</span>
+        <span class="hstat">⌨️ Code typing</span>
+        <span class="hstat">🧮 EOB math</span>
+        <span class="hstat">🚨 Denial triage</span>
       </div>
     </div>
     <div id="stage"></div>
@@ -78,16 +110,20 @@
 </div>
 <script src="/js/app.js"></script>
 <script>
-const LET = ['A', 'B', 'C', 'D'];
-let QS = [], MODE = '', timer = null, left = 0;
+const LET = ['A', 'B', 'C', 'D', 'E', 'F'];
+let QS = [], MODE = '', timer = null, left = 0, done = false, marked = new Set(), startTs = 0;
+const QTYPE_LABEL = { code_entry: ['⌨️ CODE ENTRY', 'qt-code'], eob_math: ['🧮 EOB MATH', 'qt-eob'],
+  denial_triage: ['🚨 DENIAL TRIAGE', 'qt-triage'], mcq: ['📝 MCQ', 'qt-mcq'] };
 const MODES = [
-  ['timed', '⏱️', 'Timed Quiz', '20 questions · 15 minutes. Exam-day pressure, real pacing.', 20, 900],
-  ['weakest', '🎯', 'Weakest Subject', 'Auto-targets your two lowest-scoring cases. 15 questions of pure growth.', 15, 0],
-  ['missed', '🔁', 'Missed Questions', 'Only questions you got wrong before. Kill your blind spots.', 20, 0],
-  ['mix', '🎲', 'Random Mix', '15 questions from the full bank. Warm-up or cool-down.', 15, 0],
+  ['cpc', '🏆', 'CPC Simulation', '20 questions · 48 minutes. Real exam pacing, mark-and-return, mixed advanced types.', 20, 2880, true],
+  ['timed', '⏱️', 'Timed Quiz', '20 questions · 15 minutes. Exam-day pressure, real pacing.', 20, 900, false],
+  ['weakest', '🎯', 'Weakest Subject', 'Auto-targets your two lowest-scoring cases. 15 questions of pure growth.', 15, 0, false],
+  ['missed', '🔁', 'Missed Questions', 'Only questions you got wrong before. Kill your blind spots.', 20, 0, false],
+  ['mix', '🎲', 'Random Mix', '15 questions from the full bank. Warm-up or cool-down.', 15, 0, false],
 ];
 async function bests() { try { return (await api('/api/labs/bests')).bests; } catch (e) { return {}; } }
 async function menu() {
+  clearInterval(timer); done = false;
   const b = await bests();
   document.getElementById('stage').innerHTML = `
     <div class="mode-grid">${MODES.map(([k, ic, t, d], ix) => `
@@ -97,11 +133,62 @@ async function menu() {
         <p>${d}</p>
         <div class="mfoot"><span class="go">Enter arena →</span></div>
       </div>`).join('')}</div>
-    <div class="empty lab-anim" style="animation-delay:.3s"><div class="empty-ic" style="font-size:40px">🎮</div>
+    <div class="empty lab-anim" style="animation-delay:.35s"><div class="empty-ic" style="font-size:40px">🎮</div>
       <h4>Your arena awaits</h4><p>Modes unlock from your own history — attempt cases first for<br><b>Weakest Subject</b> and <b>Missed Questions</b> to light up.</p></div>`;
 }
+function qtypeTag(q) {
+  const [label, cls] = QTYPE_LABEL[q.qtype] || QTYPE_LABEL.mcq;
+  return `<span class="qtype-tag ${cls}">${label}</span>`;
+}
+function renderQ(q, qi) {
+  const qt = q.qtype || 'mcq';
+  let body = '';
+  if (qt === 'code_entry') {
+    body = `<input class="code-inp" id="ti${q.id}" placeholder="Type the exact code (e.g. 99213-25)" autocomplete="off" spellcheck="false"
+      oninput="this.value=this.value.toUpperCase()">`;
+  } else {
+    body = (q.options || []).map((o, i) =>
+      `<label><input type="radio" name="q${q.id}" value="${i}"> <b>${LET[i]}.</b> ${esc(o)}</label>`).join('');
+  }
+  return `
+    <div class="qq lab-anim" data-q="${q.id}" id="qq${q.id}" style="animation-delay:${Math.min(qi * .04, .4)}s">
+      <div class="qhead">
+        <div class="meta">${esc(q.caseCode)} · Q${q.qnum} · ${qi + 1}/${QS.length}</div>
+        ${MODES.find(m => m[0] === MODE)[6] ? `<button class="mark-btn" id="mk${q.id}" onclick="toggleMark(${q.id}, event)">🔖 Mark</button>` : ''}
+      </div>
+      ${qtypeTag(q)}
+      <div class="stem">${esc(q.prompt)}</div>
+      ${body}
+      ${q.hint ? `<div style="font-size:12px;color:#64748b;margin-top:6px">💡 ${esc(q.hint)}</div>` : ''}
+      <div class="fb" id="fb${q.id}"></div>
+    </div>`;
+}
+function toggleMark(qid, ev) {
+  ev.stopPropagation();
+  const btn = document.getElementById('mk' + qid);
+  if (marked.has(qid)) { marked.delete(qid); btn.classList.remove('marked'); btn.textContent = '🔖 Mark'; }
+  else { marked.add(qid); btn.classList.add('marked'); btn.textContent = '🔖 Marked'; }
+}
+function answeredCount() {
+  return QS.filter(q => {
+    if ((q.qtype || 'mcq') === 'code_entry') {
+      const el = document.getElementById('ti' + q.id);
+      return el && el.value.trim().length > 0;
+    }
+    return document.querySelector(`input[name="q${q.id}"]:checked`);
+  }).length;
+}
+function paceHtml() {
+  if (!left || MODE !== 'cpc') return '';
+  const elapsed = Date.now() - startTs, total = QS.length;
+  const expected = (elapsed / (2880 * 1000)) * total; // questions we should have done by now
+  const doneN = answeredCount();
+  const ok = doneN >= expected - 1;
+  return `<span class="pace ${ok ? 'good' : 'bad'}">${ok ? '✅ On pace' : '⚠️ Falling behind'} · ${doneN}/${total} done</span>`;
+}
 async function start(mode) {
-  MODE = mode;
+  MODE = mode; done = false; marked = new Set();
+  clearInterval(timer);
   const cfg = MODES.find(m => m[0] === mode);
   const d = await api(`/api/labs/quiz?mode=${mode}&n=${cfg[4]}`);
   if (!d.questions.length) {
@@ -109,56 +196,153 @@ async function start(mode) {
       <button class="btn btn-line" onclick="menu()" style="margin-top:12px">← Back to modes</button></div>`;
     return;
   }
-  QS = d.questions; left = cfg[5];
+  QS = d.questions; left = cfg[5]; startTs = Date.now();
   let html = '';
   if (left) {
-    html += `<div class="timerbar"><span>${esc(cfg[1])} ${esc(cfg[2])}</span><span class="t" id="clock"></span></div>`;
+    html += `<div class="timerbar"><span>${esc(cfg[1])} ${esc(cfg[2])}</span>
+      <span id="paceBox">${paceHtml()}</span><span class="t" id="clock"></span></div>`;
     timer = setInterval(() => {
       left--;
       const el = document.getElementById('clock');
-      if (el) el.textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`;
-      if (left <= 0) submit();
+      if (el) {
+        el.textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`;
+        el.className = 't' + (left <= 300 ? ' crit' : left <= 600 ? ' warn' : '');
+      }
+      const pb = document.getElementById('paceBox');
+      if (pb && left % 5 === 0) pb.innerHTML = paceHtml();
+      if (left <= 0) { clearInterval(timer); review(true); }
     }, 1000);
   }
   html += `<div class="panel-light lab-anim" style="margin-bottom:14px"><h3>${esc(cfg[1])} ${esc(cfg[2])}</h3>
-    <div style="font-size:13px;color:#64748b">${QS.length} questions · answer everything, then submit.</div></div>`;
-  html += QS.map((q, qi) => `
-    <div class="qq lab-anim" data-q="${q.id}" style="animation-delay:${Math.min(qi * .04, .4)}s">
-      <div class="meta">${esc(q.caseCode)} · Q${q.qnum} · ${qi + 1}/${QS.length}</div>
-      <div class="stem">${esc(q.prompt)}</div>
-      ${q.options.map((o, i) => `<label><input type="radio" name="q${q.id}" value="${i}"> <b>${LET[i]}.</b> ${esc(o)}</label>`).join('')}
-      ${q.hint ? `<div style="font-size:12px;color:#64748b;margin-top:6px">💡 ${esc(q.hint)}</div>` : ''}
-      <div class="fb" id="fb${q.id}"></div>
-    </div>`).join('');
-  html += `<button class="btn btn-teal" id="subBtn" data-fn="lab-run" onclick="submit()" style="font-size:16px;padding:12px 34px">Submit answers</button>
+    <div style="font-size:13px;color:#64748b">${QS.length} questions · mixed types (MCQ, code entry, EOB math, denial triage) · answer everything, then submit.</div></div>`;
+  html += QS.map((q, qi) => renderQ(q, qi)).join('');
+  const hasMark = !!cfg[6];
+  html += `<button class="btn btn-teal" id="subBtn" data-fn="lab-run" onclick="${hasMark ? 'review()' : 'submit()'}" style="font-size:16px;padding:12px 34px">${hasMark ? 'Review & submit →' : 'Submit answers'}</button>
     <button class="btn btn-line" onclick="menu()" style="margin-left:10px">← Modes</button>`;
   document.getElementById('stage').innerHTML = html;
   window.scrollTo({ top: 0 });
 }
-let done = false;
+function review(auto) {
+  if (done) return;
+  clearInterval(timer);
+  const cells = QS.map((q, qi) => {
+    const isA = (q.qtype || 'mcq') === 'code_entry'
+      ? (document.getElementById('ti' + q.id)?.value.trim().length > 0)
+      : !!document.querySelector(`input[name="q${q.id}"]:checked`);
+    const cls = 'rev-cell' + (isA ? ' answered' : '') + (marked.has(q.id) ? ' marked' : '');
+    return `<div class="${cls}" onclick="jumpQ(${q.id})" title="Q${qi + 1}${marked.has(q.id) ? ' (marked)' : ''}">${qi + 1}</div>`;
+  }).join('');
+  const unans = QS.length - answeredCount();
+  document.getElementById('stage').innerHTML = `
+    <div class="panel-light lab-anim" style="max-width:640px;margin:0 auto">
+      <h3>📋 Review before submit</h3>
+      <p style="font-size:13.5px;color:#64748b">${auto ? '⏰ <b>Time expired</b> — auto-submitting your answers.' : `You answered <b>${answeredCount()}/${QS.length}</b>${unans ? ` · <b style="color:#d97706">${unans} unanswered</b>` : ' · all done!'}${marked.size ? ` · <b>🔖 ${marked.size} marked</b>` : ''}`}</p>
+      <div class="review-grid">${cells}</div>
+      <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+        ${auto ? '' : '<button class="btn btn-line" onclick="backToQuiz()">← Back to questions</button>'}
+        <button class="btn btn-teal" id="subBtn" data-fn="lab-run" onclick="submit()">Submit ${QS.length} answers</button>
+      </div>
+    </div>`;
+  window.scrollTo({ top: 0 });
+  if (auto) setTimeout(() => { if (!done) submit(); }, 2500);
+}
+let _savedHtml = '';
+function backToQuiz() {
+  // re-render questions preserving answers
+  const saved = QS.map(q => {
+    if ((q.qtype || 'mcq') === 'code_entry') {
+      const el = document.getElementById('ti' + q.id);
+      return { id: q.id, text: el ? el.value : '' };
+    }
+    const r = document.querySelector(`input[name="q${q.id}"]:checked`);
+    return { id: q.id, chosen: r ? +r.value : -1 };
+  });
+  const cfg = MODES.find(m => m[0] === MODE);
+  let html = '';
+  if (left > 0) {
+    html += `<div class="timerbar"><span>${esc(cfg[1])} ${esc(cfg[2])}</span>
+      <span id="paceBox">${paceHtml()}</span><span class="t" id="clock"></span></div>`;
+    timer = setInterval(() => {
+      left--;
+      const el = document.getElementById('clock');
+      if (el) {
+        el.textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`;
+        el.className = 't' + (left <= 300 ? ' crit' : left <= 600 ? ' warn' : '');
+      }
+      const pb = document.getElementById('paceBox');
+      if (pb && left % 5 === 0) pb.innerHTML = paceHtml();
+      if (left <= 0) { clearInterval(timer); review(true); }
+    }, 1000);
+  }
+  html += `<div class="panel-light lab-anim" style="margin-bottom:14px"><h3>${esc(cfg[1])} ${esc(cfg[2])}</h3>
+    <div style="font-size:13px;color:#64748b">${QS.length} questions · review your marks, then submit.</div></div>`;
+  html += QS.map((q, qi) => renderQ(q, qi)).join('');
+  html += `<button class="btn btn-teal" id="subBtn" data-fn="lab-run" onclick="review()" style="font-size:16px;padding:12px 34px">Review & submit →</button>
+    <button class="btn btn-line" onclick="menu()" style="margin-left:10px">← Modes</button>`;
+  document.getElementById('stage').innerHTML = html;
+  // restore answers + marks
+  saved.forEach(sv => {
+    if (sv.text !== undefined) {
+      const el = document.getElementById('ti' + sv.id);
+      if (el) el.value = sv.text;
+    } else if (sv.chosen >= 0) {
+      const r = document.querySelector(`input[name="q${sv.id}"][value="${sv.chosen}"]`);
+      if (r) r.checked = true;
+    }
+  });
+  marked.forEach(qid => {
+    const btn = document.getElementById('mk' + qid);
+    if (btn) { btn.classList.add('marked'); btn.textContent = '🔖 Marked'; }
+  });
+  window.scrollTo({ top: 0 });
+}
+function jumpQ(qid) {
+  backToQuiz();
+  setTimeout(() => {
+    const el = document.getElementById('qq' + qid);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
 async function submit() {
   if (done) return; done = true;
   clearInterval(timer);
   const btn = document.getElementById('subBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Grading…'; }
   const answers = QS.map(q => {
+    if ((q.qtype || 'mcq') === 'code_entry') {
+      const el = document.getElementById('ti' + q.id);
+      return { questionId: q.id, text: el ? el.value.trim() : '' };
+    }
     const r = document.querySelector(`input[name="q${q.id}"]:checked`);
     return { questionId: q.id, chosen: r ? +r.value : -1 };
   });
   const r = await api('/api/labs/quiz/submit', { method: 'POST', body: JSON.stringify({ mode: MODE, answers }) });
   const fbById = Object.fromEntries(r.feedback.map(f => [f.questionId, f]));
-  QS.forEach(q => {
-    const fb = fbById[q.id], box = document.getElementById('fb' + q.id);
-    if (!fb || !box) return;
-    box.className = 'fb ' + (fb.correct ? 'ok' : 'no');
-    box.textContent = (fb.correct ? '✅ Correct. ' : '❌ Not quite. ') + (fb.explanation || '');
-  });
+  // re-render questions to show feedback
+  const cfg = MODES.find(m => m[0] === MODE);
+  let html = `<div class="panel-light lab-anim" style="margin-bottom:14px"><h3>${esc(cfg[1])} ${esc(cfg[2])} — Results</h3></div>`;
+  html += QS.map((q, qi) => {
+    const fb = fbById[q.id];
+    let body = '';
+    if ((q.qtype || 'mcq') === 'code_entry') {
+      body = `<div style="font-family:ui-monospace,monospace;font-size:15px;padding:10px 14px;background:#f8fafc;border-radius:10px;margin:8px 0">
+        Your answer: <b>${esc(fb?.typed || '(blank)')}</b>${fb?.expected ? `<br>Correct answer: <b style="color:#0e9f8a">${esc(fb.expected)}</b>` : ''}${fb?.partial ? ' <span class="qtype-tag" style="background:#fef3c7;color:#92400e">½ partial credit</span>' : ''}</div>`;
+    } else {
+      body = (q.options || []).map((o, i) =>
+        `<label style="${fb && !fb.correct ? 'cursor:default' : ''}"><input type="radio" disabled> <b>${LET[i]}.</b> ${esc(o)}</label>`).join('');
+    }
+    return `<div class="qq" data-q="${q.id}">
+      <div class="meta">${esc(q.caseCode)} · Q${q.qnum} · ${qi + 1}/${QS.length}</div>
+      ${qtypeTag(q)}
+      <div class="stem">${esc(q.prompt)}</div>${body}
+      <div class="fb ${fb ? (fb.correct ? 'ok' : fb.partial ? 'part' : 'no') : ''}" id="fb${q.id}" style="${fb ? 'display:block' : ''}">${fb ? ((fb.correct ? '✅ Correct. ' : fb.partial ? '🟡 Partial credit — base code right, modifier/detail off. ' : '❌ Not quite. ') + (fb.explanation || '') + (fb.pointsEarned !== undefined ? ` <b>(+${fb.pointsEarned})</b>` : '')) : ''}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('stage').innerHTML = html;
   window.scrollTo({ top: 0, behavior: 'smooth' });
   const top = document.createElement('div');
-  top.className = 'panel-light';
-  top.style.cssText = 'margin-bottom:16px;text-align:center';
-  const medal = r.pct >= 90 ? '🥇' : r.pct >= 75 ? '🥈' : r.pct >= 60 ? '🥉' : '💪';
   top.style.cssText = 'margin-bottom:16px;text-align:center;background:linear-gradient(135deg,#0f2743,#143a5e);color:#fff;border-radius:18px;padding:28px;box-shadow:0 10px 30px rgba(15,39,67,.3)';
+  const medal = r.pct >= 90 ? '🥇' : r.pct >= 75 ? '🥈' : r.pct >= 60 ? '🥉' : '💪';
   top.innerHTML = `<div style="font-size:52px;margin-bottom:4px">${medal}</div>
     <div class="eyebrow2" style="z-index:auto">Arena Result</div>
     <b style="font-size:44px;color:#fff">${r.pct}<span style="font-size:20px;color:#94a3b8">%</span></b>
