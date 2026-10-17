@@ -1,29 +1,87 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Denials — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<title>Denials — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css">
+<style>
+/* ===== Denials ULTRA ===== */
+.pt-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:24px 28px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.pt-hero::before{content:"";position:absolute;top:-50px;right:10%;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.pt-hero h1{margin:0 0 6px;font-size:22px;position:relative}
+.pt-hero .psub{color:#b9d4e8;margin:0;font-size:13.5px;position:relative}
+.pt-hero .act-row{position:relative;margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pt-hero .hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 14px;font-size:13px;backdrop-filter:blur(6px)}
+.pt-hero .hstat b{font-size:16px}
+.pfilters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.pf{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:24px;border:1.5px solid #e2e8f0;
+  background:#fff;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;transition:all .2s;
+  box-shadow:0 1px 3px rgba(10,22,40,.04);font-family:inherit}
+.pf:hover{border-color:#0e9f8a;color:#0f2743;transform:translateY(-1px);box-shadow:0 3px 10px rgba(14,159,138,.12)}
+.pf.on{background:linear-gradient(135deg,#0f2743,#1a3a5c);color:#fff;border-color:#0f2743;
+  box-shadow:0 4px 14px rgba(15,39,67,.25)}
+.pf .cnt{background:#f1f5f9;color:#475569;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;min-width:24px;text-align:center}
+.pf.on .cnt{background:rgba(255,255,255,.2);color:#fff}
+.pav{width:38px;height:38px;border-radius:11px;color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+@keyframes ccIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pt-anim{animation:ccIn .4s cubic-bezier(.2,.8,.2,1) backwards}
+.kic{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#f0fdfa,#ccfbf1);
+  display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+.wrbar{display:flex;height:8px;border-radius:5px;overflow:hidden;background:#f1f5f9;margin-top:8px}
+.wrbar div{height:100%;background:linear-gradient(90deg,#0e9f8a,#34d3bd);transition:width .5s ease}
+.pulse-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#f87171;margin-right:6px;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.code-chip{font-family:monospace;font-weight:800;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;
+  border-radius:8px;padding:4px 10px;font-size:12.5px}
+@media(max-width:700px){.pt-hero{padding:20px}.pf{padding:8px 14px;font-size:12px}}
+</style></head>
 <body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
-  <div class="phead"><div>
-    <div class="eyebrow2">Revenue Cycle</div><h1>Denial Work Queue</h1>
+  <div class="pt-hero pt-anim">
+    <div class="eyebrow2" style="color:#34d3bd">Revenue Cycle</div>
+    <h1>🚫 Denial Work Queue</h1>
     <p class="psub">Investigate denied claims, document root causes and corrective actions, manage appeals.</p>
-  </div><span class="bdg b-red" style="font-size:11px"><span class="pulse-dot"></span> DENIAL DESK</span></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)">
-    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+    <div class="act-row">
+      <span class="bdg" style="background:rgba(248,113,113,.18);color:#fca5a5;border:1px solid rgba(248,113,113,.3);font-size:11px"><span class="pulse-dot"></span>DENIAL DESK</span>
+      <span class="hstat">Open <b id="hOpen">—</b></span>
+      <span class="hstat">Appealed <b id="hApp" style="color:#5eead4">—</b></span>
+      <span class="hstat">Resolved <b id="hRes">—</b></span>
+    </div>
   </div>
-  <div class="panel" style="margin-bottom:18px" id="winPanel" style="display:none"><div class="prow"><h3 style="margin:0">🏆 Appeal Win Rate by Denial Code</h3></div>
-    <div id="winrate" class="kpi-strip" style="grid-template-columns:repeat(4,1fr);margin:0"></div></div>
-  <div class="info-panel">🚫 <b>Denial management training:</b> every denial has a root cause. Document it, fix it, then decide — <b>appeal</b> when the claim was correct, <b>correct &amp; rebill</b> when it wasn't, <b>write off</b> only when recovery isn't possible.</div>
-  <div class="panel"><div class="prow"><h3 style="margin:0">Open Denials</h3>
-    <input class="search" id="q" placeholder="Search denials…"></div>
-    <div class="twrap"><table><thead><tr>
-      <th>Claim</th><th>Patient</th><th>Payer</th><th>Billed</th><th>Denial Code</th><th>Status</th><th></th>
+
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div>
+    <div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
+
+  <div class="panel pt-anim" style="animation-delay:.06s;margin-bottom:18px" id="winPanel" style="display:none">
+    <div class="prow"><h3 style="margin:0">🏆 Appeal Win Rate by Denial Code</h3>
+      <span style="color:#64748b;font-size:12px">your appeal track record</span></div>
+    <div id="winrate" class="kpi-strip" style="grid-template-columns:repeat(4,1fr);margin:0"></div>
+  </div>
+
+  <div class="info-panel pt-anim" style="animation-delay:.07s">🚫 <b>Denial management training:</b> every denial has a root cause. Document it, fix it, then decide — <b>appeal</b> when the claim was correct, <b>correct &amp; rebill</b> when it wasn't, <b>write off</b> only when recovery isn't possible.</div>
+
+  <div class="panel pt-anim" style="animation-delay:.08s">
+    <div class="prow"><h3 style="margin:0">Open Denials</h3>
+      <input class="search" id="q" placeholder="Search denials…"></div>
+    <div class="pfilters" id="dfilters">
+      <button class="pf on" data-f="all">📋 All <span class="cnt" id="dAll">0</span></button>
+      <button class="pf" data-f="DENIED">🚫 Denied <span class="cnt" id="dDen">0</span></button>
+      <button class="pf" data-f="APPEALED">📨 Appealed <span class="cnt" id="dApp">0</span></button>
+    </div>
+    <div class="twrap" style="overflow-x:auto"><table style="min-width:780px"><thead><tr>
+      <th>Claim</th><th>Patient</th><th>Payer</th><th>Billed</th><th>Denial Code</th><th>Status</th><th style="text-align:right">Action</th>
     </tr></thead><tbody id="rows"><tr><td colspan="7"><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div></td></tr></tbody></table></div>
-    <div class="empty" id="empty" style="display:none">No open denials — clean claiming! 🎉</div>
+    <div class="empty" id="empty" style="display:none"><div class="empty-ic">🎉</div><h4>No open denials</h4><p>Clean claiming! Denials appear here when a submitted claim is denied.</p><div style="margin-top:14px"><a class="btn btn-teal" href="/claims">Go to Claims →</a></div></div>
   </div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
-let rows = [], q = '';
+let rows = [], q = '', df = 'all';
 const ROOT_CAUSES = ['Coding error', 'Eligibility / benefits', 'Missing authorization', 'Duplicate claim', 'Timely filing', 'Missing information', 'Coordination of benefits', 'Medical necessity', 'Other'];
+const initials = n => String(n || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+const avBg = s => { const hues = [160, 200, 220, 180, 190, 210]; let h = 0; for (const c of String(s)) h += c.charCodeAt(0); return `hsl(${hues[h % hues.length]},45%,42%)`; };
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('denialsq', u);
@@ -31,29 +89,41 @@ async function load() {
   const d = await api('/api/rcm/denials'); rows = d.denials;
   const open = rows.filter(r => r.status === 'DENIED').length;
   const prog = rows.filter(r => r.status === 'APPEALED').length;
+  document.getElementById('hOpen').textContent = open;
+  document.getElementById('hApp').textContent = prog;
+  document.getElementById('hRes').textContent = d.resolved || 0;
   document.getElementById('kpis').innerHTML = [
-    ['Open', open, 'Denials requiring work'],
-    ['In progress', prog, 'Under investigation'],
-    ['Appealed', prog, 'Awaiting payer'],
-    ['Resolved', d.resolved || 0, 'Won / corrected / written off'],
-  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+    ['🚫', 'Open', open, 'Denials requiring work'],
+    ['🔍', 'In progress', prog, 'Under investigation'],
+    ['📨', 'Appealed', prog, 'Awaiting payer'],
+    ['✅', 'Resolved', d.resolved || 0, 'Won / corrected / written off'],
+  ].map(([ic, l, v, s], i) => `<div class="kpi pt-anim" style="animation-delay:${.04 * i}s"><span class="kic">${ic}</span><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
   const wr = d.winRate || {}, codes = Object.keys(wr);
   if (codes.length) {
     document.getElementById('winPanel').style.display = 'block';
     document.getElementById('winrate').innerHTML = codes.map(c =>
-      `<div class="kpi"><span>${esc(c)}</span><b>${wr[c].pct}%</b><div class="sub">${wr[c].won}/${wr[c].total} appeals won</div></div>`).join('');
+      `<div class="kpi"><span>${esc(c)}</span><b>${wr[c].pct}%</b><div class="sub">${wr[c].won}/${wr[c].total} appeals won</div>
+      <div class="wrbar"><div style="width:${wr[c].pct}%"></div></div></div>`).join('');
   }
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  set('dAll', rows.length); set('dDen', open); set('dApp', prog);
   render();
 }
+document.querySelectorAll('#dfilters .pf').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#dfilters .pf').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); df = b.dataset.f; render();
+});
 function render() {
-  const rs = rows.filter(r => (r.claim_no + ' ' + r.patient_code + ' ' + r.denial_code).toLowerCase().includes(q));
-  document.getElementById('rows').innerHTML = rs.map(r => `<tr>
-    <td><b><code>${esc(r.claim_no)}</code></b></td><td>${esc(r.patient_code)}</td>
+  const rs = rows.filter(r => (df === 'all' || r.status === df) &&
+    (r.claim_no + ' ' + r.patient_code + ' ' + r.denial_code).toLowerCase().includes(q));
+  document.getElementById('rows').innerHTML = rs.map((r, ix) => `<tr class="pt-anim" style="animation-delay:${Math.min(ix * .03, .3)}s">
+    <td><b><code>${esc(r.claim_no)}</code></b></td>
+    <td><div style="display:flex;align-items:center;gap:10px"><span class="pav" style="background:${avBg(r.patient_code)}">${esc(initials(r.patient_code))}</span><span style="font-size:13px;font-weight:600">${esc(r.patient_code)}</span></div></td>
     <td style="max-width:170px">${esc(r.payer)}</td><td>${money(r.billed)}</td>
-    <td><span class="bdg b-red">${esc(r.denial_code)}</span></td>
-    <td><span class="bdg ${r.status === 'DENIED' ? 'b-red' : 'b-blue'}">${esc(r.status)}</span></td>
-    <td><button class="btn btn-teal btn-sm" onclick="workDenial(${r.id})">Work Denial</button></td></tr>`).join('');
-  document.getElementById('empty').style.display = rs.length ? 'none' : 'block';
+    <td><span class="code-chip">${esc(r.denial_code)}</span></td>
+    <td><span class="bdg ${r.status === 'DENIED' ? 'b-red' : 'b-blue'}"><span class="dot"></span>${esc(r.status)}</span></td>
+    <td style="text-align:right"><button class="btn btn-teal btn-sm" onclick="workDenial(${r.id})">Work Denial</button></td></tr>`).join('');
+  document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
 }
 const DENIAL_HELP = {
   'CO-16': 'Claim lacks information — check what the payer needs and resubmit with documentation.',

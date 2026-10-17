@@ -1,54 +1,96 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reports — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<title>Reports — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css">
+<style>
+/* ===== Reports ULTRA ===== */
+.pt-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:24px 28px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.pt-hero::before{content:"";position:absolute;top:-50px;right:10%;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.pt-hero h1{margin:0 0 6px;font-size:22px;position:relative}
+.pt-hero .psub{color:#b9d4e8;margin:0;font-size:13.5px;position:relative}
+.pt-hero .act-row{position:relative;margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pt-hero .hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 14px;font-size:13px;backdrop-filter:blur(6px)}
+.pt-hero .hstat b{font-size:16px}
+@keyframes ccIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pt-anim{animation:ccIn .4s cubic-bezier(.2,.8,.2,1) backwards}
+.kic{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#f0fdfa,#ccfbf1);
+  display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+.dpills{display:flex;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;padding:5px;backdrop-filter:blur(6px)}
+.dpills .tab{background:transparent;border:none;color:#b9d4e8;font-size:12.5px;font-weight:600;padding:8px 16px;
+  border-radius:10px;cursor:pointer;transition:all .18s;font-family:inherit}
+.dpills .tab:hover{color:#fff}
+.dpills .tab.on{background:#5eead4;color:#0f2743;box-shadow:0 2px 10px rgba(94,234,212,.35)}
+.sec-h{display:flex;align-items:center;gap:10px;margin:24px 0 14px}
+.sec-h h3{margin:0;font-size:16px;color:#0f2743}
+.sec-h .line{flex:1;height:1px;background:#e8eef4}
+.ratebar{display:flex;height:8px;border-radius:5px;overflow:hidden;background:#f1f5f9;margin-top:8px;max-width:120px}
+.ratebar div{height:100%}
+.pav{width:36px;height:36px;border-radius:10px;color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:12px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+@media(max-width:700px){.pt-hero{padding:20px}}
+</style></head>
 <body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
-  <div class="phead"><div>
-    <div class="eyebrow2">MbiInventra RCM Academy</div><h1>Reports &amp; Analytics</h1>
+  <div class="pt-hero pt-anim">
+    <div class="eyebrow2" style="color:#34d3bd">MbiInventra RCM Academy</div>
+    <h1>📊 Reports &amp; Analytics</h1>
     <p class="psub">Revenue cycle performance and training progress — one view.</p>
-  </div><div class="act-row">
-    <span class="bdg b-teal" style="font-size:12px">Student Report</span>
-    <div class="tabs" id="datepills" style="margin:0">
-      <button class="tab on" data-d="0">All time</button>
-      <button class="tab" data-d="7">7d</button>
-      <button class="tab" data-d="30">30d</button>
-      <button class="tab" data-d="90">90d</button>
+    <div class="act-row">
+      <span class="bdg" style="background:rgba(94,234,212,.18);color:#5eead4;border:1px solid rgba(94,234,212,.3);font-size:12px">Student Report</span>
+      <div class="dpills" id="datepills">
+        <button class="tab on" data-d="0">All time</button>
+        <button class="tab" data-d="7">7d</button>
+        <button class="tab" data-d="30">30d</button>
+        <button class="tab" data-d="90">90d</button>
+      </div>
+      <button class="btn-hero" id="csvBtn" style="padding:9px 18px;font-size:13px">⬇ Export CSV</button>
     </div>
-    <button class="btn btn-line btn-sm" id="csvBtn">⬇ Export CSV</button>
-  </div></div>
-
-  <h3 style="margin:4px 0 14px">💼 RCM Performance</h3>
-  <div class="kpi-strip" id="kpisRcm" style="grid-template-columns:repeat(4,1fr)">
-    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
   </div>
 
-  <h3 style="margin:22px 0 14px">🎓 Training Performance</h3>
-  <div class="kpi-strip" id="kpisTr" style="grid-template-columns:repeat(4,1fr)">
-    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+  <div class="sec-h pt-anim" style="animation-delay:.04s"><h3>💼 RCM Performance</h3><div class="line"></div></div>
+  <div class="kpi-strip" id="kpisRcm" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div>
+    <div class="skel skel-card"></div><div class="skel skel-card"></div>
   </div>
 
-  <div class="panel"><div class="prow"><h3 style="margin:0">🏥 Per-Payer Performance</h3>
-    <span style="color:#64748b;font-size:12px">which payers pay — and which deny</span></div>
-    <div class="twrap"><table><thead><tr>
+  <div class="sec-h pt-anim" style="animation-delay:.06s"><h3>🎓 Training Performance</h3><div class="line"></div></div>
+  <div class="kpi-strip" id="kpisTr" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div>
+    <div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
+
+  <div class="panel pt-anim" style="animation-delay:.08s">
+    <div class="prow"><h3 style="margin:0">🏥 Per-Payer Performance</h3>
+      <span style="color:#64748b;font-size:12px">which payers pay — and which deny</span></div>
+    <div class="twrap" style="overflow-x:auto"><table style="min-width:720px"><thead><tr>
       <th>Payer</th><th>Claims</th><th>Billed</th><th>Collected</th><th>Denials</th><th>Denial Rate</th>
     </tr></thead><tbody id="payerrows"><tr><td colspan="6"><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div></td></tr></tbody></table></div>
   </div>
 
-  <div class="panel"><div class="prow"><h3 style="margin:0">Recent Training Attempts</h3></div>
-    <div class="twrap"><table><thead><tr>
+  <div class="panel pt-anim" style="animation-delay:.1s">
+    <div class="prow"><h3 style="margin:0">🎯 Recent Training Attempts</h3></div>
+    <div class="twrap" style="overflow-x:auto"><table style="min-width:640px"><thead><tr>
       <th>Case</th><th>Title</th><th>Score</th><th>Date</th>
     </tr></thead><tbody id="rows"><tr><td colspan="4"><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div></td></tr></tbody></table></div>
-    <div class="empty" id="empty" style="display:none">No attempts yet — start training. 🎯</div>
+    <div class="empty" id="empty" style="display:none"><div class="empty-ic">🎯</div><h4>No attempts yet</h4><p>Start training in the Case Center to see your progress here.</p><div style="margin-top:14px"><a class="btn btn-teal" href="/training">Go to Case Center →</a></div></div>
   </div>
 
-  <div class="panel"><div class="prow"><h3 style="margin:0">Lab Bests</h3></div>
-    <div class="twrap"><table><thead><tr><th>Lab</th><th>Best Score</th><th>Runs</th></tr></thead>
+  <div class="panel pt-anim" style="animation-delay:.12s">
+    <div class="prow"><h3 style="margin:0">🔬 Lab Bests</h3>
+      <span style="color:#64748b;font-size:12px">your top advanced-lab runs</span></div>
+    <div class="twrap" style="overflow-x:auto"><table style="min-width:480px"><thead><tr><th>Lab</th><th>Best Score</th><th>Runs</th></tr></thead>
     <tbody id="labrows"></tbody></table></div>
   </div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
 const LABN = { scrubber: 'Claim Scrubber', denials: 'Denial Crime-Scene', sprints: 'Coding Sprints', quiz: 'Quiz Arena' };
+const LABICON = { scrubber: '🔍', denials: '🕵️', sprints: '⚡', quiz: '🧠' };
 let D = null, DAYS = 0;
+const initials = n => String(n || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+const avBg = s => { const hues = [160, 200, 220, 180, 190, 210]; let h = 0; for (const c of String(s)) h += c.charCodeAt(0); return `hsl(${hues[h % hues.length]},45%,42%)`; };
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('reports', u);
@@ -57,30 +99,38 @@ async function load() {
   D = d;
   const r = d.rcm, t = d.training;
   document.getElementById('kpisRcm').innerHTML = [
-    ['Total billed', money(r.totalBilled), `${r.totalClaims} claims`],
-    ['Collected', money(r.collected), 'Payer payments'],
-    ['Denial rate', r.denialRate + '%', 'Denied / appealed'],
-    ['Clean claim rate', r.cleanClaimRate + '%', 'Passed validation'],
-  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+    ['💵', 'Total billed', money(r.totalBilled), `${r.totalClaims} claims`],
+    ['💰', 'Collected', money(r.collected), 'Payer payments'],
+    ['🚫', 'Denial rate', r.denialRate + '%', 'Denied / appealed'],
+    ['✨', 'Clean claim rate', r.cleanClaimRate + '%', 'Passed validation'],
+  ].map(([ic, l, v, s], i) => `<div class="kpi pt-anim" style="animation-delay:${.04 * i}s"><span class="kic">${ic}</span><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
   document.getElementById('kpisTr').innerHTML = [
-    ['Attempts', t.attempts, 'Finished cases'],
-    ['Average score', t.avgScore + '%', 'Across attempts'],
-    ['Best score', t.bestScore + '%', 'Highest recorded'],
-    ['Open A/R', r.openAR, `${r.avgDaysAR} avg days`],
-  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
-  document.getElementById('payerrows').innerHTML = (d.payers || []).map(p => `<tr>
-    <td style="max-width:220px">${esc(p.payer)}</td><td>${p.claims}</td>
-    <td>${money(p.billed)}</td><td><b>${money(p.collected)}</b></td><td>${p.denied}</td>
-    <td><span class="bdg ${p.denialRate >= 30 ? 'b-red' : p.denialRate > 0 ? 'b-amber' : 'b-green'}">${p.denialRate}%</span></td></tr>`).join('')
-    || `<tr><td colspan="6" class="empty">No claims yet.</td></tr>`;
-  document.getElementById('rows').innerHTML = d.recent.map(a => `<tr>
+    ['📝', 'Attempts', t.attempts, 'Finished cases'],
+    ['📊', 'Average score', t.avgScore + '%', 'Across attempts'],
+    ['🏆', 'Best score', t.bestScore + '%', 'Highest recorded'],
+    ['📉', 'Open A/R', r.openAR, `${r.avgDaysAR} avg days`],
+  ].map(([ic, l, v, s], i) => `<div class="kpi pt-anim" style="animation-delay:${.06 + .04 * i}s"><span class="kic">${ic}</span><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+  document.getElementById('payerrows').innerHTML = (d.payers || []).map((p, ix) => {
+    const cls = p.denialRate >= 30 ? 'b-red' : p.denialRate > 0 ? 'b-amber' : 'b-green';
+    return `<tr class="pt-anim" style="animation-delay:${Math.min(ix * .03, .3)}s">
+    <td><div style="display:flex;align-items:center;gap:10px"><span class="pav" style="background:${avBg(p.payer)}">${esc(initials(p.payer))}</span><span style="font-size:13px;font-weight:600;max-width:220px">${esc(p.payer)}</span></div></td>
+    <td>${p.claims}</td><td>${money(p.billed)}</td><td><b style="color:#0e9f8a">${money(p.collected)}</b></td><td>${p.denied}</td>
+    <td><span class="bdg ${cls}"><span class="dot"></span>${p.denialRate}%</span>
+      <div class="ratebar"><div style="width:${Math.min(100, p.denialRate)}%;background:${p.denialRate >= 30 ? '#ef4444' : p.denialRate > 0 ? '#f59e0b' : '#0e9f8a'}"></div></div></td></tr>`;
+  }).join('') || `<tr><td colspan="6" class="empty">No claims yet.</td></tr>`;
+  document.getElementById('rows').innerHTML = d.recent.map((a, ix) => {
+    const pct = Math.round(100 * a.score / Math.max(1, a.max));
+    const cls = pct >= 80 ? 'b-green' : pct >= 60 ? 'b-amber' : 'b-red';
+    return `<tr class="pt-anim" style="animation-delay:${Math.min(ix * .03, .3)}s">
     <td><b>${esc(a.code)}</b></td><td>${esc(a.title)}</td>
-    <td><b>${Math.round(100 * a.score / Math.max(1, a.max))}%</b> <span style="color:#64748b">(${a.score}/${a.max})</span></td>
-    <td>${esc((a.when || '').slice(0, 10))}</td></tr>`).join('');
+    <td><span class="bdg ${cls}"><span class="dot"></span>${pct}%</span> <span style="color:#64748b">(${a.score}/${a.max})</span></td>
+    <td>${esc((a.when || '').slice(0, 10))}</td></tr>`;
+  }).join('');
   document.getElementById('empty').style.display = d.recent.length ? 'none' : 'block';
-  document.getElementById('labrows').innerHTML = t.labs.map(l => `<tr>
-    <td>${esc(LABN[l.lab] || l.lab)}</td><td><b>${l.best}</b></td><td>${l.runs}</td></tr>`).join('')
-    || `<tr><td colspan="3" class="empty">No lab runs yet.</td></tr>`;
+  document.getElementById('labrows').innerHTML = t.labs.map((l, ix) => `<tr class="pt-anim" style="animation-delay:${Math.min(ix * .03, .3)}s">
+    <td><div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">${LABICON[l.lab] || '🔬'}</span><b>${esc(LABN[l.lab] || l.lab)}</b></div></td>
+    <td><b>${l.best}</b></td><td>${l.runs} run${l.runs === 1 ? '' : 's'}</td></tr>`).join('')
+    || `<tr><td colspan="3" class="empty">No lab runs yet — visit the Advanced Labs.</td></tr>`;
 }
 document.querySelectorAll('#datepills .tab').forEach(t => t.onclick = () => {
   document.querySelectorAll('#datepills .tab').forEach(x => x.classList.remove('on'));

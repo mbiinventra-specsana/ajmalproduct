@@ -2,8 +2,35 @@
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Payments — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css">
 <style>
+/* ===== Payments ULTRA ===== */
+.pt-hero{background:linear-gradient(120deg,#0f2743,#143a5e 60%,#0e6f62);border-radius:18px;padding:24px 28px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.pt-hero::before{content:"";position:absolute;top:-50px;right:10%;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.pt-hero h1{margin:0 0 6px;font-size:22px;position:relative}
+.pt-hero .psub{color:#b9d4e8;margin:0;font-size:13.5px;position:relative}
+.pt-hero .act-row{position:relative;margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pt-hero .hstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:11px;
+  padding:8px 14px;font-size:13px;backdrop-filter:blur(6px)}
+.pt-hero .hstat b{font-size:16px}
+.pfilters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.pf{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:24px;border:1.5px solid #e2e8f0;
+  background:#fff;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;transition:all .2s;
+  box-shadow:0 1px 3px rgba(10,22,40,.04);font-family:inherit}
+.pf:hover{border-color:#0e9f8a;color:#0f2743;transform:translateY(-1px);box-shadow:0 3px 10px rgba(14,159,138,.12)}
+.pf.on{background:linear-gradient(135deg,#0f2743,#1a3a5c);color:#fff;border-color:#0f2743;
+  box-shadow:0 4px 14px rgba(15,39,67,.25)}
+.pf .cnt{background:#f1f5f9;color:#475569;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;min-width:24px;text-align:center}
+.pf.on .cnt{background:rgba(255,255,255,.2);color:#fff}
+.pav{width:38px;height:38px;border-radius:11px;color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+@keyframes ccIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pt-anim{animation:ccIn .4s cubic-bezier(.2,.8,.2,1) backwards}
+.kic{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#f0fdfa,#ccfbf1);
+  display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+/* EOB bits */
 .eob{background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden}
-.eob-h{background:#0f2743;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+.eob-h{background:linear-gradient(120deg,#0f2743,#143a5e);color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
 .eob-h small{color:#a9bdd6}
 .eob table{width:100%;border-collapse:collapse;font-size:13.5px}
 .eob td,.eob th{padding:10px 16px;border-bottom:1px solid #f1f5f9;text-align:right}
@@ -13,35 +40,54 @@
 .wfall div{height:100%}
 .wleg{display:flex;gap:14px;font-size:12px;color:#64748b;flex-wrap:wrap;margin-bottom:6px}
 .wleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
-.prow2{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.prow2 select{max-width:260px}
+@media(max-width:700px){.pt-hero{padding:20px}.pf{padding:8px 14px;font-size:12px}}
 </style></head>
 <body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
-  <div class="phead"><div>
-    <div class="eyebrow2">Revenue Cycle</div><h1>Payment Posting</h1>
+  <div class="pt-hero pt-anim">
+    <div class="eyebrow2" style="color:#34d3bd">Revenue Cycle</div>
+    <h1>💳 Payment Posting</h1>
     <p class="psub">Practice posting the EOB/ERA — payer paid, contractual adjustment, patient responsibility.</p>
-  </div></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)">
-    <div class="skel" style="height:86px;border-radius:14px"></div><div class="skel" style="height:86px;border-radius:14px"></div>
-    <div class="skel" style="height:86px;border-radius:14px"></div><div class="skel" style="height:86px;border-radius:14px"></div>
+    <div class="act-row">
+      <span class="hstat">Awaiting <b id="hAwait">—</b></span>
+      <span class="hstat">Posted <b id="hPosted" style="color:#5eead4">—</b></span>
+      <span class="hstat">Collected <b id="hColl">—</b></span>
+    </div>
   </div>
-  <div class="info-panel">💳 <b>Payment posting training:</b> read the remittance, post the payer's payment and adjustment, and move the leftover to patient responsibility. Paid + patient share can never exceed the allowed amount. Click a posted payment to view its EOB.</div>
-  <div class="panel"><div class="prow"><h3 style="margin:0">Claims Awaiting Payment</h3></div>
-    <div class="twrap"><table><thead><tr>
-      <th>Claim #</th><th>Patient</th><th>Billed</th><th>Allowed</th><th>Paid</th><th>Balance</th><th>Status</th><th></th>
+
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div>
+    <div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
+
+  <div class="info-panel pt-anim" style="animation-delay:.06s">💳 <b>Payment posting training:</b> read the remittance, post the payer's payment and adjustment, and move the leftover to patient responsibility. Paid + patient share can never exceed the allowed amount. Click a posted payment to view its EOB.</div>
+
+  <div class="panel pt-anim" style="animation-delay:.08s">
+    <div class="prow"><h3 style="margin:0">Claims Awaiting Payment</h3></div>
+    <div class="pfilters" id="cfilters">
+      <button class="pf on" data-f="all">📋 All <span class="cnt" id="cAll">0</span></button>
+      <button class="pf" data-f="SUBMITTED">📤 Submitted <span class="cnt" id="cSub">0</span></button>
+      <button class="pf" data-f="PAID">✅ Paid <span class="cnt" id="cPaid">0</span></button>
+    </div>
+    <div class="twrap" style="overflow-x:auto"><table style="min-width:760px"><thead><tr>
+      <th>Claim #</th><th>Patient</th><th>Billed</th><th>Allowed</th><th>Paid</th><th>Balance</th><th>Status</th><th style="text-align:right">Action</th>
     </tr></thead><tbody id="rows"><tr><td colspan="8"><div class="skel" style="height:38px"></div><div class="skel" style="height:38px;margin-top:8px"></div></td></tr></tbody></table></div>
-    <div class="empty" id="empty" style="display:none">No submitted claims yet — submit a validated claim first. 📄</div>
+    <div class="empty" id="empty" style="display:none"><div class="empty-ic">💳</div><h4>No claims awaiting payment</h4><p>Submit a validated claim first — then post its payment here.</p><div style="margin-top:14px"><a class="btn btn-teal" href="/claims">Go to Claims →</a></div></div>
   </div>
-  <div class="panel"><div class="prow prow2"><h3 style="margin:0">Posted Payments</h3>
-    <select class="search" id="pf" style="max-width:240px"><option value="">All payers</option></select></div>
-    <div class="twrap"><table><thead><tr>
-      <th>Date</th><th>Claim #</th><th>Payer</th><th>Paid</th><th>Adjustment</th><th>Patient Resp.</th><th>Method</th><th></th>
+
+  <div class="panel pt-anim" style="animation-delay:.1s">
+    <div class="prow"><h3 style="margin:0">Posted Payments</h3>
+      <select class="search" id="pf" style="max-width:240px"><option value="">All payers</option></select></div>
+    <div class="twrap" style="overflow-x:auto"><table style="min-width:760px"><thead><tr>
+      <th>Date</th><th>Claim #</th><th>Payer</th><th>Paid</th><th>Adjustment</th><th>Patient Resp.</th><th>Method</th><th style="text-align:right"></th>
     </tr></thead><tbody id="prows"><tr><td colspan="8"><div class="skel" style="height:38px"></div></td></tr></tbody></table></div>
+    <div class="empty" id="pempty" style="display:none"><div class="empty-ic">🧾</div><h4>No payments posted yet</h4><p>Post your first payment from a submitted claim above.</p></div>
   </div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
-let claims = [], posted = [], pf = '';
+let claims = [], posted = [], pf = '', cf = 'all';
+const initials = n => String(n || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+const avBg = s => { const hues = [160, 200, 220, 180, 190, 210]; let h = 0; for (const c of String(s)) h += c.charCodeAt(0); return `hsl(${hues[h % hues.length]},45%,42%)`; };
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('payments', u);
@@ -50,33 +96,50 @@ async function load() {
   claims = c.claims.filter(x => ['SUBMITTED', 'PAID'].includes(x.status));
   posted = p.payments;
   const totPaid = posted.reduce((s, x) => s + Number(x.paid), 0);
+  const awaiting = claims.filter(x => x.status === 'SUBMITTED').length;
+  document.getElementById('hAwait').textContent = awaiting;
+  document.getElementById('hPosted').textContent = posted.length;
+  document.getElementById('hColl').textContent = money(totPaid);
   document.getElementById('kpis').innerHTML = [
-    ['Awaiting payment', claims.filter(x => x.status === 'SUBMITTED').length, 'Open'],
-    ['Posted payments', posted.length, 'This workspace'],
-    ['Total posted', money(totPaid), 'Payer payments'],
-    ['Patient A/R', money(claims.reduce((s, x) => s + Number(x.patient_resp), 0)), 'Patient share'],
-  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+    ['⏳', 'Awaiting payment', awaiting, 'Open claims'],
+    ['✅', 'Posted payments', posted.length, 'This workspace'],
+    ['💰', 'Total posted', money(totPaid), 'Payer payments'],
+    ['🧍', 'Patient A/R', money(claims.reduce((s, x) => s + Number(x.patient_resp), 0)), 'Patient share'],
+  ].map(([ic, l, v, s], i) => `<div class="kpi pt-anim" style="animation-delay:${.04 * i}s"><span class="kic">${ic}</span><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
   const payers = [...new Set(posted.map(x => x.payer).filter(Boolean))];
   const sel = document.getElementById('pf');
   sel.innerHTML = `<option value="">All payers (${posted.length})</option>` + payers.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join('');
   sel.value = pf;
-  document.getElementById('rows').innerHTML = claims.map(x => {
-    return `<tr><td><b><code>${esc(x.claim_no)}</code></b></td><td>${esc(x.patient_code)}</td>
-    <td>${money(x.billed)}</td><td>${money(x.allowed)}</td><td>${money(x.paid)}</td>
-    <td><b>${money(Math.max(0, Number(x.allowed || x.billed) - Number(x.paid)))}</b></td>
-    <td><span class="bdg ${x.status === 'PAID' ? 'b-green' : 'b-blue'}">${x.status}</span></td>
-    <td>${x.status === 'SUBMITTED' ? `<button class="btn btn-teal btn-sm" onclick="postPay(${x.id})">Post Payment</button>` : ''}</td></tr>`;
-  }).join('') || `<tr><td colspan="8" class="empty">No claims awaiting payment.</td></tr>`;
-  document.getElementById('empty').style.display = claims.length ? 'none' : 'block';
+  renderClaims();
   renderPosted();
 }
+function renderClaims() {
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  set('cAll', claims.length);
+  set('cSub', claims.filter(x => x.status === 'SUBMITTED').length);
+  set('cPaid', claims.filter(x => x.status === 'PAID').length);
+  const rs = claims.filter(x => cf === 'all' || x.status === cf);
+  document.getElementById('rows').innerHTML = rs.map((x, ix) => {
+    return `<tr class="pt-anim" style="animation-delay:${Math.min(ix * .03, .3)}s"><td><b><code>${esc(x.claim_no)}</code></b></td>
+    <td><div style="display:flex;align-items:center;gap:10px"><span class="pav" style="background:${avBg(x.patient_code)}">${esc(initials(x.patient_code))}</span><span style="font-size:13px;font-weight:600">${esc(x.patient_code)}</span></div></td>
+    <td>${money(x.billed)}</td><td>${money(x.allowed)}</td><td style="color:#0e9f8a;font-weight:600">${money(x.paid)}</td>
+    <td><b>${money(Math.max(0, Number(x.allowed || x.billed) - Number(x.paid)))}</b></td>
+    <td><span class="bdg ${x.status === 'PAID' ? 'b-green' : 'b-blue'}"><span class="dot"></span>${x.status}</span></td>
+    <td style="text-align:right">${x.status === 'SUBMITTED' ? `<button class="btn btn-teal btn-sm" onclick="postPay(${x.id})">Post Payment</button>` : ''}</td></tr>`;
+  }).join('');
+  document.getElementById('empty').style.display = claims.length ? 'none' : 'block';
+}
+document.querySelectorAll('#cfilters .pf').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#cfilters .pf').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); cf = b.dataset.f; renderClaims();
+});
 function renderPosted() {
   const rs = posted.filter(x => !pf || x.payer === pf);
-  document.getElementById('prows').innerHTML = rs.map(x => `<tr style="cursor:pointer" onclick="eob(${x.id})" title="View EOB">
-    <td>${esc(x.created_at.slice(0, 10))}</td><td><code>${esc(x.claim_no)}</code></td><td style="max-width:180px">${esc(x.payer || '—')}</td>
-    <td><b>${money(x.paid)}</b></td><td>${money(x.adjustment)}</td><td>${money(x.patient_resp)}</td><td>${esc(x.method)}</td>
-    <td><button class="btn btn-line btn-sm">EOB →</button></td></tr>`).join('')
-    || `<tr><td colspan="8" class="empty">No payments posted yet.</td></tr>`;
+  document.getElementById('prows').innerHTML = rs.map((x, ix) => `<tr class="pt-anim" style="animation-delay:${Math.min(ix * .03, .3)}s;cursor:pointer" onclick="eob(${x.id})" title="View EOB">
+    <td>${esc((x.created_at || '').slice(0, 10))}</td><td><code>${esc(x.claim_no)}</code></td><td style="max-width:180px">${esc(x.payer || '—')}</td>
+    <td><b style="color:#0e9f8a">${money(x.paid)}</b></td><td style="color:#b45309">− ${money(x.adjustment)}</td><td>${money(x.patient_resp)}</td><td><span class="bdg b-teal">${esc(x.method)}</span></td>
+    <td style="text-align:right"><button class="btn btn-line btn-sm">EOB →</button></td></tr>`).join('');
+  document.getElementById('pempty').style.display = posted.length ? 'none' : 'block';
 }
 document.getElementById('pf').onchange = e => { pf = e.target.value; renderPosted(); };
 function eob(id) {
@@ -89,7 +152,7 @@ function eob(id) {
   openModal('Remittance Advice (EOB)', `
     <div class="eob">
       <div class="eob-h"><div><b style="font-size:15px">${esc(x.payer || 'Payer')}</b><br><small>Electronic Remittance Advice · ${esc(x.method)}</small></div>
-      <div style="text-align:right"><b>${esc(x.claim_no)}</b><br><small>${esc(x.created_at.slice(0, 10))}</small></div></div>
+      <div style="text-align:right"><b>${esc(x.claim_no)}</b><br><small>${esc((x.created_at || '').slice(0, 10))}</small></div></div>
       <table>
         <tr><td>Patient</td><td><b>${esc(x.claim_no)}</b> · DOS ${esc(x.dos || '—')}</td></tr>
         <tr><td>Amount billed</td><td>${money(billed)}</td></tr>
