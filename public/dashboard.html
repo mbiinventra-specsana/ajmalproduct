@@ -15,24 +15,24 @@
     </div>
     <div id="announceBar"></div>
 
-    <div class="kpi-strip" id="kpis"></div>
+    <div class="kpi-strip" id="kpis"><div class="skel-cards" style="grid-template-columns:repeat(6,1fr)"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div></div></div>
 
     <div class="cc-grid">
       <div class="panel-light">
         <div class="pl-head"><h3>🧾 Work Queue — training cases</h3><a href="/training">Case Center →</a></div>
         <div style="overflow-x:auto"><table class="dtable"><thead><tr>
           <th>Case</th><th>Category</th><th>Level</th><th>Status</th><th>Best</th><th>Att.</th><th></th>
-        </tr></thead><tbody id="queue"></tbody></table></div>
+        </tr></thead><tbody id="queue"><tr><td colspan="7"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div></td></tr></tbody></table></div>
       </div>
       <div>
-        <div class="panel-light"><h3>🔔 Alerts</h3><div id="alerts"></div></div>
-        <div class="panel-light" style="margin-top:16px"><h3>🎯 Level progress</h3><div id="lvlprog"></div></div>
+        <div class="panel-light"><h3>🔔 Alerts</h3><div id="alerts"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line w60"></div></div></div>
+        <div class="panel-light" style="margin-top:16px"><h3>🎯 Level progress</h3><div id="lvlprog"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line w60"></div></div></div>
       </div>
     </div>
 
     <div class="cc-grid" style="margin-top:16px">
-      <div class="panel-light"><h3>📊 Best score by case</h3><div id="chart"></div></div>
-      <div class="panel-light"><h3>🕘 Recent activity</h3><div id="recent"></div></div>
+      <div class="panel-light"><h3>📊 Best score by case</h3><div id="chart"><div class="skel-bar-row"><div class="skel skel-bl"></div><div class="skel skel-bt"></div><div class="skel skel-bv"></div></div><div id="chart"><div class="skel-bar-row"><div class="skel skel-bl"></div><div class="skel skel-bt"></div><div class="skel skel-bv"></div></div><div id="chart"><div class="skel-bar-row"><div class="skel skel-bl"></div><div class="skel skel-bt"></div><div class="skel skel-bv"></div></div></div></div>
+      <div class="panel-light"><h3>🕘 Recent activity</h3><div id="recent"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line w60"></div></div></div>
     </div>
   </main>
 </div>
@@ -49,6 +49,7 @@ function statusPill(c) {
   return '<span class="st st-todo">Not started</span>';
 }
 (async () => {
+  document.getElementById('sidebar').innerHTML = `<div class="skel skel-brand"></div><nav class="snav"><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div><div class="skel skel-nav"></div></nav>`;
   const u = await currentUser();
   if (!u) { location.href = '/login'; return; }
   if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }

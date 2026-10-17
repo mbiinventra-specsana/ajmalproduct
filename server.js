@@ -25,6 +25,8 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: '256kb' }));
+// gzip compression — must come before static + routes for max effect
+app.use(require('compression')({ threshold: 1024 }));
 app.use(session({
   name: 'bill.sid',
   secret: process.env.SESSION_SECRET || 'bill-dev-secret-change-me',
