@@ -181,7 +181,7 @@ function shell(active, user) {
     <div class="sfoot">
       <div class="uinfo"><span class="uavatar">${esc((user.name || 'U')[0].toUpperCase())}</span><div>👤 ${esc(user.name)}<br><span class="urole">${esc(user.role)}</span></div></div>
       <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
-      <div style="margin-top:10px"><span class="badge-fict">TRAINING MODE · fictional data</span></div>
+      <div style="margin-top:10px"><span class="badge-fict">TRAINING MODE</span></div>
     </div>`;
   applyFnGates(user); // hide buttons for disabled per-student functions
 }
