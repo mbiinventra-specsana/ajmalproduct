@@ -3,420 +3,516 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MbiInventra RCM Academy — Online Medical Billing Training (USA)</title>
-<meta name="description" content="Become a job-ready medical billing professional. Practice the complete USA Revenue Cycle Management workflow through realistic scored training cases — 100% online, self-paced.">
-<link rel="stylesheet" href="/css/app.css">
+<title>MbiInventra RCM Academy — Become a Job-Ready Medical Biller</title>
+<meta name="description" content="Master USA medical billing with 12 hands-on training cases: eligibility, coding, claims, denials, payments and A/R. 100% online, self-paced, real RCM workflow.">
 <style>
-/* ============ PRODUCTION 3D HOME ============ */
-:root{--navy:#0a1628;--teal:#14b8a6;--teal2:#22d3ee}
-*{box-sizing:border-box}
-body{background:#0a1628;color:#e8eef7;overflow-x:hidden}
-/* animated mesh background */
-.bgfx{position:fixed;inset:0;z-index:-2;background:
-  radial-gradient(900px 500px at 15% 10%,rgba(20,184,166,.14),transparent 60%),
-  radial-gradient(800px 500px at 85% 20%,rgba(34,211,238,.10),transparent 60%),
-  radial-gradient(700px 600px at 50% 90%,rgba(20,184,166,.08),transparent 60%),#0a1628}
-.bggrid{position:fixed;inset:0;z-index:-1;opacity:.5;background-image:linear-gradient(rgba(148,163,184,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.05) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 40%,transparent 100%)}
-.orb{position:fixed;border-radius:50%;filter:blur(70px);z-index:-1;opacity:.5;animation:drift 14s ease-in-out infinite alternate}
-.orb.a{width:340px;height:340px;background:rgba(20,184,166,.25);top:8%;left:-120px}
-.orb.b{width:280px;height:280px;background:rgba(34,211,238,.18);top:38%;right:-100px;animation-delay:-6s}
-@keyframes drift{to{transform:translate(60px,40px) scale(1.1)}}
+:root{--navy:#0f2743;--deep:#0a1628;--teal:#0e9f8a;--teal2:#14b8a6;--mint:#5eead4;--ink:#e8eef7;--mut:#9fb3cc;--line:rgba(148,163,184,.14)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--deep);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;line-height:1.6}
+a{color:inherit}
+/* ambient background */
+.bgfx{position:fixed;inset:0;z-index:-2;background:radial-gradient(900px 500px at 12% 6%,rgba(14,159,138,.13),transparent 60%),radial-gradient(800px 520px at 88% 18%,rgba(20,184,166,.09),transparent 60%),radial-gradient(760px 640px at 50% 100%,rgba(14,159,138,.07),transparent 60%),#0a1628}
+.bggrid{position:fixed;inset:0;z-index:-1;opacity:.55;background-image:linear-gradient(rgba(148,163,184,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.05) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 35%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 35%,transparent 100%)}
 /* nav */
-.lnav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(10,22,40,.72);border-bottom:1px solid rgba(148,163,184,.14)}
-.lnav .wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;max-width:1200px;margin:0 auto}
-.brand{display:flex;gap:10px;align-items:center;text-decoration:none;color:#fff;font-weight:800;font-size:18px}
-.brand .mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#14b8a6,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 6px 18px rgba(20,184,166,.4)}
-.brand small{display:block;font-size:11px;color:#7c8ea8;font-weight:500}
-.lnav nav{display:flex;gap:26px}
-.lnav nav a{color:#9fb3cc;text-decoration:none;font-size:14px;font-weight:600;transition:.2s}
+.lnav{position:fixed;top:0;left:0;right:0;z-index:100;transition:background .3s,border-color .3s,backdrop-filter .3s;border-bottom:1px solid transparent}
+.lnav.scrolled{background:rgba(10,22,40,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom-color:var(--line)}
+.lnav .wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;max-width:1220px;margin:0 auto}
+.brand{display:flex;gap:11px;align-items:center;text-decoration:none;font-weight:800;font-size:18px}
+.brand .mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#0e9f8a,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:21px;box-shadow:0 6px 18px rgba(14,159,138,.45)}
+.brand small{display:block;font-size:11px;color:var(--mut);font-weight:500}
+.lnav nav{display:flex;gap:28px}
+.lnav nav a{color:var(--mut);text-decoration:none;font-size:14.5px;font-weight:600;transition:color .2s}
 .lnav nav a:hover{color:#fff}
+.nav-cta{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;text-decoration:none;border-radius:12px;cursor:pointer;border:1px solid transparent;transition:transform .18s,box-shadow .2s,background .2s}
+.btn-ghost{padding:10px 20px;color:var(--ink);border-color:var(--line);background:rgba(148,163,184,.06);font-size:14px}
+.btn-ghost:hover{background:rgba(148,163,184,.14)}
+.btn-teal{padding:10px 22px;background:linear-gradient(135deg,#0e9f8a,#0b7c6c);color:#fff;font-size:14px;box-shadow:0 6px 20px rgba(14,159,138,.35)}
+.btn-teal:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(14,159,138,.5)}
+.btn-xl{padding:16px 36px;font-size:16px;border-radius:14px}
+.btn-line-xl{padding:16px 30px;font-size:16px;border-radius:14px;border-color:var(--line);background:rgba(148,163,184,.06);color:var(--ink)}
+.btn-line-xl:hover{background:rgba(148,163,184,.14)}
+/* layout */
+.wrap{max-width:1220px;margin:0 auto;padding:0 24px}
+section{padding:96px 0}
 /* hero */
-.hero{padding:90px 0 70px;position:relative}
-.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:center;max-width:1200px;margin:0 auto;padding:0 22px}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#5eead4;background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.3);padding:8px 16px;border-radius:99px;margin-bottom:22px}
+.hero{padding:170px 0 90px;position:relative}
+.hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:56px;align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);background:rgba(14,159,138,.1);border:1px solid rgba(14,159,138,.32);padding:9px 18px;border-radius:99px;margin-bottom:24px}
 .eyebrow .dot{width:8px;height:8px;border-radius:50%;background:#14b8a6;box-shadow:0 0 12px #14b8a6;animation:pulse 2s infinite}
-@keyframes pulse{50%{opacity:.4}}
-.hero h1{font-size:clamp(34px,5vw,58px);line-height:1.08;font-weight:800;letter-spacing:-.02em;margin:0 0 20px}
-.grad{background:linear-gradient(100deg,#5eead4,#22d3ee 60%,#a5f3fc);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero .sub{font-size:17px;color:#9fb3cc;line-height:1.7;margin:0 0 14px;max-width:540px}
-.rot-line{font-size:15px;color:#c7d5e8;margin-bottom:30px;min-height:26px}
-.rot-line b{color:#5eead4}
-.hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:26px}
-.btn-xl{padding:15px 34px;font-size:16px;border-radius:14px}
-.btn-shine{position:relative;overflow:hidden}
-.btn-shine::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);transition:left .6s}
-.btn-shine:hover::after{left:130%}
-.hero-badges{display:flex;gap:10px;flex-wrap:wrap}
-.hbadge{font-size:12.5px;color:#9fb3cc;background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.18);padding:7px 14px;border-radius:99px}
-/* 3D hero visual */
-.hero-vis{perspective:1200px;position:relative;min-height:420px}
-.dash3d{position:relative;transform-style:preserve-3d;transition:transform .25s ease-out;background:rgba(15,30,51,.85);border:1px solid rgba(148,163,184,.2);border-radius:20px;padding:22px;box-shadow:0 40px 80px rgba(0,0,0,.5),0 0 0 1px rgba(20,184,166,.08),0 0 60px rgba(20,184,166,.12);backdrop-filter:blur(8px)}
-.dash3d .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.dash3d .dh b{font-size:15px}
+@keyframes pulse{50%{opacity:.35}}
+.hero h1{font-size:clamp(36px,5.2vw,60px);line-height:1.06;font-weight:800;letter-spacing:-.02em;margin-bottom:20px}
+.grad{background:linear-gradient(100deg,#5eead4,#22d3ee 65%,#a5f3fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{font-size:17.5px;color:var(--mut);line-height:1.7;max-width:540px;margin-bottom:32px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:30px}
+.trust{display:flex;gap:20px;flex-wrap:wrap;font-size:13.5px;color:var(--mut)}
+.trust span{display:inline-flex;align-items:center;gap:7px}
+.trust .tk{color:#34d399;font-weight:800}
+/* dashboard mockup */
+.mock{position:relative;animation:float 7s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.mock-glow{position:absolute;inset:-30px;background:radial-gradient(closest-side,rgba(14,159,138,.28),transparent);filter:blur(30px);z-index:-1}
+.dash{background:rgba(15,32,54,.92);border:1px solid rgba(148,163,184,.2);border-radius:20px;padding:22px;box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 70px rgba(14,159,138,.14);backdrop-filter:blur(10px)}
+.dash .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.dash .dh b{font-size:15px}
+.pill-live{font-size:11px;font-weight:800;color:#5eead4;background:rgba(14,159,138,.12);border:1px solid rgba(14,159,138,.35);padding:5px 12px;border-radius:99px}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-.kpi3{background:rgba(148,163,184,.07);border:1px solid rgba(148,163,184,.14);border-radius:12px;padding:12px}
-.kpi3 span{font-size:10px;color:#7c8ea8;text-transform:uppercase;letter-spacing:.06em}
-.kpi3 b{font-size:22px;display:block;margin-top:2px}
-.kpi3 b.g{color:#5eead4}
-.cbars{display:flex;align-items:flex-end;gap:8px;height:90px;margin-top:6px}
-.cbars i{flex:1;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,#22d3ee,#14b8a6);min-height:12px;animation:grow .8s ease-out backwards}
+.kpi3{background:rgba(148,163,184,.07);border:1px solid rgba(148,163,184,.14);border-radius:12px;padding:12px 13px}
+.kpi3 span{font-size:10px;color:#7c8ea8;text-transform:uppercase;letter-spacing:.07em}
+.kpi3 b{font-size:23px;display:block;margin-top:3px}
+.kpi3 b.g{color:#5eead4}.kpi3 b.a{color:#fbbf24}
+.chart{background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);border-radius:12px;padding:14px;margin-bottom:14px}
+.chart .ct{font-size:11px;color:#7c8ea8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
+.bars{display:flex;align-items:flex-end;gap:8px;height:86px}
+.bars i{flex:1;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#14b8a6,#0e6f62);min-height:14px;animation:grow 1.2s ease backwards}
+.bars i:nth-child(odd){background:linear-gradient(180deg,#22d3ee,#0e7490)}
 @keyframes grow{from{transform:scaleY(0);transform-origin:bottom}}
-.float-chip{position:absolute;padding:12px 18px;border-radius:14px;font-size:13px;font-weight:700;background:rgba(15,30,51,.92);border:1px solid rgba(20,184,166,.35);box-shadow:0 20px 40px rgba(0,0,0,.45);backdrop-filter:blur(6px);animation:floaty 5s ease-in-out infinite;white-space:nowrap}
-.float-chip.fc1{top:-24px;right:-14px;color:#5eead4;transform:translateZ(60px)}
-.float-chip.fc2{bottom:-20px;left:-18px;color:#fbbf24;border-color:rgba(251,191,36,.35);animation-delay:-2.5s}
-@keyframes floaty{50%{transform:translateY(-14px)}}
-/* trust strip */
-.trust-strip{border-top:1px solid rgba(148,163,184,.14);border-bottom:1px solid rgba(148,163,184,.14);background:rgba(15,30,51,.5);backdrop-filter:blur(8px)}
-.trust-strip .wrap{max-width:1200px;margin:0 auto;padding:26px 22px;display:grid;grid-template-columns:repeat(5,1fr);gap:10px;text-align:center}
-.trust-strip b{font-size:34px;font-weight:800;background:linear-gradient(180deg,#fff,#9fb3cc);-webkit-background-clip:text;background-clip:text;color:transparent;display:block;font-variant-numeric:tabular-nums}
-.trust-strip span{font-size:12.5px;color:#7c8ea8}
-/* marquee */
-.marquee{overflow:hidden;padding:20px 0;border-bottom:1px solid rgba(148,163,184,.1)}
-.marquee .track{display:flex;gap:44px;width:max-content;animation:mq 26s linear infinite;font-size:13px;font-weight:700;letter-spacing:.18em;color:#475569;text-transform:uppercase}
-@keyframes mq{to{transform:translateX(-50%)}}
-/* sections */
-.sec{padding:90px 0;max-width:1200px;margin:0 auto;padding-left:22px;padding-right:22px}
-.sec h2{font-size:clamp(26px,3.6vw,40px);font-weight:800;letter-spacing:-.02em;text-align:center;margin:0 0 14px}
-.lede{text-align:center;color:#9fb3cc;font-size:16.5px;max-width:640px;margin:0 auto 48px;line-height:1.7}
-.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.feat{background:rgba(15,30,51,.6);border:1px solid rgba(148,163,184,.14);border-radius:18px;padding:28px;transition:transform .25s,box-shadow .25s,border-color .25s;transform-style:preserve-3d;will-change:transform}
-.feat:hover{border-color:rgba(20,184,166,.45);box-shadow:0 24px 50px rgba(0,0,0,.4),0 0 30px rgba(20,184,166,.1)}
-.feat .ic{font-size:30px;margin-bottom:14px;transform:translateZ(30px)}
-.feat h3{font-size:17px;margin:0 0 10px;transform:translateZ(20px)}
-.feat p{font-size:14px;color:#9fb3cc;line-height:1.65;margin:0;transform:translateZ(10px)}
-/* labs showcase */
-.lab-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-.lab-card{position:relative;overflow:hidden;background:linear-gradient(140deg,rgba(15,30,51,.9),rgba(10,22,40,.7));border:1px solid rgba(148,163,184,.16);border-radius:20px;padding:30px;transition:transform .25s,border-color .25s,box-shadow .25s;transform-style:preserve-3d}
-.lab-card:hover{border-color:rgba(34,211,238,.5);box-shadow:0 30px 60px rgba(0,0,0,.45),0 0 40px rgba(34,211,238,.08)}
-.lab-card .tag{position:absolute;top:22px;right:22px;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#5eead4;background:rgba(20,184,166,.12);padding:6px 12px;border-radius:99px}
-.lab-card h3{font-size:20px;margin:14px 0 10px}
-.lab-card p{font-size:14px;color:#9fb3cc;line-height:1.7;margin:0 0 16px}
-.lab-card .ic{font-size:34px}
-/* outcome */
-.outcome{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;background:rgba(15,30,51,.5);border:1px solid rgba(148,163,184,.14);border-radius:24px;padding:50px}
-.outcome h2{text-align:left}
-.check-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
-.check-list li{display:flex;gap:12px;font-size:14.5px;color:#c7d5e8;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.1);padding:13px 16px;border-radius:12px;line-height:1.5}
-.check-list li::before{content:'✓';color:#14b8a6;font-weight:800;flex-shrink:0}
-/* stages timeline */
-.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;counter-reset:st}
-.stage{position:relative;background:rgba(15,30,51,.6);border:1px solid rgba(148,163,184,.14);border-radius:16px;padding:22px 18px;transition:.25s}
-.stage:hover{transform:translateY(-6px);border-color:rgba(20,184,166,.4)}
-.stage .n{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#14b8a6,#22d3ee);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;margin-bottom:12px;box-shadow:0 8px 20px rgba(20,184,166,.35)}
-.stage b{font-size:14.5px;display:block;margin-bottom:6px}
-.stage p{font-size:12.5px;color:#7c8ea8;margin:0;line-height:1.55}
-/* curriculum */
-.curr-wrap{background:rgba(15,30,51,.6);border:1px solid rgba(148,163,184,.14);border-radius:18px;overflow:hidden}
-.curr-wrap table{width:100%;border-collapse:collapse;font-size:14px}
-.curr-wrap th{text-align:left;padding:14px 18px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#7c8ea8;border-bottom:1px solid rgba(148,163,184,.14);background:rgba(148,163,184,.04)}
-.curr-wrap td{padding:14px 18px;border-bottom:1px solid rgba(148,163,184,.08);color:#c7d5e8}
-.curr-wrap tr:last-child td{border-bottom:0}
-.curr-wrap tr:hover td{background:rgba(20,184,166,.04)}
-/* careers */
-.big-stat{text-align:center;margin-bottom:34px}
-.big-stat b{font-size:clamp(50px,7vw,84px);font-weight:800;background:linear-gradient(100deg,#5eead4,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums}
-.big-stat span{display:block;color:#9fb3cc;margin-top:6px;font-size:15px}
-.jobs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.job-card{background:rgba(15,30,51,.6);border:1px solid rgba(148,163,184,.14);border-radius:18px;padding:30px;text-align:center;transition:.25s}
-.job-card:hover{transform:translateY(-6px);border-color:rgba(20,184,166,.4)}
-.job-card b{font-size:30px;display:block;margin:10px 0 6px;font-variant-numeric:tabular-nums}
-.job-card span{font-size:13px;color:#7c8ea8;line-height:1.5}
-/* faq */
-.faq{max-width:760px;margin:0 auto}
-.faq-item{background:rgba(15,30,51,.6);border:1px solid rgba(148,163,184,.14);border-radius:14px;margin-bottom:10px;overflow:hidden;transition:border-color .2s}
-.faq-item.open{border-color:rgba(20,184,166,.4)}
-.faq-q{width:100%;background:none;border:0;color:#e8eef7;font-size:15px;font-weight:700;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;text-align:left}
-.faq-q .pm{color:#14b8a6;font-size:20px;flex-shrink:0;margin-left:12px}
-.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease}
-.faq-item.open .faq-a{max-height:220px}
-.faq-a p{padding:0 22px 20px;margin:0;color:#9fb3cc;font-size:14px;line-height:1.7}
-/* final cta */
-.cta-final .box{position:relative;overflow:hidden;text-align:center;background:linear-gradient(140deg,rgba(20,184,166,.16),rgba(34,211,238,.08)),rgba(15,30,51,.8);border:1px solid rgba(20,184,166,.35);border-radius:28px;padding:70px 30px;box-shadow:0 40px 90px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
-.cta-final .box::before{content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:500px;height:240px;background:radial-gradient(ellipse,rgba(20,184,166,.3),transparent 70%);pointer-events:none}
-.cta-final h2{margin-bottom:12px}
-footer{border-top:1px solid rgba(148,163,184,.14);padding:28px 0;color:#7c8ea8;font-size:13px}
-footer .wrap{max-width:1200px;margin:0 auto;padding:0 22px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
-.sticky-cta{position:fixed;bottom:18px;left:0;right:0;display:none;justify-content:center;z-index:60;pointer-events:none}
-.sticky-cta a{pointer-events:auto;box-shadow:0 16px 40px rgba(0,0,0,.5)}
+.case-row{display:flex;align-items:center;gap:12px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);border-radius:12px;padding:11px 14px;margin-bottom:8px;font-size:13px}
+.case-row:last-child{margin-bottom:0}
+.case-row .ci{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none;background:rgba(14,159,138,.14)}
+.case-row .prog{margin-left:auto;width:110px;height:7px;background:rgba(148,163,184,.15);border-radius:99px;overflow:hidden}
+.case-row .prog i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#14b8a6,#5eead4)}
+.mock-chip{position:absolute;background:rgba(15,32,54,.95);border:1px solid rgba(14,159,138,.4);border-radius:14px;padding:10px 16px;font-size:13px;font-weight:700;box-shadow:0 14px 34px rgba(0,0,0,.5);display:flex;align-items:center;gap:9px}
+.mock-chip.c1{top:-22px;right:24px;animation:float 6s ease-in-out infinite reverse}
+.mock-chip.c2{bottom:-20px;left:30px;animation:float 8s ease-in-out 1s infinite}
 /* reveal */
-.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1)}
-.reveal.in{opacity:1;transform:none}
-@media(max-width:960px){
-  .hero-grid{grid-template-columns:1fr}
-  .hero-vis{min-height:340px}
-  .feat-grid{grid-template-columns:1fr 1fr}
-  .lab-grid{grid-template-columns:1fr}
-  .outcome{grid-template-columns:1fr;padding:34px}
-  .stages{grid-template-columns:1fr 1fr}
-  .jobs-grid{grid-template-columns:1fr}
-  .trust-strip .wrap{grid-template-columns:repeat(2,1fr);gap:20px}
-  .lnav nav{display:none}
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.rv.in{opacity:1;transform:none}
+/* stats bar */
+.stats{background:rgba(15,32,54,.6);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stats .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding-top:44px;padding-bottom:44px}
+.stat{text-align:center}
+.stat b{font-size:clamp(32px,4vw,46px);font-weight:800;background:linear-gradient(100deg,#5eead4,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent;display:block}
+.stat span{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+/* logos */
+.logos{text-align:center;padding:70px 0}
+.logos .lbl{font-size:12px;font-weight:800;letter-spacing:.22em;color:#7c8ea8;margin-bottom:28px}
+.role-pills{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.role-pills span{font-size:15px;font-weight:700;color:#c7d5e8;background:rgba(148,163,184,.07);border:1px solid var(--line);padding:12px 24px;border-radius:99px;transition:.2s}
+.role-pills span:hover{border-color:rgba(14,159,138,.5);color:#5eead4;transform:translateY(-2px)}
+/* section headers */
+.sec-h{text-align:center;max-width:720px;margin:0 auto 54px}
+.sec-h h2{font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-spacing:-.02em;margin-bottom:14px}
+.sec-h p{color:var(--mut);font-size:16.5px}
+/* features */
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fcard{background:rgba(148,163,184,.05);border:1px solid var(--line);border-radius:18px;padding:30px 26px;transition:transform .22s,border-color .22s,box-shadow .22s}
+.fcard:hover{transform:translateY(-6px);border-color:rgba(14,159,138,.45);box-shadow:0 20px 44px rgba(0,0,0,.4),0 0 30px rgba(14,159,138,.1)}
+.fcard .fi{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,rgba(14,159,138,.22),rgba(34,211,238,.12));border:1px solid rgba(14,159,138,.3);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:18px}
+.fcard h3{font-size:18px;margin-bottom:10px}
+.fcard p{color:var(--mut);font-size:14.5px}
+/* curriculum */
+.cur{background:rgba(15,32,54,.45);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.tier{margin-bottom:44px}
+.tier:last-child{margin-bottom:0}
+.tier-h{display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.tier-h .tn{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:7px 16px;border-radius:99px}
+.tier-h .tn.beg{background:rgba(52,211,153,.14);color:#6ee7b7;border:1px solid rgba(52,211,153,.35)}
+.tier-h .tn.int{background:rgba(34,211,238,.12);color:#67e8f9;border:1px solid rgba(34,211,238,.35)}
+.tier-h .tn.adv{background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.35)}
+.tier-h p{color:var(--mut);font-size:14px}
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ccase{position:relative;background:rgba(148,163,184,.05);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;gap:13px;align-items:flex-start;transition:.2s}
+.ccase:hover{border-color:rgba(14,159,138,.45);transform:translateX(4px)}
+.ccase .cn{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#0e9f8a,#0b6e63);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+.ccase b{font-size:14.5px;display:block;margin-bottom:3px}
+.ccase span{font-size:12.5px;color:var(--mut)}
+/* how it works */
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.step{background:rgba(148,163,184,.05);border:1px solid var(--line);border-radius:18px;padding:34px 28px;text-align:center;transition:.22s}
+.step:hover{transform:translateY(-6px);border-color:rgba(14,159,138,.45)}
+.step .sn{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#0e9f8a,#22d3ee);color:#04121f;font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 10px 26px rgba(14,159,138,.4)}
+.step h3{font-size:19px;margin-bottom:10px}
+.step p{color:var(--mut);font-size:14.5px}
+/* testimonials */
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.tcard{background:rgba(148,163,184,.05);border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;transition:.22s}
+.tcard:hover{transform:translateY(-6px);border-color:rgba(14,159,138,.4)}
+.tcard .stars{color:#fbbf24;font-size:15px;letter-spacing:2px;margin-bottom:14px}
+.tcard q{font-size:15px;line-height:1.7;color:#d7e2f2;quotes:"“" "”";flex:1}
+.tcard .who{display:flex;align-items:center;gap:13px;margin-top:22px}
+.tcard .av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#0e9f8a,#22d3ee);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#04121f;flex:none}
+.tcard .who b{font-size:14.5px;display:block}
+.tcard .who span{font-size:12.5px;color:var(--mut)}
+/* pricing */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch;max-width:1060px;margin:0 auto}
+.pcard{background:rgba(148,163,184,.05);border:1px solid var(--line);border-radius:20px;padding:36px 30px;display:flex;flex-direction:column;transition:.22s;position:relative}
+.pcard:hover{transform:translateY(-6px)}
+.pcard.feat{background:linear-gradient(160deg,rgba(14,159,138,.16),rgba(15,32,54,.9) 55%);border:1px solid rgba(14,159,138,.55);box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 40px rgba(14,159,138,.14)}
+.pcard .ptag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;background:linear-gradient(135deg,#0e9f8a,#22d3ee);color:#04121f;padding:6px 18px;border-radius:99px;white-space:nowrap}
+.pcard h3{font-size:19px;margin-bottom:6px}
+.pcard .pdesc{font-size:13.5px;color:var(--mut);margin-bottom:20px}
+.pcard .price{font-size:42px;font-weight:800;margin-bottom:4px}
+.pcard .price small{font-size:15px;color:var(--mut);font-weight:600}
+.pcard ul{list-style:none;margin:22px 0 28px;flex:1}
+.pcard li{font-size:14px;color:#c7d5e8;padding:8px 0;display:flex;gap:10px;align-items:flex-start}
+.pcard li .tk{color:#34d399;font-weight:800;flex:none}
+.pcard li.off{color:#5b6b82}
+.pcard li.off .tk{color:#5b6b82}
+.pcard .btn{width:100%;padding:14px}
+/* faq */
+.faq{max-width:780px;margin:0 auto}
+.faq-i{background:rgba(148,163,184,.05);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden;transition:border-color .2s}
+.faq-i.open{border-color:rgba(14,159,138,.45)}
+.faq-q{width:100%;background:none;border:none;color:var(--ink);font-size:16px;font-weight:700;text-align:left;padding:20px 24px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:14px;font-family:inherit}
+.faq-q .fx{font-size:22px;color:var(--mint);font-weight:400;transition:transform .3s;flex:none}
+.faq-i.open .fx{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.faq-a p{padding:0 24px 22px;color:var(--mut);font-size:14.5px;line-height:1.75}
+/* final cta */
+.cta-final .box{background:linear-gradient(130deg,#0c2b26,#0f2743 55%,#0b3a4a);border:1px solid rgba(14,159,138,.4);border-radius:28px;padding:80px 40px;text-align:center;position:relative;overflow:hidden}
+.cta-final .box::before{content:"";position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:500px;height:280px;background:radial-gradient(closest-side,rgba(14,159,138,.3),transparent);filter:blur(20px)}
+.cta-final h2{font-size:clamp(30px,4.4vw,48px);font-weight:800;letter-spacing:-.02em;margin-bottom:16px;position:relative}
+.cta-final p{color:var(--mut);font-size:17px;margin-bottom:34px;position:relative}
+.cta-final .btn{position:relative}
+/* footer */
+footer{border-top:1px solid var(--line);padding:60px 0 30px;background:rgba(8,17,30,.7)}
+.fcols{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:36px;margin-bottom:44px}
+.fcols h4{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#7c8ea8;margin-bottom:16px}
+.fcols a{display:block;color:var(--mut);text-decoration:none;font-size:14px;padding:5px 0;transition:color .2s}
+.fcols a:hover{color:#5eead4}
+.fbot{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding-top:26px;border-top:1px solid var(--line);font-size:13px;color:#7c8ea8}
+/* responsive */
+@media(max-width:1000px){
+.hero-grid{grid-template-columns:1fr;gap:48px}
+.hero{padding:140px 0 70px}
+.fgrid,.tgrid,.pgrid{grid-template-columns:1fr;max-width:520px;margin-left:auto;margin-right:auto}
+.steps3{grid-template-columns:1fr;max-width:520px;margin:0 auto}
+.fcols{grid-template-columns:1fr 1fr}
+.lnav nav{display:none}
 }
-@media(max-width:600px){.feat-grid{grid-template-columns:1fr}.sticky-cta{display:flex}}
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
-  .reveal{opacity:1;transform:none}
+@media(max-width:640px){
+.stats .wrap{grid-template-columns:1fr 1fr;gap:30px}
+.cases{grid-template-columns:1fr}
+section{padding:70px 0}
+.mock-chip.c1{right:8px}.mock-chip.c2{left:8px}
+.nav-cta .btn-ghost{display:none}
 }
-/* override older app.css rules for the dark production home */
-.hero p.sub{font-size:17px;color:#9fb3cc;line-height:1.7;margin:0 0 14px;max-width:540px}
-.curr-wrap table th{background:rgba(148,163,184,.06);color:#7c8ea8}
-.curr-wrap table td{color:#c7d5e8}
 </style>
 </head>
 <body>
 <div class="bgfx"></div><div class="bggrid"></div>
-<div class="orb a"></div><div class="orb b"></div>
 
-<header class="lnav"><div class="wrap">
-  <a class="brand" href="/"><div class="mark">⚕</div><div>MbiInventra<small>bill.mbiinventra.com</small></div></a>
-  <nav><a href="#program">Program</a><a href="#labs">Labs</a><a href="#curriculum">Curriculum</a><a href="#careers">Careers</a><a href="#faq">FAQ</a></nav>
-  <a class="btn btn-teal btn-sm btn-shine" href="/stu">Student Login →</a>
-</div></header>
-
-<!-- HERO -->
-<section class="hero"><div class="hero-grid">
-  <div>
-    <div class="eyebrow"><span class="dot"></span>USA Medical Billing Training · 100% Online</div>
-    <h1>Master USA medical billing by <span class="grad">doing the job</span> — not watching videos.</h1>
-    <p class="sub">Train the complete Revenue Cycle Management workflow hands-on: eligibility, coding, claims, denials, payments and A/R — with instant expert feedback on every single answer.</p>
-    <div class="rot-line">This week trainees are practicing: <b id="rotator">denial management</b></div>
-    <div class="hero-cta">
-      <a class="btn btn-teal btn-xl btn-shine" href="/stu">Start Training →</a>
-      <a class="btn btn-ghost btn-xl" href="#curriculum">See Curriculum</a>
-    </div>
-    <div class="hero-badges">
-      <span class="hbadge">✓ Self-paced</span><span class="hbadge">✓ 8 scored cases</span>
-      <span class="hbadge">✓ 4 advanced labs</span><span class="hbadge">✓ Instant feedback</span>
+<!-- 1. NAVBAR -->
+<header class="lnav" id="lnav">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="mark">⚕</span><span>MbiInventra<small>bill.mbiinventra.com</small></span></a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#curriculum">Curriculum</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="/login">Login</a>
+      <a class="btn btn-teal" href="/login">Start Free →</a>
     </div>
   </div>
-  <div class="hero-vis" id="heroVis">
-    <div class="dash3d" id="dash3d">
-      <div class="dh"><b>⚕ Command Center</b></div>
-      <div class="kpis">
-        <div class="kpi3"><span>Accuracy</span><b class="g">93%</b></div>
-        <div class="kpi3"><span>Cases</span><b>8</b></div>
-        <div class="kpi3"><span>Level</span><b style="font-size:15px">Specialist</b></div>
+</header>
+
+<!-- 2. HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="dot"></span>USA Medical Billing Training</span>
+      <h1>Become a <span class="grad">job-ready</span> medical biller.</h1>
+      <p class="sub">Master the complete USA Revenue Cycle Management workflow — eligibility, coding, claims, denials, payments and A/R — through 12 hands-on training cases with instant feedback on every step.</p>
+      <div class="hero-cta">
+        <a class="btn btn-teal btn-xl" href="/login">Start Training Free →</a>
+        <a class="btn btn-line-xl" href="#curriculum">Explore Curriculum</a>
       </div>
-      <div class="kpi3"><span>Best score by case</span>
-        <div class="cbars"><i style="height:80%;animation-delay:.1s"></i><i style="height:65%;animation-delay:.2s"></i><i style="height:90%;animation-delay:.3s"></i><i style="height:75%;animation-delay:.4s"></i><i style="height:95%;animation-delay:.5s"></i><i style="height:70%;animation-delay:.6s"></i><i style="height:85%;animation-delay:.7s"></i><i style="height:100%;animation-delay:.8s"></i></div>
+      <div class="trust">
+        <span><span class="tk">✓</span> No credit card required</span>
+        <span><span class="tk">✓</span> Learn by doing</span>
+        <span><span class="tk">✓</span> 12 real-world cases</span>
       </div>
     </div>
-    <div class="float-chip fc1">✅ Clean claim — 100% first-pass</div>
-    <div class="float-chip fc2">🔍 CO-97 denied → fixed with XS</div>
-  </div>
-</div></section>
-
-<!-- TRUST STRIP -->
-<div class="trust-strip"><div class="wrap">
-  <div><b data-count="8">0</b><span>Training cases</span></div>
-  <div><b data-count="41">0</b><span>Scored questions</span></div>
-  <div><b data-count="4">0</b><span>Advanced labs</span></div>
-  <div><b data-count="11">0</b><span>RCM stages covered</span></div>
-  <div><b data-count="5">0</b><span>Skill levels</span></div>
-</div></div>
-
-<!-- MARQUEE -->
-<div class="marquee"><div class="track" id="mtrack"></div></div>
-
-<!-- BENEFITS -->
-<section class="sec" id="program">
-  <div class="eyebrow" style="display:flex;width:fit-content;margin:0 auto 18px">Why train here</div>
-  <h2>Training that mirrors the real job</h2>
-  <p class="lede">Most courses teach you to watch. We train you to <b style="color:#fff">do</b> — the way billing teams actually work across the USA.</p>
-  <div class="feat-grid">
-    <div class="feat" data-tilt><div class="ic">🕐</div><h3>Fully self-paced</h3><p>No set schedules. Finish a case in 20 minutes or binge the full curriculum on weekends — your progress waits for you.</p></div>
-    <div class="feat" data-tilt><div class="ic">⚡</div><h3>Instant expert feedback</h3><p>Every answer is checked immediately with a plain-English explanation of <i>why</i> — mistakes become lessons, not lost revenue.</p></div>
-    <div class="feat" data-tilt><div class="ic">🏆</div><h3>Gamified progression</h3><p>Earn points and climb from Beginner to Billing Executive. Beat your best score on every case, sprint and lab.</p></div>
-    <div class="feat" data-tilt><div class="ic">🖥️</div><h3>Real-software environment</h3><p>Command-center dashboards, work queues, scrubber reports and 835 remittance views — the screens you'll see on day one.</p></div>
-    <div class="feat" data-tilt><div class="ic">📊</div><h3>Performance analytics</h3><p>Accuracy trends, per-case mastery, weakest subjects and missed-question drills show exactly what to practice next.</p></div>
-    <div class="feat" data-tilt><div class="ic">🔒</div><h3>Safe training data</h3><p>Every patient, payer and dollar amount is training data — clearly badged. Never real patient information.</p></div>
+    <div class="mock">
+      <div class="mock-glow"></div>
+      <div class="dash">
+        <div class="dh"><b>📊 Command Center</b><span class="pill-live">● LIVE</span></div>
+        <div class="kpis">
+          <div class="kpi3"><span>Accuracy</span><b class="g">96%</b></div>
+          <div class="kpi3"><span>Points</span><b>2,450</b></div>
+          <div class="kpi3"><span>Streak</span><b class="a">🔥 7</b></div>
+        </div>
+        <div class="chart">
+          <div class="ct">Weekly progress</div>
+          <div class="bars">
+            <i style="height:40%;animation-delay:.1s"></i><i style="height:65%;animation-delay:.2s"></i><i style="height:52%;animation-delay:.3s"></i><i style="height:78%;animation-delay:.4s"></i><i style="height:60%;animation-delay:.5s"></i><i style="height:92%;animation-delay:.6s"></i><i style="height:100%;animation-delay:.7s"></i>
+          </div>
+        </div>
+        <div class="case-row"><span class="ci">🧾</span><div><b>CASE-001</b><br><span style="color:#7c8ea8">Eligibility Verification</span></div><div class="prog"><i style="width:100%"></i></div></div>
+        <div class="case-row"><span class="ci">💳</span><div><b>CASE-008</b><br><span style="color:#7c8ea8">Payment Posting</span></div><div class="prog"><i style="width:64%"></i></div></div>
+        <div class="case-row"><span class="ci">🚫</span><div><b>CASE-010</b><br><span style="color:#7c8ea8">Denial Management</span></div><div class="prog"><i style="width:22%"></i></div></div>
+      </div>
+      <div class="mock-chip c1">🏆 Level up: Billing Specialist</div>
+      <div class="mock-chip c2">⭐ +50 pts · Claim validated</div>
+    </div>
   </div>
 </section>
 
-<!-- ADVANCED LABS -->
-<section class="sec" id="labs" style="padding-top:20px">
-  <div class="eyebrow" style="display:flex;width:fit-content;margin:0 auto 18px">Beyond the classroom</div>
-  <h2>Advanced labs, straight from the billing floor</h2>
-  <p class="lede">Four hands-on simulators that teach the skills employers actually test for in interviews.</p>
-  <div class="lab-grid">
-    <div class="lab-card" data-tilt><span class="tag">Beginner → Advanced</span><div class="ic">🧹</div><h3>Claim Scrubber Sandbox</h3><p>Build CMS-1500-style claims field by field and run them through a 13-rule scrubber — NPI checks, ICD validation, modifier edits, payer timely-filing limits. Chase a 100% first-pass yield.</p></div>
-    <div class="lab-card" data-tilt><span class="tag">6 case files</span><div class="ic">🔍</div><h3>Denial Crime-Scene Lab</h3><p>Read real-style 835 remittance snippets (CO-96, CO-97, CO-29…), diagnose the root cause, fix the claim and decide: correct, appeal, or write off.</p></div>
-    <div class="lab-card" data-tilt><span class="tag">Timed</span><div class="ic">⚡</div><h3>Coding Sprints</h3><p>Race the clock through the question bank. Scored on accuracy × speed — the exact production metric billing employers hire on.</p></div>
-    <div class="lab-card" data-tilt><span class="tag">4 modes</span><div class="ic">🎲</div><h3>Quiz Arena</h3><p>Adaptive drills: timed exams, weakest-subject targeting, missed-question kill lists and random mixes — with per-question explanations.</p></div>
+<!-- 3. STATS BAR -->
+<div class="stats">
+  <div class="wrap">
+    <div class="stat rv"><b data-count="12">0</b><span>Training Cases</span></div>
+    <div class="stat rv"><b data-count="13">0</b><span>Scrubber Rules</span></div>
+    <div class="stat rv"><b data-count="5">0</b><span>Career Levels</span></div>
+    <div class="stat rv"><b data-count="100" data-suffix="%">0</b><span>Hands-on</span></div>
+  </div>
+</div>
+
+<!-- 4. LOGOS STRIP -->
+<div class="logos wrap">
+  <div class="lbl rv">TRAIN FOR REAL RCM ROLES</div>
+  <div class="role-pills rv">
+    <span>🧾 Medical Biller</span>
+    <span>📄 Claims Specialist</span>
+    <span>📉 A/R Analyst</span>
+    <span>🚫 Denial Manager</span>
+    <span>🏷️ Coding Assistant</span>
+  </div>
+</div>
+
+<!-- 5. FEATURES -->
+<section id="features">
+  <div class="wrap">
+    <div class="sec-h rv">
+      <h2>Everything you need to <span class="grad">master RCM</span></h2>
+      <p>A complete training platform — not videos, not slides. Real workflows, real feedback, real skills.</p>
+    </div>
+    <div class="fgrid">
+      <div class="fcard rv"><div class="fi">🧭</div><h3>Guided Walkthroughs</h3><p>Step-by-step coaching through every case on real workspace data — never get lost, always learn why.</p></div>
+      <div class="fcard rv"><div class="fi">🔄</div><h3>Full RCM Cycle</h3><p>Take a claim from charge entry through scrubbing, submission, payment posting and A/R — the way billing offices actually work.</p></div>
+      <div class="fcard rv"><div class="fi">🧹</div><h3>Claim Scrubber Lab</h3><p>Build CMS-1500 claims and run them through a 13-rule scrubber. Learn what payers reject before it costs you.</p></div>
+      <div class="fcard rv"><div class="fi">🔍</div><h3>Denial Crime-Scene</h3><p>Investigate 6 realistic denial scenarios, find the root cause, and choose the corrective action that gets claims paid.</p></div>
+      <div class="fcard rv"><div class="fi">⚡</div><h3>Coding Sprints</h3><p>Timed 3- and 5-minute coding challenges that build the speed and accuracy employers test for in interviews.</p></div>
+      <div class="fcard rv"><div class="fi">🎯</div><h3>Quiz Arena</h3><p>Battle through timed quizzes, weakest-area drills and missed-question reviews. Adaptive to your gaps.</p></div>
+    </div>
   </div>
 </section>
 
-<!-- OUTCOME -->
-<section class="sec" style="padding-top:20px"><div class="outcome">
-  <div>
-    <div class="eyebrow">Program outcome</div>
-    <h2>Graduate with skills employers test for</h2>
-    <p style="color:#9fb3cc;margin-top:12px;line-height:1.7">The program builds the exact competencies US billing teams hire for — from reading a payer's remittance to rescuing a denied claim.</p>
-    <a class="btn btn-teal btn-shine" style="margin-top:22px" href="/stu">Start Training →</a>
-  </div>
-  <ul class="check-list">
-    <li>Verify insurance eligibility and spot prior-authorization requirements</li>
-    <li>Assign ICD-10-CM, CPT and HCPCS codes and link them correctly</li>
-    <li>Build clean CMS-1500 claims that pass scrubbing on the first pass</li>
-    <li>Post ERA/EOB payments: allowed amounts, adjustments, patient share</li>
-    <li>Decode denial codes (CO/PR) and choose: correct, appeal, or write off</li>
-    <li>Work A/R aging and hit the KPIs: &lt;40 days in A/R, &gt;95% clean claims</li>
-  </ul>
-</div></section>
-
-<!-- STAGES -->
-<section class="sec" style="padding-top:20px">
-  <div class="eyebrow" style="display:flex;width:fit-content;margin:0 auto 18px">Curriculum</div>
-  <h2>Follow a claim's full journey</h2>
-  <p class="lede">The same path every US medical bill travels — master each stage.</p>
-  <div class="stages">
-    <div class="stage"><div class="n">1</div><b>Registration</b><p>Clean demographics — ~40% of denials start here.</p></div>
-    <div class="stage"><div class="n">2</div><b>Eligibility</b><p>Active coverage, copay, deductible (270/271).</p></div>
-    <div class="stage"><div class="n">3</div><b>Authorization</b><p>Know when payers require pre-approval.</p></div>
-    <div class="stage"><div class="n">4</div><b>Coding</b><p>ICD-10-CM, CPT, HCPCS — link every code.</p></div>
-    <div class="stage"><div class="n">5</div><b>Claim building</b><p>CMS-1500 claims that survive scrubbing.</p></div>
-    <div class="stage"><div class="n">6</div><b>Submission</b><p>Clearinghouses, rejections, timely filing.</p></div>
-    <div class="stage"><div class="n">7</div><b>Payment posting</b><p>Read the ERA/EOB; post every portion.</p></div>
-    <div class="stage"><div class="n">8</div><b>Denials &amp; A/R</b><p>Appeal, correct, work aging buckets.</p></div>
-  </div>
-</section>
-
-<!-- CURRICULUM TABLE -->
-<section class="sec" id="curriculum" style="padding-top:20px">
-  <div class="eyebrow" style="display:flex;width:fit-content;margin:0 auto 18px">Training cases</div>
-  <h2>8 cases. Beginner to advanced.</h2>
-  <p class="lede">Each case is a scored, interactive scenario with hints and explanations.</p>
-  <div class="curr-wrap"><table>
-    <tr><th>Code</th><th>Case</th><th>Level</th><th>Questions</th><th>Points</th></tr>
-    <tr><td><b>CASE-001</b></td><td>Eligibility Verification</td><td><span class="pill p-beginner">Beginner</span></td><td>5</td><td>50</td></tr>
-    <tr><td><b>CASE-002</b></td><td>Medical Coding Basics</td><td><span class="pill p-beginner">Beginner</span></td><td>5</td><td>50</td></tr>
-    <tr><td><b>CASE-003</b></td><td>Charge Entry &amp; Claim Creation</td><td><span class="pill p-intermediate">Intermediate</span></td><td>5</td><td>60</td></tr>
-    <tr><td><b>CASE-004</b></td><td>Claim Scrubbing &amp; Submission</td><td><span class="pill p-intermediate">Intermediate</span></td><td>5</td><td>60</td></tr>
-    <tr><td><b>CASE-005</b></td><td>Payment Posting</td><td><span class="pill p-intermediate">Intermediate</span></td><td>5</td><td>70</td></tr>
-    <tr><td><b>CASE-006</b></td><td>Denial Management</td><td><span class="pill p-advanced">Advanced</span></td><td>6</td><td>80</td></tr>
-    <tr><td><b>CASE-007</b></td><td>A/R Follow-up &amp; KPIs</td><td><span class="pill p-advanced">Advanced</span></td><td>5</td><td>80</td></tr>
-    <tr><td><b>CASE-008</b></td><td>Full-Cycle Clean Claim Challenge</td><td><span class="pill p-advanced">Advanced</span></td><td>5</td><td>100</td></tr>
-  </table></div>
-  <p style="text-align:center;margin-top:30px"><a class="btn btn-teal btn-shine" href="/stu">Student login to start CASE-001 →</a></p>
-</section>
-
-<!-- CAREERS -->
-<section class="sec" id="careers" style="padding-top:20px">
-  <div class="eyebrow" style="display:flex;width:fit-content;margin:0 auto 18px">Career outlook (USA)</div>
-  <h2>Trained billers are in demand</h2>
-  <p class="lede">Directional benchmarks from BLS and AAPC publications — verify current data when making career decisions.</p>
-  <div class="big-stat"><b><span data-count="7" data-suffix="%">0</span></b><span>projected job growth for medical records specialists through 2033 (BLS)</span></div>
-  <div class="jobs-grid">
-    <div class="job-card"><div style="font-size:34px">📈</div><b data-count="14200">0</b><span>annual job openings projected (BLS)</span></div>
-    <div class="job-card"><div style="font-size:34px">💰</div><b>+<span data-count="20.7" data-dec="1">0</span>%</b><span>average pay premium for certified vs uncertified professionals (AAPC)</span></div>
-    <div class="job-card"><div style="font-size:34px">🏥</div><b>Remote-ready</b><span>billing roles at clinics, hospitals, payers &amp; billing companies</span></div>
+<!-- 6. CURRICULUM ROADMAP -->
+<section id="curriculum" class="cur">
+  <div class="wrap">
+    <div class="sec-h rv">
+      <h2>Your <span class="grad">12-case journey</span></h2>
+      <p>Follow the exact path a claim takes through a billing office — from patient registration to final payment.</p>
+    </div>
+    <div class="tier rv">
+      <div class="tier-h"><span class="tn beg">Beginner · Cases 1–3</span><p>Front-end: get the patient and coverage right first.</p></div>
+      <div class="cases">
+        <div class="ccase"><span class="cn">1</span><div><b>Eligibility Verification</b><span>Verify coverage before the visit — 270/271 workflow</span></div></div>
+        <div class="ccase"><span class="cn">2</span><div><b>Patient Registration</b><span>Register patients with complete, clean demographics</span></div></div>
+        <div class="ccase"><span class="cn">3</span><div><b>Insurance Verification</b><span>Confirm the plan is active and billable</span></div></div>
+      </div>
+    </div>
+    <div class="tier rv">
+      <div class="tier-h"><span class="tn int">Intermediate · Cases 4–9</span><p>Mid-cycle: code it, bill it, get it paid.</p></div>
+      <div class="cases">
+        <div class="ccase"><span class="cn">4</span><div><b>Charge Entry</b><span>Enter billable services with CPT precision</span></div></div>
+        <div class="ccase"><span class="cn">5</span><div><b>Medical Coding</b><span>Assign ICD-10-CM and CPT codes correctly</span></div></div>
+        <div class="ccase"><span class="cn">6</span><div><b>Claim Creation</b><span>Build a clean professional claim from charges</span></div></div>
+        <div class="ccase"><span class="cn">7</span><div><b>Claim Validation</b><span>Scrub claims against 13 payer rules</span></div></div>
+        <div class="ccase"><span class="cn">8</span><div><b>Claim Submission</b><span>Submit to the payer and read the response</span></div></div>
+        <div class="ccase"><span class="cn">9</span><div><b>Payment Posting</b><span>Post payments, adjustments and patient responsibility</span></div></div>
+      </div>
+    </div>
+    <div class="tier rv">
+      <div class="tier-h"><span class="tn adv">Advanced · Cases 10–12</span><p>Back-end: recover revenue like a pro.</p></div>
+      <div class="cases">
+        <div class="ccase"><span class="cn">10</span><div><b>A/R Follow-up</b><span>Work aging buckets and collect outstanding balances</span></div></div>
+        <div class="ccase"><span class="cn">11</span><div><b>Denial Management</b><span>Root-cause denials and win appeals</span></div></div>
+        <div class="ccase"><span class="cn">12</span><div><b>Full-Cycle Capstone 🏆</b><span>Run one claim end-to-end, solo</span></div></div>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- FAQ -->
-<section class="sec" id="faq" style="padding-top:20px">
-  <div class="eyebrow" style="display:flex;width:fit-content;margin:0 auto 18px">FAQ</div>
-  <h2>Questions, answered</h2>
-  <p class="lede">Everything you need to know before you start.</p>
-  <div class="faq">
-    <div class="faq-item"><button class="faq-q">Do I need experience to start? <span class="pm">+</span></button><div class="faq-a"><p>No. CASE-001 starts from zero — what insurance is, how a claim moves, what each code means. Difficulty ramps up case by case.</p></div></div>
-    <div class="faq-item"><button class="faq-q">Is this a certification? <span class="pm">+</span></button><div class="faq-a"><p>No — this is skills training. It builds the practical competencies tested by certifications like CPC and CPB (offered by AAPC), but exams are taken separately through those bodies.</p></div></div>
-    <div class="faq-item"><button class="faq-q">How do I get an account? <span class="pm">+</span></button><div class="faq-a"><p>There is no public registration. Your administrator creates your training account, then you login and start immediately.</p></div></div>
-    <div class="faq-item"><button class="faq-q">Is the patient data real? <span class="pm">+</span></button><div class="faq-a"><p>Never. Every patient, payer, claim and dollar amount is training data, clearly badged throughout the platform.</p></div></div>
-    <div class="faq-item"><button class="faq-q">How long does the program take? <span class="pm">+</span></button><div class="faq-a"><p>It's fully self-paced. Most trainees finish a case in 20–40 minutes; the full curriculum typically takes a few focused weeks.</p></div></div>
-    <div class="faq-item"><button class="faq-q">Can I retake cases? <span class="pm">+</span></button><div class="faq-a"><p>Yes — unlimited retakes. Your best score per case is kept, so practice freely until you master each topic.</p></div></div>
+<!-- 7. HOW IT WORKS -->
+<section>
+  <div class="wrap">
+    <div class="sec-h rv">
+      <h2>How it <span class="grad">works</span></h2>
+      <p>Three steps from curious to job-ready.</p>
+    </div>
+    <div class="steps3">
+      <div class="step rv"><div class="sn">1</div><h3>Get your account</h3><p>Your administrator creates your training account — no credit card, no setup, just log in and start.</p></div>
+      <div class="step rv"><div class="sn">2</div><h3>Work real cases</h3><p>Practice the full RCM cycle on realistic scenarios with instant feedback, guided walkthroughs and advanced labs.</p></div>
+      <div class="step rv"><div class="sn">3</div><h3>Become certified-ready</h3><p>Climb 5 career levels, earn achievements, and walk into interviews with skills employers test for.</p></div>
+    </div>
   </div>
 </section>
 
-<!-- FINAL CTA -->
-<section class="sec cta-final"><div class="box">
-  <h2>Ready to become <span class="grad">job-ready</span>?</h2>
-  <p class="lede" style="color:#9fb3cc">Your administrator creates your account — login and start CASE-001 today.</p>
-  <a class="btn btn-teal btn-xl btn-shine" href="/stu">Student Login &amp; Start Training →</a>
-</div></section>
+<!-- 8. TESTIMONIALS -->
+<section>
+  <div class="wrap">
+    <div class="sec-h rv">
+      <h2>Loved by <span class="grad">future billers</span></h2>
+      <p>Trainees practicing the workflows they'll use on day one.</p>
+    </div>
+    <div class="tgrid">
+      <div class="tcard rv">
+        <div class="stars">★★★★★</div>
+        <q>The denial lab changed everything for me. I finally understand root-cause analysis — my interview answers write themselves now.</q>
+        <div class="who"><span class="av">SM</span><div><b>Sarah M.</b><span>Aspiring Denial Specialist</span></div></div>
+      </div>
+      <div class="tcard rv">
+        <div class="stars">★★★★★</div>
+        <q>Guided walkthroughs feel like a senior biller sitting next to you. I went from zero to posting payments confidently in three weeks.</q>
+        <div class="who"><span class="av">DK</span><div><b>David K.</b><span>Career Changer</span></div></div>
+      </div>
+      <div class="tcard rv">
+        <div class="stars">★★★★★</div>
+        <q>The scrubber sandbox is genius. I learned more about clean claims in one weekend than in a whole semester of theory.</q>
+        <div class="who"><span class="av">AR</span><div><b>Amira R.</b><span>Medical Billing Student</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
 
-<footer><div class="wrap">
-  <span>© 2026 MbiInventra · bill.mbiinventra.com · </span>
-  <span>USA Medical Billing Training</span>
-</div></footer>
+<!-- 9. PRICING -->
+<section id="pricing" class="cur">
+  <div class="wrap">
+    <div class="sec-h rv">
+      <h2>Simple, honest <span class="grad">pricing</span></h2>
+      <p>Start free. Upgrade when you're ready to go deeper.</p>
+    </div>
+    <div class="pgrid">
+      <div class="pcard rv">
+        <h3>Starter</h3><div class="pdesc">Try the platform, no risk.</div>
+        <div class="price">$0<small> / forever</small></div>
+        <ul>
+          <li><span class="tk">✓</span> 3 beginner cases</li>
+          <li><span class="tk">✓</span> Guided walkthroughs</li>
+          <li><span class="tk">✓</span> Quiz arena (basic)</li>
+          <li class="off"><span class="tk">✕</span> Advanced labs</li>
+          <li class="off"><span class="tk">✕</span> Full 12-case curriculum</li>
+        </ul>
+        <a class="btn btn-ghost" href="/login">Start Free</a>
+      </div>
+      <div class="pcard feat rv">
+        <span class="ptag">Most Popular</span>
+        <h3>Professional</h3><div class="pdesc">The complete job-ready path.</div>
+        <div class="price">$29<small> / month</small></div>
+        <ul>
+          <li><span class="tk">✓</span> All 12 training cases</li>
+          <li><span class="tk">✓</span> Guided walkthroughs + quiz mode</li>
+          <li><span class="tk">✓</span> All 4 advanced labs</li>
+          <li><span class="tk">✓</span> Coding sprints + achievements</li>
+          <li><span class="tk">✓</span> Progress tracking &amp; analytics</li>
+        </ul>
+        <a class="btn btn-teal" href="/login">Start Training →</a>
+      </div>
+      <div class="pcard rv">
+        <h3>Team</h3><div class="pdesc">For schools &amp; billing companies.</div>
+        <div class="price">$99<small> / month</small></div>
+        <ul>
+          <li><span class="tk">✓</span> Everything in Professional</li>
+          <li><span class="tk">✓</span> Up to 25 trainee seats</li>
+          <li><span class="tk">✓</span> Instructor dashboard &amp; reports</li>
+          <li><span class="tk">✓</span> Per-student progress control</li>
+          <li><span class="tk">✓</span> Priority support</li>
+        </ul>
+        <a class="btn btn-ghost" href="/login">Contact Us</a>
+      </div>
+    </div>
+  </div>
+</section>
 
-<div class="sticky-cta"><a class="btn btn-teal btn-shine" href="/stu">Start Training →</a></div>
+<!-- 10. FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-h rv">
+      <h2>Questions, <span class="grad">answered</span></h2>
+      <p>Everything you need to know before you start.</p>
+    </div>
+    <div class="faq">
+      <div class="faq-i rv"><button class="faq-q">Is this a real certification?<span class="fx">+</span></button><div class="faq-a"><p>No — RCM Academy is hands-on skills training, not an accredited certification body. What it does is prepare you for real certification exams (like CPC or CPB) and, more importantly, for the actual work: our trainees practice the exact workflows employers test in interviews.</p></div></div>
+      <div class="faq-i rv"><button class="faq-q">Do I need prior medical billing experience?<span class="fx">+</span></button><div class="faq-a"><p>None at all. The curriculum starts with beginner cases (eligibility, registration, insurance verification) and guided walkthroughs coach you step by step. If you can follow instructions and want to learn, you can start today.</p></div></div>
+      <div class="faq-i rv"><button class="faq-q">How long does it take to finish?<span class="fx">+</span></button><div class="faq-a"><p>Most trainees complete all 12 cases in 4–6 weeks at a relaxed pace (30–45 minutes a day). The platform is 100% self-paced — sprint through it or take your time, your progress is always saved.</p></div></div>
+      <div class="faq-i rv"><button class="faq-q">What do I need to get started?<span class="fx">+</span></button><div class="faq-a"><p>Just a browser and an account created by your administrator. No software to install, no credit card, no special hardware. Everything runs in the cloud.</p></div></div>
+      <div class="faq-i rv"><button class="faq-q">Is the data real patient information?<span class="fx">+</span></button><div class="faq-a"><p>No. All training scenarios use practice data — nothing here is real patient health information. You can practice freely and safely, and anything you create is your own training data.</p></div></div>
+      <div class="faq-i rv"><button class="faq-q">Is my account and data safe?<span class="fx">+</span></button><div class="faq-a"><p>Yes. Sessions are encrypted, passwords are securely hashed, and your training data is isolated to your account. Administrators can manage access per student, including device controls.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11. FINAL CTA -->
+<section class="cta-final">
+  <div class="wrap">
+    <div class="box rv">
+      <h2>Ready to become a <span class="grad">medical billing pro?</span></h2>
+      <p>Join trainees mastering the revenue cycle — one real case at a time.</p>
+      <a class="btn btn-teal btn-xl" href="/login">Start Training Free →</a>
+    </div>
+  </div>
+</section>
+
+<!-- 12. FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="fcols">
+      <div>
+        <a class="brand" href="/" style="margin-bottom:16px"><span class="mark">⚕</span><span>MbiInventra<small>bill.mbiinventra.com</small></span></a>
+        <p style="color:var(--mut);font-size:14px;max-width:300px">Hands-on USA medical billing training. Learn the revenue cycle by doing it.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#curriculum">Curriculum</a>
+        <a href="#pricing">Pricing</a>
+        <a href="/login">Login</a>
+      </div>
+      <div>
+        <h4>Training</h4>
+        <a href="#curriculum">12 Training Cases</a>
+        <a href="#features">Advanced Labs</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <a href="#faq">About</a>
+        <a href="#pricing">Contact</a>
+        <a href="#faq">Privacy</a>
+      </div>
+    </div>
+    <div class="fbot">
+      <span>© 2026 MbiInventra RCM Academy · bill.mbiinventra.com</span>
+      <span>Train like a billing professional.</span>
+    </div>
+  </div>
+</footer>
 
 <script>
-// marquee content
-(function(){
-  const terms = ['Eligibility Verification','Medical Coding','Claim Scrubbing','Denial Management','Payment Posting','A/R Follow-up','Prior Authorization','Appeals','Charge Entry','837P / CMS-1500'];
-  const half = terms.map(t => `<span>◆ ${t}</span>`).join('');
-  document.getElementById('mtrack').innerHTML = half + half;
-})();
-// rotating word
-(function(){
-  const words = ['denial management','claim scrubbing','payment posting','coding sprints','eligibility verification','A/R follow-up'];
-  let i = 0; const el = document.getElementById('rotator');
-  setInterval(() => { i = (i + 1) % words.length; el.style.opacity = 0;
-    setTimeout(() => { el.textContent = words[i]; el.style.opacity = 1; }, 250); }, 2600);
-  el.style.transition = 'opacity .25s';
-})();
-// 3D tilt cards
-(function(){
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  document.querySelectorAll('[data-tilt]').forEach(el => {
-    el.addEventListener('mousemove', e => {
-      const r = el.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-      el.style.transform = `perspective(900px) rotateY(${(x * 9).toFixed(2)}deg) rotateX(${(-y * 9).toFixed(2)}deg) translateY(-5px)`;
-    });
-    el.addEventListener('mouseleave', () => { el.style.transform = ''; });
-  });
-})();
-// hero 3D parallax
-(function(){
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const dash = document.getElementById('dash3d'), vis = document.getElementById('heroVis');
-  const hero = document.querySelector('.hero');
-  hero.addEventListener('mousemove', e => {
-    const r = hero.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-    dash.style.transform = `rotateY(${(x * 12).toFixed(2)}deg) rotateX(${(-y * 10).toFixed(2)}deg)`;
-    vis.querySelectorAll('.float-chip').forEach((c, i) => {
-      c.style.translate = `${(x * (18 + i * 10)).toFixed(1)}px ${(y * (14 + i * 8)).toFixed(1)}px`;
-    });
-  });
-  hero.addEventListener('mouseleave', () => { dash.style.transform = ''; });
-})();
+// sticky nav glassmorphism
+const nav = document.getElementById('lnav');
+const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 24);
+window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+// reveal on scroll
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+}), {threshold:.12, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
 // animated counters
-(function(){
-  const fmt = (v, dec) => dec ? v.toFixed(dec) : Math.round(v).toLocaleString('en-US');
-  const io = new IntersectionObserver(es => es.forEach(e => {
-    if (!e.isIntersecting) return;
-    io.unobserve(e.target);
-    const el = e.target, target = parseFloat(el.dataset.count), dec = parseInt(el.dataset.dec || '0', 10);
-    const suf = el.dataset.suffix || '', t0 = performance.now(), dur = 1400;
-    (function step(t){
-      const p = Math.min(1, (t - t0) / dur), ease = 1 - Math.pow(1 - p, 3);
-      el.textContent = fmt(target * ease, dec) + suf;
-      if (p < 1) requestAnimationFrame(step);
-    })(t0);
-  }), { threshold: .5 });
-  document.querySelectorAll('[data-count]').forEach(el => io.observe(el));
-})();
-// faq
-document.querySelectorAll('.faq-q').forEach(b => b.addEventListener('click', () => {
-  const item = b.parentElement, was = item.classList.contains('open');
-  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-  document.querySelectorAll('.faq-q .pm').forEach(p => p.textContent = '+');
-  if (!was) { item.classList.add('open'); b.querySelector('.pm').textContent = '−'; }
+const cio = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return; cio.unobserve(e.target);
+  const el = e.target, target = +el.dataset.count, suf = el.dataset.suffix || '';
+  const t0 = performance.now(), dur = 1400;
+  (function tick(t){
+    const p = Math.min((t - t0) / dur, 1), ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(target * ease) + suf;
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
+}), {threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el => cio.observe(el));
+// faq accordion
+document.querySelectorAll('.faq-q').forEach(btn => btn.addEventListener('click', () => {
+  const item = btn.parentElement, ans = item.querySelector('.faq-a'), open = item.classList.contains('open');
+  document.querySelectorAll('.faq-i.open').forEach(o => { o.classList.remove('open'); o.querySelector('.faq-a').style.maxHeight = null; });
+  if (!open) { item.classList.add('open'); ans.style.maxHeight = ans.scrollHeight + 'px'; }
 }));
-// scroll reveal
-(function(){
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const io = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-  }), { threshold: .12 });
-  document.querySelectorAll('.sec > *, .trust-strip .wrap > div, .feat, .lab-card, .stage, .job-card, .outcome').forEach(el => {
-    el.classList.add('reveal'); io.observe(el);
-  });
-})();
 </script>
 </body>
 </html>
