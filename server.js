@@ -131,8 +131,12 @@ app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
 // ---------- auth API (login only) ----------
 app.post('/api/login', ah(async (req, res) => {
   const { email, password } = req.body || {};
-  const u = typeof email === 'string' &&
-    await db.get('SELECT * FROM users WHERE email = ?', [email.trim().toLowerCase()]);
+  const emailInput = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  let u = emailInput && await db.get('SELECT * FROM users WHERE email = ?', [emailInput]);
+  if (!u && emailInput && !emailInput.includes('@')) {
+    // backward compat: older installs used admin@local
+    u = await db.get('SELECT * FROM users WHERE email = ?', [emailInput + '@local']);
+  }
   const ok = u && db.verifyPassword(password || '', u.pass_hash);
   if (!ok) { noteFail(req); return res.status(401).json({ error: 'Invalid email or password.' }); }
   req.session.regenerate((err) => {
