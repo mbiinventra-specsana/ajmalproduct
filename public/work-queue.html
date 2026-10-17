@@ -1,71 +1,169 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Work Queue — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<title>Work Queue — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css">
+<style>
+/* ===== Work Queue ULTRA ===== */
+.wq-hero{background:linear-gradient(120deg,#0f2743,#143a5e);border-radius:18px;padding:24px 28px;color:#fff;
+  margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
+.wq-hero::before{content:"";position:absolute;top:-50px;right:-30px;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.28),transparent 70%)}
+.wq-hero h1{margin:0 0 6px;font-size:22px;position:relative}
+.wq-hero .psub{color:#b9d4e8;margin:0;font-size:13.5px;position:relative;max-width:640px}
+.wq-hero .act-row{position:relative;margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+/* spotlight card */
+.spotlight{background:linear-gradient(135deg,#fff,#f0fdfa);border:1px solid rgba(14,159,138,.25);
+  border-radius:16px;padding:20px 22px;margin-bottom:18px;position:relative;overflow:hidden;
+  box-shadow:0 6px 24px rgba(14,159,138,.1);animation:ccIn .45s cubic-bezier(.2,.8,.2,1)}
+.spotlight::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;
+  background:linear-gradient(180deg,#0e9f8a,#34d3bd)}
+.spotlight .sl-tag{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#0e9f8a;text-transform:uppercase;margin-bottom:8px}
+.spotlight h3{margin:0 0 6px;font-size:17px;color:#0f2743}
+.spotlight p{margin:0 0 14px;font-size:13.5px;color:#64748b}
+.spotlight .sl-meta{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.spotlight .sl-m{font-size:12.5px;color:#64748b}
+.spotlight .sl-m b{color:#0f2743;font-size:14px}
+/* score bar */
+.scorebar{display:flex;align-items:center;gap:8px;min-width:110px}
+.scorebar .sb{flex:1;height:7px;border-radius:4px;background:#e8eef4;overflow:hidden;min-width:56px}
+.scorebar .sb i{display:block;height:100%;border-radius:4px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.scorebar .sv{font-weight:800;font-size:13px;min-width:28px;text-align:right}
+/* type icon chip */
+.tchip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#334155}
+.tchip .ti{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+.ti-claim{background:#dbeafe}.ti-denial{background:#fee2e2}.ti-ar{background:#fef3c7}
+.ti-payment{background:#ccfbf1}.ti-charge{background:#ede9fe}.ti-case{background:#f1f5f9}
+/* filter tabs */
+.ftabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.ftab{display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:24px;border:1px solid #e2e8f0;
+  background:#fff;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;transition:all .18s}
+.ftab:hover{border-color:#0e9f8a;color:#0f2743;transform:translateY(-1px)}
+.ftab.on{background:#0f2743;border-color:#0f2743;color:#fff;box-shadow:0 4px 12px rgba(15,39,67,.25)}
+.ftab .cnt{background:#f1f5f9;color:#64748b;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
+.ftab.on .cnt{background:rgba(255,255,255,.18);color:#fff}
+/* table polish */
+.wq-table td{vertical-align:middle;padding:13px 12px}
+.wq-table tr{transition:background .15s}
+.wq-table tbody tr:hover{background:#f8fafc}
+.wq-table tr.top-row{background:rgba(14,159,138,.05)}
+.wq-table tr.top-row:hover{background:rgba(14,159,138,.09)}
+/* kpi icons */
+.kpi .kic{font-size:24px;margin-bottom:8px;display:block}
+/* queue health */
+.qhealth{display:flex;align-items:center;gap:10px;font-size:13px;color:#b9d4e8;position:relative}
+.qhealth .qh-bar{width:120px;height:8px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden}
+.qhealth .qh-bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#34d3bd,#0e9f8a)}
+@keyframes ccIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.wq-anim{animation:ccIn .4s cubic-bezier(.2,.8,.2,1) backwards}
+</style></head>
 <body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
-  <div class="phead"><div>
-    <div class="eyebrow2">Revenue Cycle Management</div><h1>RCM Work Queue</h1>
-    <p class="psub">Centralized operational queue — validate claims, work denials, follow up A/R and keep training on track.</p>
-  </div><div class="act-row">
-    <span class="bdg b-teal" style="font-size:11px"><span class="pulse-dot"></span> LIVE QUEUE</span>
-    <button class="btn btn-teal btn-sm" id="workNext">⚡ Work next</button>
-  </div></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)">
+  <div class="wq-hero wq-anim">
+    <div class="eyebrow2" style="color:#34d3bd">Revenue Cycle Management</div>
+    <h1>RCM Work Queue</h1>
+    <p class="psub">Your prioritized action list — validate claims, work denials, follow up A/R. Highest impact first, always.</p>
+    <div class="act-row">
+      <span class="bdg b-teal" style="font-size:11px;background:rgba(52,211,189,.15);color:#5eead4;border:1px solid rgba(52,211,189,.3)"><span class="pulse-dot"></span> LIVE QUEUE</span>
+      <button class="btn-hero" id="workNext" style="padding:9px 18px;font-size:13px">⚡ Work next</button>
+      <span class="qhealth" id="qhealth"></span>
+    </div>
+  </div>
+
+  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
     <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
   </div>
-  <div class="tabs" id="tabs"></div>
-  <div class="panel"><div class="prow"><h3 style="margin:0">Work Items <span style="color:#64748b;font-weight:400;font-size:12px">— ranked by priority score</span></h3>
+
+  <div id="spotlight"></div>
+
+  <div class="ftabs wq-anim" style="animation-delay:.1s" id="tabs"></div>
+  <div class="panel wq-anim" style="animation-delay:.14s">
+    <div class="prow"><h3 style="margin:0">Work Items <span style="color:#64748b;font-weight:400;font-size:12px">— ranked by priority score</span></h3>
     <input class="search" id="q" placeholder="Search queue…"></div>
-    <div class="twrap"><table><thead><tr>
-      <th>Score</th><th>Priority</th><th>Type</th><th>Task</th><th>Detail</th><th>Amount</th><th></th>
-    </tr></thead><tbody id="rows"><tr><td colspan="7"><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div></td></tr></tbody></table></div>
-    <div class="empty" id="empty" style="display:none">Queue is clear — nice work. 🎉<br>
-      <span style="font-size:13px;color:#5b6b85">Create charges and claims from the Billing menu to fill your queue.</span></div>
+    <div class="twrap"><table class="wq-table"><thead><tr>
+      <th style="min-width:130px">Priority score</th><th>Level</th><th>Task</th><th>Detail</th><th>Amount</th><th></th>
+    </tr></thead><tbody id="rows"><tr><td colspan="6"><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div><div class="skel skel-table-row"></div></td></tr></tbody></table></div>
+    <div class="empty" id="empty" style="display:none"><div class="empty-ic">🎉</div><h4>Queue is clear</h4><p>Create charges and claims from the Billing menu to fill your queue.</p></div>
   </div>
   <div class="info-panel">💡 <b>Priority score</b> = urgency × amount × aging × denial risk. <b>⚡ Work next</b> jumps straight to your highest-impact item — work the queue like a real billing team lead.</div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
 let items = [], tab = 'all', q = '';
-const KIND = { claim: 'CLAIM', denial: 'DENIAL', ar: 'A/R', payment: 'PAYMENT', charge: 'CHARGE', case: 'CASE' };
-const KCLS = { claim: 'b-blue', denial: 'b-red', ar: 'b-amber', payment: 'b-teal', charge: 'b-purple', case: 'b-gray' };
-const PCLS = { HIGH: 'b-red', MEDIUM: 'b-amber', LOW: 'b-gray' };
+const KIND = { claim:['Claim','🧾','ti-claim'], denial:['Denial','🚫','ti-denial'], ar:['A/R','📊','ti-ar'],
+  payment:['Payment','💳','ti-payment'], charge:['Charge','🧮','ti-charge'], case:['Training','🎓','ti-case'] };
+const KICON = { claim:'🧾', denial:'🚫', ar:'📊', payment:'💳', charge:'🧮', case:'🎓' };
+const KBG = { claim:'ti-claim', denial:'ti-denial', ar:'ti-ar', payment:'ti-payment', charge:'ti-charge', case:'ti-case' };
+const PCLS = { HIGH:'b-red', MEDIUM:'b-amber', LOW:'b-gray' };
+const TABICON = { all:'📋', claim:'🧾', ar:'📊', denial:'🚫', payment:'💳', charge:'🧮', case:'🎓' };
+function scoreColor(s, max) {
+  const r = max ? s / max : 0;
+  return r >= .66 ? 'linear-gradient(90deg,#ef4444,#f87171)' : r >= .33 ? 'linear-gradient(90deg,#f59e0b,#fbbf24)' : 'linear-gradient(90deg,#0e9f8a,#34d3bd)';
+}
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('workqueue', u);
   if (!guardFeature(u, 'workqueue', 'Work Queue')) return;
   const [ov, wq] = await Promise.all([api('/api/rcm/overview'), api('/api/rcm/work-queue')]);
-  items = wq.items;
+  items = (wq.items || []).sort((a, b) => (b.score || 0) - (a.score || 0));
+  const maxScore = Math.max(1, ...items.map(i => i.score || 0));
+
   document.getElementById('kpis').innerHTML = [
-    ['Open tasks', ov.openTasks, 'Active work items'],
-    ['High priority', ov.highPriority, 'Needs attention'],
-    ['Outstanding', money(ov.outstanding), 'Queue-associated amount'],
-    ['Denials', ov.denials, 'Open denial tasks'],
-  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+    ['📥', 'Open tasks', ov.openTasks, 'Active work items'],
+    ['🔥', 'High priority', ov.highPriority, 'Needs attention'],
+    ['💰', 'Outstanding', money(ov.outstanding), 'Queue-associated amount'],
+    ['🚫', 'Denials', ov.denials, 'Open denial tasks'],
+  ].map(([ic, l, v, s], i) => `<div class="kpi wq-anim" style="animation-delay:${.04*i}s"><span class="kic">${ic}</span><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+
+  // queue health: % of items not high-priority
+  const hp = items.filter(i => i.priority === 'HIGH').length;
+  const health = items.length ? Math.round(100 * (items.length - hp) / items.length) : 100;
+  document.getElementById('qhealth').innerHTML =
+    `Queue health <span class="qh-bar"><i style="width:${health}%"></i></span> <b style="color:#fff">${health}%</b>`;
+
+  // spotlight: top item
+  const top = items[0];
+  document.getElementById('spotlight').innerHTML = top ? `
+    <div class="spotlight">
+      <div class="sl-tag">⭐ Highest priority — start here</div>
+      <h3>${esc(top.title)}</h3><p>${esc(top.sub)}</p>
+      <div class="sl-meta">
+        <span class="sl-m">Priority <b>${esc(top.priority)}</b></span>
+        <span class="sl-m">Type <b>${esc((KIND[top.kind]||[top.kind])[0])}</b></span>
+        ${top.amount ? `<span class="sl-m">Amount <b>${money(top.amount)}</b></span>` : ''}
+        ${top.score ? `<span class="sl-m">Score <b style="color:#0e9f8a">${top.score}</b></span>` : ''}
+      </div>
+      <a class="btn btn-teal" href="${top.href}">${esc(top.action)} →</a>
+    </div>` : '';
+
   renderTabs(); render();
   const wn = document.getElementById('workNext');
   wn.disabled = !items.length;
+  wn.style.opacity = items.length ? 1 : .5;
   wn.onclick = () => { const next = items.filter(i => tab === 'all' || i.kind === tab)[0]; if (next) location.href = next.href; };
 }
 function renderTabs() {
   const counts = { all: items.length };
   for (const i of items) counts[i.kind] = (counts[i.kind] || 0) + 1;
-  const tabs = [['all', 'All'], ['claim', 'Claims'], ['ar', 'A/R'], ['denial', 'Denials'], ['payment', 'Payments'], ['charge', 'Charges'], ['case', 'Cases']];
+  const tabs = [['all','All'],['claim','Claims'],['ar','A/R'],['denial','Denials'],['payment','Payments'],['charge','Charges'],['case','Cases']];
   document.getElementById('tabs').innerHTML = tabs.map(([k, l]) =>
-    `<button class="tab ${tab === k ? 'on' : ''}" data-k="${k}">${l}<span class="cnt">${counts[k] || 0}</span></button>`).join('');
-  document.querySelectorAll('.tab').forEach(t => t.onclick = () => { tab = t.dataset.k; renderTabs(); render(); });
+    `<button class="ftab ${tab === k ? 'on' : ''}" data-k="${k}">${TABICON[k]} ${l}<span class="cnt">${counts[k] || 0}</span></button>`).join('');
+  document.querySelectorAll('.ftab').forEach(t => t.onclick = () => { tab = t.dataset.k; renderTabs(); render(); });
 }
 function render() {
   const rows = items.filter(i => (tab === 'all' || i.kind === tab) &&
     (i.title + ' ' + i.sub).toLowerCase().includes(q));
-  document.getElementById('rows').innerHTML = rows.map((i, ix) => `<tr${ix === 0 ? ' style="background:rgba(14,159,138,.05)"' : ''}>
-    <td><b style="color:#0e9f8a">${i.score ?? '—'}</b></td>
-    <td><span class="bdg ${PCLS[i.priority]}">${i.priority}</span></td>
-    <td><span class="bdg ${KCLS[i.kind] || 'b-gray'}">${KIND[i.kind] || i.kind}</span></td>
-    <td><b>${esc(i.title)}</b>${ix === 0 ? ' <span class="bdg b-teal" style="font-size:10px">NEXT</span>' : ''}</td>
-    <td style="color:#64748b">${esc(i.sub)}</td>
-    <td>${i.amount ? money(i.amount) : '—'}</td>
-    <td><a class="btn btn-teal btn-sm" href="${i.href}">${esc(i.action)}</a></td></tr>`).join('');
-  document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
+  const maxScore = Math.max(1, ...rows.map(i => i.score || 0));
+  document.getElementById('rows').innerHTML = rows.map((i, ix) => {
+    const kl = KIND[i.kind] || [i.kind, '📄', 'ti-case'];
+    const pct = i.score ? Math.round(100 * i.score / maxScore) : 0;
+    return `<tr class="${ix === 0 ? 'top-row' : ''}">
+    <td><div class="scorebar"><div class="sb"><i style="width:${pct}%;background:${scoreColor(i.score||0, maxScore)}"></i></div><span class="sv">${i.score ?? '—'}</span></div></td>
+    <td><span class="bdg ${PCLS[i.priority] || 'b-gray'}">${esc(i.priority)}</span></td>
+    <td><span class="tchip"><span class="ti ${kl[2]}">${kl[1]}</span><b>${esc(i.title)}</b>${ix === 0 ? ' <span class="bdg b-teal" style="font-size:10px">NEXT</span>' : ''}</span></td>
+    <td style="color:#64748b;font-size:12.5px;max-width:280px">${esc(i.sub)}</td>
+    <td><b>${i.amount ? money(i.amount) : '—'}</b></td>
+    <td style="text-align:right"><a class="btn btn-teal btn-sm" href="${i.href}">${esc(i.action)}</a></td></tr>`; }).join('');
+  const empty = document.getElementById('empty');
+  empty.style.display = rows.length ? 'none' : 'block';
+  document.querySelector('.twrap').style.display = rows.length ? '' : 'none';
 }
 document.getElementById('q').oninput = e => { q = e.target.value.toLowerCase(); render(); };
 load();
