@@ -1749,7 +1749,12 @@ app.post('/api/admin/users', requireAdmin, ah(async (req, res) => {
        db.hashPassword(password), role, db.now()]);
     logActivity(req.adminUser.id, 'user_created', `id=${r.id} email=${String(email).toLowerCase().trim().slice(0, 120)} role=${role}`, req);
     res.json({ ok: true, id: r.id });
-  } catch (e) { res.status(409).json({ error: 'Email already exists.' }); }
+  } catch (e) {
+    console.error('[admin] create user failed:', e.message);
+    if (/duplicate|unique|already exists/i.test(e.message))
+      return res.status(409).json({ error: 'Email already exists.' });
+    return res.status(500).json({ error: 'Server error: ' + e.message });
+  }
 }));
 app.delete('/api/admin/users/:id', requireAdmin, ah(async (req, res) => {
   if (Number(req.params.id) === req.adminUser.id)
