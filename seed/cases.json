@@ -76,78 +76,154 @@
     ]
   },
   {
-    "code": "CASE-002",
-    "title": "Medical Coding Basics",
-    "description": "Learn ICD-10-CM, CPT, and HCPCS-II roles, diagnosis pointers, and mismatch denials.",
+    "code": "CASE-009",
+    "title": "Patient Registration",
+    "description": "Register a new patient with complete, accurate demographics — the foundation of every clean claim.",
     "difficulty": "Beginner",
-    "category": "CODING",
+    "category": "PATIENT_REGISTRATION",
     "points": 50,
     "sort": 2,
     "questions": [
       {
-        "q": "Which statement correctly describes the three coding systems?",
+        "q": "Which fields are REQUIRED to register a new patient?",
         "options": [
-          "ICD-10-CM codes what was done; CPT codes why it was done",
-          "ICD-10-CM codes why (diagnosis), CPT codes what was done (procedure), HCPCS-II codes supplies and drugs",
-          "All three code the same thing and are interchangeable",
-          "HCPCS-II codes diagnoses; ICD-10-CM codes procedures"
+          "Full name, date of birth, phone",
+          "Only the patient's first name",
+          "Email address only",
+          "Insurance card number only"
+        ],
+        "answer": 0,
+        "points": 10,
+        "explanation": "Name, DOB, and phone are the minimum to uniquely identify a patient and contact them. Without DOB you can't verify identity; without phone you can't reach them for scheduling or balances.",
+        "hint": "What three things identify and reach a patient?"
+      },
+      {
+        "q": "A patient's name is spelled 'Jon' on the ID but 'John' in your system. What should you do?",
+        "options": [
+          "Leave it — close enough",
+          "Correct it to match the photo ID exactly",
+          "Delete the record and start over",
+          "Ask the patient to change their ID"
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "ICD-10-CM captures the diagnosis (the reason for care), CPT captures the procedure or service performed, and HCPCS Level II covers supplies, DME, and drugs. They work together on a claim and none replaces another.",
-        "hint": "Match each system to 'why,' 'what,' or 'with what.'"
+        "explanation": "Demographics must match the photo ID exactly. Mismatched names cause eligibility failures (the payer can't find the patient) and claim rejections. Always correct to the ID.",
+        "hint": "What does the payer match against?"
       },
       {
-        "q": "A patient is seen for chest pain. Which ICD-10-CM code fits?",
+        "q": "Why is the date of birth critical at registration?",
         "options": [
-          "I20.9 (chest pain, unspecified)",
-          "S82.41XA (fracture, initial encounter)",
-          "C50.111 (malignant neoplasm of breast)",
-          "Z00.00 (general exam without abnormal findings)"
-        ],
-        "answer": 0,
-        "points": 10,
-        "explanation": "I20.9 is the unspecified chest-pain code. The fracture and neoplasm codes describe entirely different conditions, and Z00.00 is for a routine exam — using it for a symptomatic visit would misrepresent the encounter.",
-        "hint": "Pick the code that names the symptom the patient reported."
-      },
-      {
-        "q": "The visit is a moderate-complexity established-patient office visit. Which CPT code is most likely?",
-        "options": [
-          "99213",
-          "90837 (60-minute psychotherapy)",
-          "A4232 (syringe supply code)",
-          "99281 (low-level emergency department visit)"
-        ],
-        "answer": 0,
-        "points": 10,
-        "explanation": "99213 is the standard code for a moderate established-patient office visit. 90837 is a timed psychotherapy code, A4232 is a supply code, and 99281 belongs to the emergency department — the setting and service must match the code.",
-        "hint": "Office visit, established patient, moderate complexity."
-      },
-      {
-        "q": "What is a diagnosis pointer, and why does it matter?",
-        "options": [
-          "A note from the doctor about follow-up steps",
-          "The link on the claim connecting each procedure (CPT) to the diagnosis (ICD-10-CM) that justifies it",
-          "A modifier that increases the payment amount",
-          "The patient's signature authorizing the claim"
+          "It determines the patient's copay",
+          "It's used for identity verification and eligibility matching",
+          "It's only needed for pediatric patients",
+          "It sets the appointment length"
         ],
         "answer": 1,
         "points": 10,
-        "explanation": "Diagnosis pointers tell the payer which diagnosis supports each billed service. Without a valid pointer linking a covered diagnosis to the procedure, the payer cannot establish medical necessity and will deny the line.",
-        "hint": "It 'points' from the procedure to its reason."
+        "explanation": "DOB is a key identity verifier — payers match name + DOB + member ID. Wrong DOB means the 270 eligibility check fails and the claim denies as CO-16 (missing/invalid information).",
+        "hint": "Which transaction needs name + DOB?"
       },
       {
-        "q": "A claim denies with CO-50 (medical necessity). The CPT was for a knee MRI, but the linked ICD-10-CM was for a routine physical. What went wrong?",
+        "q": "A duplicate patient record is created (same person, two charts). What's the risk?",
         "options": [
-          "The codes do not support each other — the diagnosis does not justify the procedure",
-          "The claim was filed too late",
-          "The payer's system was down that day",
-          "The patient's copay was not collected"
+          "No risk — more records are better",
+          "Split clinical history, billing errors, and compliance issues",
+          "It speeds up check-in",
+          "It lowers the patient's deductible"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "Duplicates split the clinical and billing history across two charts — charges go to the wrong record, eligibility checks fail, and it creates HIPAA/compliance risk. Always search before creating.",
+        "hint": "What happens to the patient's history?"
+      },
+      {
+        "q": "When should you verify a returning patient's demographics?",
+        "options": [
+          "Never — they were verified once",
+          "At every visit, before the encounter",
+          "Only when they complain",
+          "Once per year"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "Verify at every visit. People move, change numbers, and get new insurance constantly. Stale demographics are the #1 cause of front-end denials — a 30-second check prevents a denied claim.",
+        "hint": "How often do phone numbers and addresses change?"
+      }
+    ]
+  },
+  {
+    "code": "CASE-010",
+    "title": "Insurance Verification",
+    "description": "Read insurance cards, verify active coverage, and spot inactive or terminated plans before the visit.",
+    "difficulty": "Beginner",
+    "category": "INSURANCE",
+    "points": 50,
+    "sort": 3,
+    "questions": [
+      {
+        "q": "A patient's insurance card shows an effective date of 01/01/2026 and today's visit is 10/17/2026. The plan is…",
+        "options": [
+          "Active — the effective date has passed",
+          "Inactive — cards expire yearly",
+          "Active only for emergencies",
+          "Cannot be determined from the card"
         ],
         "answer": 0,
         "points": 10,
-        "explanation": "CO-50 means the payer found no medical necessity: a routine-physical diagnosis does not justify a knee MRI. The fix is accurate coding that reflects the true clinical reason — never changing codes just to chase payment.",
-        "hint": "Read the denial literally: not medically necessary."
+        "explanation": "A passed effective date with no termination date means the plan is active. But the card alone isn't enough — always run the 270 to confirm, since coverage can terminate mid-year.",
+        "hint": "Effective date passed + no end date = ?"
+      },
+      {
+        "q": "The 271 response shows coverage status 'INACTIVE'. What do you do?",
+        "options": [
+          "Bill the visit anyway",
+          "Tell the patient and collect self-pay or reschedule",
+          "Ignore it — the card looked fine",
+          "Change the status to active in the system"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "INACTIVE means no coverage — billing it guarantees a denial. Tell the patient upfront, offer self-pay options or reschedule. Never alter payer data to force a claim through.",
+        "hint": "What happens if you bill inactive coverage?"
+      },
+      {
+        "q": "What's the difference between the member ID and the group number?",
+        "options": [
+          "They're the same thing",
+          "Member ID identifies the patient; group number identifies the employer plan",
+          "Group number is the patient's SSN",
+          "Member ID is only for dental plans"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "The member ID is unique to the patient (like an account number). The group number identifies the employer's plan with the payer. Both go on the claim — wrong group number routes to the wrong benefits.",
+        "hint": "Which one is unique to the person vs the employer?"
+      },
+      {
+        "q": "A patient has two insurance plans. Which is primary?",
+        "options": [
+          "The one with the lower copay",
+          "The patient's own employer plan (before a spouse's plan)",
+          "Whichever the patient prefers",
+          "The one that was added most recently"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "Coordination of benefits (COB) rules: the patient's own employer coverage is primary over a spouse's plan. For children, the 'birthday rule' applies (parent whose birthday comes first in the year is primary). Billing the wrong order causes denials.",
+        "hint": "Whose employer plan comes first?"
+      },
+      {
+        "q": "The insurance card says 'Referral required for specialist'. The patient is seeing a specialist today without one. What happens?",
+        "options": [
+          "The claim will pay normally",
+          "The claim will likely deny — obtain the referral first",
+          "The copay is waived",
+          "It only matters for surgeries"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "HMO-style plans require referrals before specialist visits. Without one, the claim denies. Check referral requirements during verification — it's part of the 271 benefits, not just the card.",
+        "hint": "What does 'referral required' mean for payment?"
       }
     ]
   },
@@ -158,7 +234,7 @@
     "difficulty": "Intermediate",
     "category": "CHARGE_ENTRY",
     "points": 60,
-    "sort": 3,
+    "sort": 4,
     "questions": [
       {
         "q": "A physician sees a patient in the office and also interprets the patient's X-ray at the hospital the same day. How many claims result, and on which forms?",
@@ -228,13 +304,165 @@
     ]
   },
   {
+    "code": "CASE-002",
+    "title": "Medical Coding Basics",
+    "description": "Learn ICD-10-CM, CPT, and HCPCS-II roles, diagnosis pointers, and mismatch denials.",
+    "difficulty": "Beginner",
+    "category": "CODING",
+    "points": 50,
+    "sort": 5,
+    "questions": [
+      {
+        "q": "Which statement correctly describes the three coding systems?",
+        "options": [
+          "ICD-10-CM codes what was done; CPT codes why it was done",
+          "ICD-10-CM codes why (diagnosis), CPT codes what was done (procedure), HCPCS-II codes supplies and drugs",
+          "All three code the same thing and are interchangeable",
+          "HCPCS-II codes diagnoses; ICD-10-CM codes procedures"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "ICD-10-CM captures the diagnosis (the reason for care), CPT captures the procedure or service performed, and HCPCS Level II covers supplies, DME, and drugs. They work together on a claim and none replaces another.",
+        "hint": "Match each system to 'why,' 'what,' or 'with what.'"
+      },
+      {
+        "q": "A patient is seen for chest pain. Which ICD-10-CM code fits?",
+        "options": [
+          "I20.9 (chest pain, unspecified)",
+          "S82.41XA (fracture, initial encounter)",
+          "C50.111 (malignant neoplasm of breast)",
+          "Z00.00 (general exam without abnormal findings)"
+        ],
+        "answer": 0,
+        "points": 10,
+        "explanation": "I20.9 is the unspecified chest-pain code. The fracture and neoplasm codes describe entirely different conditions, and Z00.00 is for a routine exam — using it for a symptomatic visit would misrepresent the encounter.",
+        "hint": "Pick the code that names the symptom the patient reported."
+      },
+      {
+        "q": "The visit is a moderate-complexity established-patient office visit. Which CPT code is most likely?",
+        "options": [
+          "99213",
+          "90837 (60-minute psychotherapy)",
+          "A4232 (syringe supply code)",
+          "99281 (low-level emergency department visit)"
+        ],
+        "answer": 0,
+        "points": 10,
+        "explanation": "99213 is the standard code for a moderate established-patient office visit. 90837 is a timed psychotherapy code, A4232 is a supply code, and 99281 belongs to the emergency department — the setting and service must match the code.",
+        "hint": "Office visit, established patient, moderate complexity."
+      },
+      {
+        "q": "What is a diagnosis pointer, and why does it matter?",
+        "options": [
+          "A note from the doctor about follow-up steps",
+          "The link on the claim connecting each procedure (CPT) to the diagnosis (ICD-10-CM) that justifies it",
+          "A modifier that increases the payment amount",
+          "The patient's signature authorizing the claim"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "Diagnosis pointers tell the payer which diagnosis supports each billed service. Without a valid pointer linking a covered diagnosis to the procedure, the payer cannot establish medical necessity and will deny the line.",
+        "hint": "It 'points' from the procedure to its reason."
+      },
+      {
+        "q": "A claim denies with CO-50 (medical necessity). The CPT was for a knee MRI, but the linked ICD-10-CM was for a routine physical. What went wrong?",
+        "options": [
+          "The codes do not support each other — the diagnosis does not justify the procedure",
+          "The claim was filed too late",
+          "The payer's system was down that day",
+          "The patient's copay was not collected"
+        ],
+        "answer": 0,
+        "points": 10,
+        "explanation": "CO-50 means the payer found no medical necessity: a routine-physical diagnosis does not justify a knee MRI. The fix is accurate coding that reflects the true clinical reason — never changing codes just to chase payment.",
+        "hint": "Read the denial literally: not medically necessary."
+      }
+    ]
+  },
+  {
+    "code": "CASE-011",
+    "title": "Claim Creation",
+    "description": "Build a professional CMS-1500 claim from a completed charge — the bridge from clinical to billing.",
+    "difficulty": "Intermediate",
+    "category": "CLAIMS",
+    "points": 50,
+    "sort": 6,
+    "questions": [
+      {
+        "q": "What is the CMS-1500 form used for?",
+        "options": [
+          "Hospital inpatient billing",
+          "Professional (physician/supplier) claims",
+          "Dental claims only",
+          "Pharmacy prescriptions"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "The CMS-1500 (837P electronic) is for professional claims — physician offices, clinics, suppliers. Hospitals use the UB-04 (837I). Using the wrong form guarantees rejection.",
+        "hint": "1500 = professional, UB-04 = institutional"
+      },
+      {
+        "q": "A charge must be in what status before you can create a claim from it?",
+        "options": [
+          "Any status works",
+          "READY — completed and unlinked",
+          "Already linked to another claim",
+          "Deleted"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "Only READY charges (completed, not yet claimed) can become claims. Creating two claims from one charge is duplicate billing — a compliance violation.",
+        "hint": "Can one charge become two claims?"
+      },
+      {
+        "q": "Which diagnosis pointer links the procedure to the diagnosis on the claim?",
+        "options": [
+          "The patient's phone number",
+          "The diagnosis pointer (1, 2, 3, 4) on each service line",
+          "The claim number",
+          "The provider's NPI"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "Each service line carries diagnosis pointers referencing the diagnosis codes (1-4). This tells the payer WHY each procedure was done — wrong pointers cause medical-necessity denials.",
+        "hint": "How does the payer know which diagnosis justifies which procedure?"
+      },
+      {
+        "q": "The charge has CPT 99213 and ICD E11.9. When creating the claim, you should…",
+        "options": [
+          "Change the codes to get paid more",
+          "Carry the codes exactly as documented",
+          "Leave the diagnosis blank",
+          "Add extra procedures for revenue"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "The claim must mirror the documented charge exactly. Changing codes to increase payment is upcoding (fraud). Adding undocumented procedures is also fraud. The claim is a billing translation, not a rewrite.",
+        "hint": "What happens if you change codes for money?"
+      },
+      {
+        "q": "After creating a claim, what status should it have before submission?",
+        "options": [
+          "PAID",
+          "DRAFT — validated but not yet sent",
+          "DENIED",
+          "Written off"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "New claims start as DRAFT. They must pass scrubber validation, THEN be submitted. Skipping validation is how dirty claims reach the payer and deny.",
+        "hint": "What comes between creation and submission?"
+      }
+    ]
+  },
+  {
     "code": "CASE-004",
-    "title": "Claim Scrubbing & Submission",
-    "description": "Clearinghouse scrubbing, rejection vs denial, NCCI edits, and timely filing limits.",
+    "title": "Claim Validation",
+    "description": "Run the 13-rule scrubber, fix flags, and validate claims before submission.",
     "difficulty": "Intermediate",
     "category": "CLAIMS",
     "points": 60,
-    "sort": 4,
+    "sort": 7,
     "questions": [
       {
         "q": "What does a clearinghouse do during claim scrubbing?",
@@ -304,13 +532,89 @@
     ]
   },
   {
+    "code": "CASE-012",
+    "title": "Claim Submission",
+    "description": "Scrub, validate, and transmit the 837P to the payer — then read the adjudication result.",
+    "difficulty": "Intermediate",
+    "category": "CLAIMS",
+    "points": 50,
+    "sort": 8,
+    "questions": [
+      {
+        "q": "What does the claim scrubber check before submission?",
+        "options": [
+          "The provider's lunch schedule",
+          "13+ rules: demographics, codes, medical necessity, duplicates, timely filing",
+          "Only the claim total",
+          "The patient's credit score"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "The scrubber runs the same edits the payer will — demographics match, valid CPT/ICD, diagnosis pointers, NPI, place of service, duplicates, timely filing. Catching errors here prevents denials.",
+        "hint": "What would the payer check?"
+      },
+      {
+        "q": "The scrubber flags an error. You should…",
+        "options": [
+          "Submit anyway and hope",
+          "Fix the error, re-validate, then submit",
+          "Delete the claim",
+          "Submit to a different payer"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "Fix → re-validate → submit. Submitting a flagged claim guarantees a denial or rejection. The scrubber exists to catch what humans miss.",
+        "hint": "What's the point of the scrubber?"
+      },
+      {
+        "q": "What is the 837P transaction?",
+        "options": [
+          "The paper claim form",
+          "The electronic professional claim sent to the payer",
+          "The payment from the payer",
+          "The eligibility check"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "837P = electronic professional claim (the digital CMS-1500). 837I is institutional. 835 is the remittance/payment, 270/271 is eligibility.",
+        "hint": "837P… P = ?"
+      },
+      {
+        "q": "After submission, the payer returns 'PAID'. What does this mean?",
+        "options": [
+          "The full billed amount was paid",
+          "The claim adjudicated — check allowed, paid, adjustment, and patient responsibility",
+          "No further action is ever needed",
+          "The patient owes nothing"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "PAID means adjudicated, not 'paid in full'. Always reconcile: allowed amount, payer paid, contractual adjustment, and patient responsibility. There may still be a patient balance to collect.",
+        "hint": "Does PAID mean the whole billed amount?"
+      },
+      {
+        "q": "After submission, the payer returns 'DENIED' with CO-16. What's the first step?",
+        "options": [
+          "Write it off immediately",
+          "Read the denial reason, fix the missing/invalid information, and rebill",
+          "Sue the payer",
+          "Bill the patient the full amount"
+        ],
+        "answer": 1,
+        "points": 10,
+        "explanation": "CO-16 = missing/invalid information. Read what exactly is missing, correct it, and rebill. Most CO-16 denials are fixable — writing off without trying loses revenue.",
+        "hint": "What does CO-16 tell you?"
+      }
+    ]
+  },
+  {
     "code": "CASE-005",
     "title": "Payment Posting",
     "description": "ERA vs EOB, allowed amounts, contractual adjustments, and underpayment detection.",
     "difficulty": "Intermediate",
     "category": "PAYMENTS",
     "points": 70,
-    "sort": 5,
+    "sort": 9,
     "questions": [
       {
         "q": "Worked example: CPT 90837 billed $200, allowed $140. What is the contractual adjustment, and why?",
@@ -380,13 +684,89 @@
     ]
   },
   {
+    "code": "CASE-007",
+    "title": "A/R Follow-up & KPIs",
+    "description": "Aging buckets, days in A/R, benchmark KPIs, and claim prioritization.",
+    "difficulty": "Advanced",
+    "category": "AR",
+    "points": 80,
+    "sort": 10,
+    "questions": [
+      {
+        "q": "Claims sit in aging buckets: 0-30, 31-60, 61-90, 91+ days. A claim is 75 days old with no payer response. What does that tell you?",
+        "options": [
+          "It is fine — payers routinely take 75 days",
+          "It sits in the 61-90 bucket and needs active follow-up now, before it slides into 91+ where collectability drops",
+          "It should be written off immediately",
+          "Aging buckets are only for management reports"
+        ],
+        "answer": 1,
+        "points": 16,
+        "explanation": "Aging buckets prioritize work because older balances are harder and less likely to collect. A 75-day claim with no response is stuck and needs a status call or appeal now. Waiting turns a follow-up task into a write-off.",
+        "hint": "Money gets colder with age — work the warmest old claims first."
+      },
+      {
+        "q": "How is 'days in A/R' calculated?",
+        "options": [
+          "Total accounts receivable divided by average daily charges",
+          "Total charges divided by the number of patients",
+          "Denied claims divided by total claims",
+          "Cash collected divided by days in the month"
+        ],
+        "answer": 0,
+        "points": 16,
+        "explanation": "Days in A/R equals total accounts receivable divided by average daily charges. It answers: how many days of revenue are sitting uncollected? Lower is better — best-in-class is under 40 days, with top performers under 35.",
+        "hint": "It is a 'how long until we are paid' number."
+      },
+      {
+        "q": "Your practice shows: clean claim rate 88%, denial rate 9%, days in A/R 55. Benchmarks are >95-98% clean, <5% denials, <40 days in A/R. What is the right read?",
+        "options": [
+          "Everything is performing fine",
+          "All three miss benchmark — revenue leaks at submission (low clean rate), adjudication (high denials), and collection (slow A/R); fix upstream first",
+          "Only the denial rate matters",
+          "Benchmarks do not apply to smaller practices"
+        ],
+        "answer": 1,
+        "points": 16,
+        "explanation": "The three KPIs tell one story: claims go out dirty (88% clean), get denied (9%), and sit unpaid (55 days). Because most denials originate upstream, the highest-leverage fix is front-end quality — registration, eligibility, coding — which lifts all three numbers together.",
+        "hint": "Three red lights, one engine — start where claims are born."
+      },
+      {
+        "q": "You have one hour for A/R follow-up. Which claims do you work first?",
+        "options": [
+          "The newest claims in the 0-30 bucket",
+          "High-dollar claims in the 61-90 and 91+ buckets that are closest to timely-filing or appeal deadlines",
+          "Claims in alphabetical order by patient name",
+          "Only the smallest balances, to clear volume"
+        ],
+        "answer": 1,
+        "points": 16,
+        "explanation": "Prioritization equals dollars at risk times time sensitivity. High-value aging claims near filing or appeal deadlines lose everything if they expire; new claims still have time. Work the intersection of big money and expiring soon.",
+        "hint": "Save what is about to be lost forever first."
+      },
+      {
+        "q": "What is net collection rate, and why does it matter more than gross collection rate?",
+        "options": [
+          "They measure exactly the same thing",
+          "Net collection rate is collections divided by charges minus contractual adjustments; it measures how much of what you are actually allowed to collect you really collect (benchmark above 95-96%). The gross rate is distorted by write-offs",
+          "Net collection rate is always 100%",
+          "It measures patient satisfaction scores"
+        ],
+        "answer": 1,
+        "points": 16,
+        "explanation": "Gross collections can look fine even while contractual adjustments hide underperformance. Net collection rate strips out the contracted write-offs and asks: of every collectible dollar, how many did we get? Above 95 to 96% is the benchmark.",
+        "hint": "Judge yourself on dollars you were allowed to keep, not dollars you billed."
+      }
+    ]
+  },
+  {
     "code": "CASE-006",
     "title": "Denial Management",
     "description": "Group codes, CARCs, bundling, corrected claims vs appeals, and the denial workflow.",
     "difficulty": "Advanced",
     "category": "DENIALS",
     "points": 80,
-    "sort": 6,
+    "sort": 11,
     "questions": [
       {
         "q": "A denial carries group code CO. A second carries PR. What is the practical difference?",
@@ -469,89 +849,13 @@
     ]
   },
   {
-    "code": "CASE-007",
-    "title": "A/R Follow-up & KPIs",
-    "description": "Aging buckets, days in A/R, benchmark KPIs, and claim prioritization.",
-    "difficulty": "Advanced",
-    "category": "AR",
-    "points": 80,
-    "sort": 7,
-    "questions": [
-      {
-        "q": "Claims sit in aging buckets: 0-30, 31-60, 61-90, 91+ days. A claim is 75 days old with no payer response. What does that tell you?",
-        "options": [
-          "It is fine — payers routinely take 75 days",
-          "It sits in the 61-90 bucket and needs active follow-up now, before it slides into 91+ where collectability drops",
-          "It should be written off immediately",
-          "Aging buckets are only for management reports"
-        ],
-        "answer": 1,
-        "points": 16,
-        "explanation": "Aging buckets prioritize work because older balances are harder and less likely to collect. A 75-day claim with no response is stuck and needs a status call or appeal now. Waiting turns a follow-up task into a write-off.",
-        "hint": "Money gets colder with age — work the warmest old claims first."
-      },
-      {
-        "q": "How is 'days in A/R' calculated?",
-        "options": [
-          "Total accounts receivable divided by average daily charges",
-          "Total charges divided by the number of patients",
-          "Denied claims divided by total claims",
-          "Cash collected divided by days in the month"
-        ],
-        "answer": 0,
-        "points": 16,
-        "explanation": "Days in A/R equals total accounts receivable divided by average daily charges. It answers: how many days of revenue are sitting uncollected? Lower is better — best-in-class is under 40 days, with top performers under 35.",
-        "hint": "It is a 'how long until we are paid' number."
-      },
-      {
-        "q": "Your practice shows: clean claim rate 88%, denial rate 9%, days in A/R 55. Benchmarks are >95-98% clean, <5% denials, <40 days in A/R. What is the right read?",
-        "options": [
-          "Everything is performing fine",
-          "All three miss benchmark — revenue leaks at submission (low clean rate), adjudication (high denials), and collection (slow A/R); fix upstream first",
-          "Only the denial rate matters",
-          "Benchmarks do not apply to smaller practices"
-        ],
-        "answer": 1,
-        "points": 16,
-        "explanation": "The three KPIs tell one story: claims go out dirty (88% clean), get denied (9%), and sit unpaid (55 days). Because most denials originate upstream, the highest-leverage fix is front-end quality — registration, eligibility, coding — which lifts all three numbers together.",
-        "hint": "Three red lights, one engine — start where claims are born."
-      },
-      {
-        "q": "You have one hour for A/R follow-up. Which claims do you work first?",
-        "options": [
-          "The newest claims in the 0-30 bucket",
-          "High-dollar claims in the 61-90 and 91+ buckets that are closest to timely-filing or appeal deadlines",
-          "Claims in alphabetical order by patient name",
-          "Only the smallest balances, to clear volume"
-        ],
-        "answer": 1,
-        "points": 16,
-        "explanation": "Prioritization equals dollars at risk times time sensitivity. High-value aging claims near filing or appeal deadlines lose everything if they expire; new claims still have time. Work the intersection of big money and expiring soon.",
-        "hint": "Save what is about to be lost forever first."
-      },
-      {
-        "q": "What is net collection rate, and why does it matter more than gross collection rate?",
-        "options": [
-          "They measure exactly the same thing",
-          "Net collection rate is collections divided by charges minus contractual adjustments; it measures how much of what you are actually allowed to collect you really collect (benchmark above 95-96%). The gross rate is distorted by write-offs",
-          "Net collection rate is always 100%",
-          "It measures patient satisfaction scores"
-        ],
-        "answer": 1,
-        "points": 16,
-        "explanation": "Gross collections can look fine even while contractual adjustments hide underperformance. Net collection rate strips out the contracted write-offs and asks: of every collectible dollar, how many did we get? Above 95 to 96% is the benchmark.",
-        "hint": "Judge yourself on dollars you were allowed to keep, not dollars you billed."
-      }
-    ]
-  },
-  {
     "code": "CASE-008",
     "title": "Full-Cycle Clean Claim Challenge",
     "description": "Follow fictional patient Sarah Johnson from registration through payment and A/R — including a denial twist.",
     "difficulty": "Advanced",
     "category": "FULL_CYCLE",
     "points": 100,
-    "sort": 8,
+    "sort": 12,
     "questions": [
       {
         "q": "Stage 1 — Registration: at check-in, the front desk copies Sarah Johnson's insurance card but does not verify eligibility. What is the risk?",

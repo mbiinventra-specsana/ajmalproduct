@@ -5,6 +5,7 @@
 <title>Training Case — MbiInventra RCM Academy</title>
 <link rel="stylesheet" href="/css/app.css">
 <style>
+/* quiz mode (untouched) */
 .grail{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
 .gstep-dot{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:#f1f5f9;font-size:13px;font-weight:600;color:#64748b;border:2px solid transparent}
 .gstep-dot .n{width:24px;height:24px;border-radius:50%;background:#cbd5e1;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
@@ -29,6 +30,56 @@
 .gdone{text-align:center;padding:40px 20px}
 .gdone .ring{width:110px;height:110px;margin:0 auto 18px}
 @media(max-width:640px){.gcard{padding:18px}.grail{overflow-x:auto;flex-wrap:nowrap}}
+/* ===== REAL-SOFTWARE CASE PLAYER ===== */
+.player{max-width:860px;margin:0 auto}
+.rc-head{background:linear-gradient(120deg,#0f2743,#143a5e 70%,#0e6f62);border-radius:18px;padding:26px 30px;color:#fff;
+  margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+  box-shadow:0 8px 28px rgba(15,39,67,.22);position:relative;overflow:hidden}
+.rc-head::before{content:"";position:absolute;top:-60px;right:-30px;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.rc-kicker{font-size:11px;font-weight:800;letter-spacing:1.6px;color:#34d3bd;text-transform:uppercase;margin-bottom:8px;position:relative}
+.rc-head h1{margin:0 0 8px;font-size:24px;position:relative}
+.rc-head p{margin:0;color:#b9d4e8;font-size:13.5px;max-width:560px;position:relative}
+.rc-head .pill{flex:none;position:relative}
+.rc-card{background:#fff;border-radius:16px;padding:22px 24px;box-shadow:0 2px 14px rgba(15,39,67,.06);
+  margin-bottom:16px;border:1px solid #eef2f7;animation:rcIn .35s ease backwards}
+@keyframes rcIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.rc-card h3{margin:0 0 14px;font-size:16px;color:#0f2743;display:flex;align-items:center;gap:10px}
+.rc-n{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#0e9f8a,#34d3bd);color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex:none;
+  box-shadow:0 3px 10px rgba(14,159,138,.35)}
+.rc-sub{font-size:13px;color:#64748b;margin:-6px 0 14px;line-height:1.55}
+.rc-steps{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.rc-steps li{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:#334155;background:#f8fafc;
+  border-radius:10px;padding:10px 14px}
+.rc-steps li b{color:#0e9f8a;flex:none}
+.rc-tile{background:#f0fdfa;border:1px solid rgba(14,159,138,.25);border-radius:12px;padding:12px 16px;margin-top:12px}
+.rc-271{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden}
+.rc-271h{background:#0f2743;color:#fff;padding:12px 16px;font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.rc-271 .kv-card{border-radius:0}
+.rc-prev{margin-top:14px}
+.rc-foot{border:2px dashed rgba(14,159,138,.35);background:#f8fdfc}
+.rule-row{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:10px;margin-bottom:8px;font-size:13.5px}
+.rule-row.ok{background:#f0fdf4;border:1px solid #bbf7d0}
+.rule-row.bad{background:#fef2f2;border:1px solid #fecaca}
+.rule-row .rr-ic{font-size:16px;flex:none}
+.quiz-opts{display:grid;gap:10px}
+.quiz-opts .opt{text-align:left;padding:13px 16px;border:2px solid #e2e8f0;border-radius:12px;background:#fff;
+  cursor:pointer;font-size:14px;transition:all .15s;color:#0f2743;width:100%}
+.quiz-opts .opt:hover{border-color:#0e9f8a}
+.quiz-opts .opt.sel{border-color:#0e9f8a;background:#e6f7f3;box-shadow:0 2px 10px rgba(14,159,138,.12)}
+.quiz-opts .opt b{color:#0e9f8a;margin-right:6px}
+.kv-card{background:#f8fafc;border-radius:12px;padding:6px 14px}
+.kv{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #eef2f7;font-size:13px;gap:12px}
+.kv:last-child{border:none}
+.kv span{color:#64748b}
+.feedback{display:none;padding:13px 17px;border-radius:12px;font-size:14px;line-height:1.5}
+.feedback.show{display:block}
+.feedback.ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d}
+.feedback.no{background:#fef2f2;border:1px solid #fecaca;color:#dc2626}
+.fld{margin-bottom:12px}.fld label{display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:7px}
+.frow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+@media(max-width:640px){.rc-head{padding:20px}.rc-head h1{font-size:20px}.rc-card{padding:18px}}
 </style>
 </head>
 <body>
@@ -111,212 +162,1213 @@ async function finish() {
 }
 
 
-/* ============ GUIDED WALKTHROUGH MODE ============ */
-let G = null; // {caseId, code, title, steps, idx, ctx, points}
-function gtoast(msg) {
-  const t = document.createElement('div');
-  t.className = 'gtoast'; t.textContent = msg;
-  document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+/* ============ GUIDED MODE: REAL-SOFTWARE SINGLE-PAGE FORMS ============ */
+let G = null; // {caseId, code, title, difficulty, desc, steps}
+
+/* ---------- shared UI builders ---------- */
+function gHeader(meta) {
+  return `<div class="rc-head"><div>
+    <div class="rc-kicker">${esc(meta.code)} · GUIDED CASE</div>
+    <h1>${esc(meta.title)}</h1>
+    <p>${esc(meta.desc || '')}</p></div>
+    <span class="pill p-${(meta.difficulty || 'beginner').toLowerCase()}">${esc(meta.difficulty || '')}</span></div>`;
 }
-function gsub(str, ctx) {
-  return String(str).replace(/\{(\w+)\}/g, (_, k) => ctx[k] !== undefined ? ctx[k] : '');
+function gInstr(steps) {
+  return `<div class="rc-card"><h3>📋 Case Instructions</h3>
+    <ol class="rc-steps">${steps.map((s, i) => `<li><b>${i + 1}.</b> ${esc(s)}</li>`).join('')}</ol></div>`;
 }
-function grail() {
-  return `<div class="grail">` + G.steps.map((s, i) => {
-    const cls = i < G.idx ? 'done' : i === G.idx ? 'cur' : '';
-    const mark = i < G.idx ? '✓' : (i + 1);
-    return `<div class="gstep-dot ${cls}"><span class="n">${mark}</span><span>${esc(s.t)}</span></div>`;
-  }).join('') + `</div>`;
+function gClin(rows) {
+  // rows: [[label, value], ...]
+  return `<div class="rc-card"><h3>🩺 Clinical Documentation</h3>
+    <div class="kv-card">${rows.map(([l, v]) => `<div class="kv"><span>${esc(l)}</span><b>${v}</b></div>`).join('')}</div></div>`;
 }
-async function grender() {
-  const st = G.steps[G.idx];
-  const total = G.steps.reduce((a, b) => a + b.pts, 0);
-  let body = '';
-  const head = `${grail()}
-    <div class="gcard"><div class="gk">${esc(G.code)} · Step ${G.idx + 1} of ${G.steps.length} · Guided walkthrough</div>
-    <div class="gpoints">⭐ ${st.pts} pts · earned ${G.points}/${total}</div>
-    <h2>${esc(st.t)}</h2><p class="gd">${esc(st.d || '')}</p><div id="gbody"></div>
-    <div class="feedback" id="gfb"></div>
-    <div id="gnext" style="margin-top:16px;text-align:right"></div></div>`;
-  stage.innerHTML = head;
-  const gb = document.getElementById('gbody'), gn = document.getElementById('gnext');
-  if (st.kind === 'info') {
-    if (st.body) gb.innerHTML = `<div class="hintbox show">${esc(st.body)}</div>`;
-    gn.innerHTML = `<button class="btn btn-teal" id="ggo">Continue →</button>`;
-    document.getElementById('ggo').onclick = () => gcomplete({});
-  } else if (st.kind === 'pick') {
-    gb.innerHTML = `<div class="gpick" id="glist"><div class="empty">Loading…</div></div>`;
-    try {
-      const r = await api(st.src);
-      let rows = r[st.rkey] || [];
-      if (st.filter && G.ctx[st.filter.from]) rows = rows.filter(x => String(x[st.filter.field]) === String(G.ctx[st.filter.from]));
-      if (st.filterStatus) rows = rows.filter(x => String(x.status) === st.filterStatus);
-      gb.innerHTML = `<div class="gpick" id="glist">` + (rows.map(x => {
-        const lbl = st.label.map(f => esc(x[f] ?? '')).join(' · ');
-        return `<button data-v="${esc(String(x[st.val]))}" data-x='${esc(JSON.stringify(x))}'>${lbl}</button>`;
-      }).join('') || `<div class="empty">No records found. Create one in the Workspace first, then come back.</div>`) + `</div>`;
-      let sel = null, selRow = null;
-      gb.querySelectorAll('#glist button').forEach(b => b.onclick = () => {
-        gb.querySelectorAll('#glist button').forEach(x => x.classList.remove('sel'));
-        b.classList.add('sel'); sel = b.dataset.v;
-        try { selRow = JSON.parse(b.dataset.x); } catch { selRow = null; }
-      });
-      gn.innerHTML = `<button class="btn btn-teal" id="ggo">Continue →</button>`;
-      document.getElementById('ggo').onclick = () => {
-        if (sel === null) { gfb('Please make a selection.'); return; }
-        G.ctx[st.ctx] = sel;
-        if (st.ctx2) G.ctx[st.ctx2[0]] = selRow ? selRow[st.ctx2[1]] : '';
-        gcomplete({ value: sel });
-      };
-    } catch (e) { gb.innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
-  } else if (st.kind === 'quiz') {
-    gb.innerHTML = `<div id="gopts">` + st.options.map((o, i) =>
-      `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('') + `</div>`;
-    gb.querySelectorAll('.opt').forEach(b => b.onclick = async () => {
-      gb.querySelectorAll('.opt').forEach(x => x.disabled = true);
-      const r = await gcomplete({ chosen: +b.dataset.i });
-      if (r && r.ok === false) {
-        b.classList.add('wrong');
-        gfb(r.msg);
-        gb.querySelectorAll('.opt').forEach(x => x.disabled = false);
-      }
-    });
-  } else if (st.kind === 'note') {
-    gb.innerHTML = `<div class="gform"><label>Your notes</label>
-      <textarea id="gnote" rows="4" placeholder="${esc(st.ph || 'Write here…')}"></textarea></div>`;
-    gn.innerHTML = `<button class="btn btn-teal" id="ggo">Submit notes →</button>`;
-    document.getElementById('ggo').onclick = () => gcomplete({ text: document.getElementById('gnote').value });
-  } else if (st.kind === 'action') {
-    const fields = st.form || [];
-    gb.innerHTML = (fields.length ? `<div class="gform">` + fields.map(f =>
-      `<label>${esc(f)}<input id="gf_${f}" value="${esc((st.defaults && st.defaults[f]) || '')}" placeholder="${esc(f)}"></label>`).join('') + `</div>`
-      : `<p class="gd">This step runs a real workspace action.</p>`);
-    gn.innerHTML = `<button class="btn btn-teal" id="ggo">▶ Run this step</button>`;
-    document.getElementById('ggo').onclick = async () => {
-      const btn = document.getElementById('ggo'); btn.disabled = true; btn.textContent = 'Working…';
-      try {
-        const payload = {};
-        for (const [k, v] of Object.entries(st.body || {})) {
-          let val = gsub(v, G.ctx);
-          const inp = document.getElementById('gf_' + k);
-          if (inp) val = inp.value;
-          else if (fields.includes(k)) { const fi = document.getElementById('gf_' + k); val = fi ? fi.value : val; }
-          payload[k] = val;
-        }
-        // fill any form fields not in body template
-        for (const f of fields) if (!(f in payload)) { const fi = document.getElementById('gf_' + f); if (fi) payload[f] = fi.value; }
-        const r = await api(gsub(st.api, G.ctx), { method: st.method || 'POST', body: payload });
-        if (st.save) for (const [ck, rk] of Object.entries(st.save)) G.ctx[ck] = r[rk];
-        // capture note text for resolve actions
-        const cr = await gcomplete({ result: r });
-        if (cr && cr.ok === false) { gfb(cr.msg); btn.disabled = false; btn.textContent = '▶ Run this step'; }
-      } catch (e) { gfb(e.message); btn.disabled = false; btn.textContent = '▶ Run this step'; }
-    };
+function gSec(n, title, inner, sub) {
+  return `<div class="rc-card"><h3><span class="rc-n">${n}</span> ${esc(title)}</h3>
+    ${sub ? `<p class="rc-sub">${sub}</p>` : ''}${inner}</div>`;
+}
+function gFoot(validBtnId, submitBtnId) {
+  return `<div class="rc-card rc-foot"><h3>✅ Validate & Submit Case</h3>
+    <div class="feedback" id="vfb" style="margin-bottom:12px"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-line" id="${validBtnId}">Validate</button>
+      <button class="btn btn-teal" id="${submitBtnId}" disabled>Submit Training Case</button>
+    </div>
+    <p class="rc-sub" style="margin:10px 0 0">Validation must pass before submission. Your work creates real records in the training workspace.</p></div>`;
+}
+function vOk(msg) { const f = document.getElementById('vfb'); f.className = 'feedback ok show'; f.innerHTML = `<b>✓ ${esc(msg)}</b>`; }
+function vErr(msg) { const f = document.getElementById('vfb'); f.className = 'feedback no show'; f.innerHTML = `<b>✗ ${esc(msg)}</b>`; }
+function optSel(id, rows, valKey, labelFn, ph) {
+  return `<select class="input" id="${id}"><option value="">${esc(ph || 'Select…')}</option>` +
+    rows.map(r => `<option value="${esc(String(r[valKey]))}">${esc(labelFn(r))}</option>`).join('') + `</select>`;
+}
+function patTile(p) {
+  if (!p) return '';
+  return `<div class="rc-tile"><div><b>${esc(p.name)}</b> <span class="bdg b-blue">${esc(p.code)}</span></div>
+    <div style="font-size:12.5px;color:#64748b">DOB ${esc(p.dob)} · ${esc(p.gender)} · ${esc(p.phone || '')}</div></div>`;
+}
+/* complete the guided run via existing step APIs (all at once on submit) */
+async function gSubmitRun(caseId, payloads) {
+  await api('/api/guided/' + caseId + '/start', { method: 'POST' });
+  let total = 0;
+  for (let i = 0; i < payloads.length; i++) {
+    const r = await api(`/api/guided/${caseId}/step/${i}`, { method: 'POST', body: payloads[i] || {} });
+    if (r.ok === false) throw new Error(r.msg || 'Step failed');
+    total += r.pointsEarned || 0;
   }
+  return total;
 }
-function gfb(msg) {
-  const fb = document.getElementById('gfb');
-  if (!fb) return;
-  fb.className = 'feedback no'; fb.innerHTML = `<b>Hold on</b> — ${esc(msg)}`;
-}
-async function gcomplete(payload) {
-  try {
-    const r = await api(`/api/guided/${G.caseId}/step/${G.idx}`, { method: 'POST', body: payload });
-    if (r.ok === false) { G.retries[G.idx] = (G.retries[G.idx] || 0) + 1; return r; }
-    G.points = r.totalPoints;
-    if (G.steps[G.idx] && G.steps[G.idx].kind === 'note' && payload.text) G.ctx['note'] = payload.text;
-    G.idx = r.step_idx;
-    if (r.pointsEarned) gtoast(`+ ${r.pointsEarned} pts`);
-    if (r.done) gfinish(); else grender();
-    return r;
-  } catch (e) { gfb(e.message); return { ok: false }; }
-}
-function gfinish() {
-  const total = G.steps.reduce((a, b) => a + b.pts, 0);
-  const pct = Math.round(100 * G.points / total);
-  const totalRetries = Object.values(G.retries).reduce((a, b) => a + b, 0);
-  const firstTry = G.steps.length - Object.keys(G.retries).length;
-  // performance heading (MedArix-style)
-  const perf = totalRetries === 0 ? ['Excellent Work! 🎉', 'Flawless walkthrough — every step correct on the first try. You demonstrated strong RCM understanding.']
-    : totalRetries <= 2 ? ['Great Job! 👏', 'Solid walkthrough with minor stumbles. Review the flagged steps below to sharpen your skills.']
-    : ['Good Attempt 💪', 'You completed the walkthrough. Focus on the steps below where retries were needed.'];
-  // per-step breakdown
-  const stepRows = G.steps.map((st, i) => {
-    const rt = G.retries[i] || 0;
-    return `<div class="sr-row"><span class="sr-n">${i + 1}</span>
-      <div style="flex:1"><b>${esc(st.t)}</b><br><span style="font-size:12px;color:#64748b">${st.pts} pts</span></div>
-      ${rt === 0 ? '<span class="bdg b-green"><span class="dot"></span>First try</span>' : `<span class="bdg b-amber"><span class="dot"></span>${rt} retr${rt > 1 ? 'ies' : 'y'}</span>`}
-    </div>`;
-  }).join('');
-  // items to improve
-  const improve = G.steps.map((st, i) => ({ st, i, rt: G.retries[i] || 0 })).filter(x => x.rt > 0);
-  const improveHtml = improve.length ? `<div class="imp-box"><h4>📝 Items to improve</h4><ul>` +
-    improve.map(({ st, rt }) => `<li><b>${esc(st.t)}</b> — needed ${rt} retr${rt > 1 ? 'ies' : 'y'}. ${esc(st.tip || 'Review this workflow step and try to get it first-try next time.')}</li>`).join('') + `</ul></div>` : '';
-  stage.innerHTML = `${grail()}
-    <div class="gcard gdone" style="max-width:640px">
+/* rich result screen */
+function gResult(o) {
+  // o: {code,title,earned,total,rows:[{t,pts,ok,note}],improve:[str]}
+  const pct = o.total ? Math.round(100 * o.earned / o.total) : 0;
+  const bad = o.rows.filter(r => !r.ok);
+  const perf = bad.length === 0 ? ['Excellent Work! 🎉', 'Flawless case — every element correct. You demonstrated strong RCM understanding.']
+    : bad.length <= 1 ? ['Great Job! 👏', 'Solid work with one area to polish. Review the flagged item below.']
+    : ['Good Attempt 💪', 'Case submitted. Focus on the flagged items to reach mastery.'];
+  stage.innerHTML = `
+    <p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Case Center</a></p>
+    <div class="gcard gdone" style="max-width:660px;margin:0 auto">
       <div class="eyebrow2" style="text-align:center">Training Result</div>
-      <h2 style="text-align:center;margin:4px 0">${esc(G.code)} — ${esc(G.title)}</h2>
-      <div style="display:flex;justify-content:center;margin:18px 0">
-        <div class="ring" style="--p:${pct}%;width:110px;height:110px;font-size:24px">${pct}%</div></div>
-      <div style="text-align:center"><span class="bdg ${pct === 100 && totalRetries === 0 ? 'b-green' : pct >= 70 ? 'b-amber' : 'b-red'}" style="font-size:13px">${G.points} / ${total} pts</span></div>
+      <h2 style="text-align:center;margin:4px 0">${esc(o.code)} — ${esc(o.title)}</h2>
+      <div style="display:flex;justify-content:center;margin:18px 0"><div class="ring" style="--p:${pct}%">${pct}%</div></div>
+      <div style="text-align:center"><span class="bdg ${pct >= 80 ? 'b-green' : pct >= 60 ? 'b-amber' : 'b-red'}" style="font-size:13px">${o.earned} / ${o.total} pts</span></div>
       <h3 style="text-align:center;margin:16px 0 8px">${perf[0]}</h3>
       <p style="color:#5b6b85;text-align:center;max-width:480px;margin:0 auto">${perf[1]}</p>
-      <div class="kv-card" style="margin:18px 0;text-align:left">
-        <div class="kv"><span>📊 Steps first-try</span><b>${firstTry}/${G.steps.length}</b></div>
-        <div class="kv"><span>🔄 Total retries</span><b>${totalRetries}</b></div>
-        <div class="kv"><span>📅 Completed</span><b>${new Date().toLocaleDateString()}</b></div>
-      </div>
-      <h4 style="margin:16px 0 10px">Step breakdown</h4>
-      <div style="text-align:left">${stepRows}</div>
-      ${improveHtml}
+      <h4 style="margin:18px 0 10px;text-align:left">Scoring breakdown</h4>
+      <div style="text-align:left">${o.rows.map((r, i) => `
+        <div class="sr-row"><span class="sr-n">${i + 1}</span><div style="flex:1"><b>${esc(r.t)}</b><br>
+        <span style="font-size:12px;color:#64748b">${r.pts} pts${r.note ? ' · ' + esc(r.note) : ''}</span></div>
+        ${r.ok ? '<span class="bdg b-green"><span class="dot"></span>Correct</span>' : '<span class="bdg b-red"><span class="dot"></span>Missed</span>'}</div>`).join('')}</div>
+      ${o.improve && o.improve.length ? `<div class="imp-box"><h4>📝 Items to improve</h4><ul>${o.improve.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
       <div style="margin-top:22px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
         <a class="btn btn-line" href="/training">← Case Center</a>
         <a class="btn btn-teal" href="/play?case=${G.caseId}">Try quiz mode →</a>
       </div>
     </div>
-    <style>
-    .sr-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f1f5f9}
-    .sr-row:last-child{border:none}
-    .sr-n{width:28px;height:28px;border-radius:50%;background:#f1f5f9;color:#475569;font-weight:700;font-size:12px;
-      display:flex;align-items:center;justify-content:center;flex:none}
+    <style>.sr-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f1f5f9}
+    .sr-n{width:28px;height:28px;border-radius:50%;background:#f1f5f9;color:#475569;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}
     .imp-box{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px;margin-top:16px;text-align:left}
-    .imp-box h4{margin:0 0 10px;color:#92400e}
-    .imp-box ul{margin:0;padding-left:20px;font-size:13.5px;color:#57534e}
-    .imp-box li{margin-bottom:8px}
-    </style>`;
+    .imp-box h4{margin:0 0 10px;color:#92400e}.imp-box ul{margin:0;padding-left:20px;font-size:13.5px;color:#57534e}.imp-box li{margin-bottom:8px}</style>`;
+  window.scrollTo({ top: 0 });
 }
+
+/* ================= CASE 001 — ELIGIBILITY ================= */
+const CASE_META = {
+  'CASE-001': { instr: ['Select the patient', 'Select their insurance policy', 'Run the 270/271 eligibility check', 'Review the 271 response', 'Interpret the result and submit'],
+       clin: null },
+  'CASE-002': { instr: ['Review the clinical documentation', 'Select the primary ICD-10-CM code', 'Select the CPT procedure code', 'Answer the medical-necessity check', 'Document your rationale', 'Validate and submit'],
+       clin: [['Patient', 'Established patient, age 45'], ['Encounter', 'Office visit — Type 2 diabetes follow-up + hypertension check'], ['Provider time', '30 minutes, level-3 evaluation'], ['Assessment', 'E11.9 Type 2 diabetes without complications<br>I10 Essential hypertension'], ['Orders', 'A1C lab (CPT 83036)']] },
+  'CASE-003': { instr: ['Select the patient', 'Enter the encounter charge (CPT 99213 · ICD E11.9 · $180.00)', 'Create the claim from your charge', 'Answer the clean-claim check', 'Validate and submit'],
+       clin: [['Encounter', 'Office visit, established patient'], ['Documented', 'CPT 99213 · ICD-10 E11.9 · $180.00']] },
+  'CASE-004': { instr: ['Select a DRAFT claim from your queue', 'Run the 13-rule claim scrubber', 'Review each rule result', 'Answer the fix check', 'Submit the clean claim'],
+       clin: null },
+  'CASE-005': { instr: ['Select a SUBMITTED claim', 'Review the ERA (835 remittance)', 'Enter payment: paid $120 · adjustment $30 · patient $30', 'Reconcile the balance', 'Post the payment'],
+       clin: [['ERA received', '835 remittance advice'], ['Billed', '$180.00'], ['Allowed', '$150.00'], ['Paid', '$120.00'], ['Contractual adjustment', '$30.00'], ['Patient responsibility', '$30.00']] },
+  'CASE-006': { instr: ['Select the denial to work', 'Review the claim and denial reason', 'Identify the root cause', 'Choose the corrective action', 'Document the resolution', 'Resolve and submit'],
+       clin: [['Remittance shows', 'CO-97 — benefit for this service is included in payment for another procedure']] },
+  'CASE-007': { instr: ['Review the A/R aging buckets', 'Prioritize: which bucket first?', 'Select a claim to follow up', 'Log the payer follow-up note', 'Answer the DSO check', 'Submit'],
+       clin: [['A/R aging', '0–30 · 31–60 · 61–90 · 90+ days'], ['Priority rule', 'Oldest dollars first — 90+ risks timely-filing write-off']] },
+  'CASE-008': { instr: ['Select patient & verify eligibility', 'Enter the charge', 'Create + validate the claim', 'Submit to payer', 'Post the ERA payment', 'Document the full-cycle note', 'Submit'],
+       clin: [['Capstone', 'Run the entire revenue cycle end-to-end on real workspace data']] },
+  'CASE-009': { instr: ['Review the registration briefing', 'Register the new patient with complete demographics', 'Answer the completeness check', 'Answer the duplicate-record check', 'Validate and submit'],
+       clin: [['Walk-in', 'New patient — first visit'], ['Photo ID shows', 'Sarah Mitchell · DOB 03/22/1988'], ['Contact on ID', '(555) 234-5678 · sarah.mitchell@email.com'], ['Address on ID', '123 Oak Street, Springfield, IL 62701']] },
+  'CASE-010': { instr: ['Review the insurance briefing', 'Select the patient', 'Select their insurance policy', 'Determine the coverage status', 'Handle inactive coverage', 'Validate and submit'],
+       clin: [['Scenario', 'Patient hands you their insurance card at check-in'], ['Card shows', 'Effective 01/01/2026 · $25 copay · referral required for specialist']] },
+  'CASE-011': { instr: ['Review the billing briefing', 'Select a READY charge', 'Create the CMS-1500 claim', 'Answer the clean-claim check', 'Validate and submit'],
+       clin: [['Source', 'Completed encounter charge (coded and ready)'], ['Output', 'Professional CMS-1500 claim (837P) in DRAFT']] },
+  'CASE-012': { instr: ['Review the clearinghouse briefing', 'Select a DRAFT claim', 'Run the 13-rule scrubber', 'Submit the 837P to the payer', 'Read the adjudication result', 'Validate and submit'],
+       clin: [['Pre-flight', 'Claim must pass all 13 scrubber rules'], ['Transmission', '837P electronic professional claim']] },
+};
+
+async function renderCase001() {
+  const m = G.meta, cm = CASE_META['CASE-001'];
+  const [pd, id] = await Promise.all([api('/api/rcm/patients'), api('/api/rcm/insurance')]);
+  const pats = pd.patients || [], allIns = id.insurance || [];
+  stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+  ${gHeader(m)}${gInstr(cm.instr)}
+  ${gSec(1, 'Select the Patient', optSel('c1_pat', pats, 'code', p => `${p.name} — ${p.code}`, 'Choose a patient…'),
+    'Choose whose coverage you will verify.')}
+  <div id="c1_ptile"></div>
+  ${gSec(2, 'Select Their Insurance', `<div id="c1_inswrap"><p class="rc-sub">Select a patient first.</p></div>`,
+    'Pick the active policy that will be billed.')}
+  ${gSec(3, 'Run the 270/271 Eligibility Check', `
+    <button class="btn btn-teal" id="c1_verify" disabled>▶ Run 270 Inquiry</button>
+    <div id="c1_271" style="margin-top:14px"></div>`,
+    'Send the 270 eligibility inquiry to the payer and read the 271 response.')}
+  ${gSec(4, 'Interpret the 271 Response', `
+    <p class="rc-sub">Based on the coverage, copay and deductible shown above:</p>
+    <div class="quiz-opts" id="c1_opts">
+      ${['Collect the $25 copay at check-in; the deductible applies to today\u2019s charges',
+         'Bill the patient the full visit amount today',
+         'Skip it \u2014 insurance covers everything',
+         'Reschedule the patient until the deductible is met'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, 'What do you tell the front desk?')}
+  ${gFoot('c1_valid', 'c1_submit')}`;
+  let pat = null, ins = null, chk = null, ans = null;
+  const vbtn = document.getElementById('c1_verify');
+  document.getElementById('c1_pat').onchange = e => {
+    pat = pats.find(p => p.code === e.target.value) || null;
+    document.getElementById('c1_ptile').innerHTML = patTile(pat);
+    const pins = allIns.filter(r => r.patient_code === (pat && pat.code));
+    document.getElementById('c1_inswrap').innerHTML = pins.length
+      ? optSel('c1_ins', pins, 'payer', r => `${r.payer} — ${r.member_id} (${r.status})`, 'Choose a policy…')
+      : `<div class="empty">No insurance on file for this patient.</div>`;
+    const si = document.getElementById('c1_ins');
+    if (si) si.onchange = ev => { ins = pins.find(r => r.payer === ev.target.value) || null; vbtn.disabled = !ins; };
+    ins = null; vbtn.disabled = true;
+  };
+  vbtn.onclick = async () => {
+    vbtn.disabled = true; vbtn.textContent = 'Sending 270…';
+    try {
+      chk = await api('/api/rcm/eligibility/verify', { method: 'POST',
+        body: { patient_code: pat.code, payer: ins.payer, service: 'Office Visit' } });
+      document.getElementById('c1_271').innerHTML = `
+        <div class="rc-271"><div class="rc-271h">271 — Eligibility Response <span class="bdg b-green"><span class="dot"></span>${esc(chk.result || 'VERIFIED')}</span></div>
+        <div class="kv-card">
+          <div class="kv"><span>Coverage</span><b>${esc(chk.coverage || 'ACTIVE')}</b></div>
+          <div class="kv"><span>Copay</span><b>${money(chk.copay ?? 25)}</b></div>
+          <div class="kv"><span>Deductible</span><b>${money(chk.deductible ?? 1000)}</b></div>
+          <div class="kv"><span>Plan</span><b>${esc(chk.plan_type || ins.plan || '—')}</b></div>
+        </div></div>`;
+    } catch (e) { vErr(e.message); }
+    vbtn.disabled = false; vbtn.textContent = '▶ Run 270 Inquiry';
+  };
+  document.querySelectorAll('#c1_opts .opt').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#c1_opts .opt').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel'); ans = +b.dataset.i;
+  });
+  document.getElementById('c1_valid').onclick = () => {
+    if (!pat) return vErr('Select a patient first.');
+    if (!ins) return vErr('Select their insurance policy.');
+    if (!chk) return vErr('Run the 270/271 eligibility check first.');
+    if (ans === null) return vErr('Answer the interpretation question.');
+    if (ans !== 0) return vErr('Interpretation is not correct — review the 271 and try again.');
+    vOk('Eligibility verified and interpreted correctly. Ready to submit.');
+    document.getElementById('c1_submit').disabled = false;
+  };
+  document.getElementById('c1_submit').onclick = async () => {
+    const btn = document.getElementById('c1_submit'); btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const earned = await gSubmitRun(G.caseId, [{}, { value: pat.code }, { value: ins.payer }, { result: chk }, { chosen: ans }]);
+      gResult({ code: m.code, title: m.title, earned, total: 50,
+        rows: [
+          { t: 'Morning huddle briefing', pts: 5, ok: true },
+          { t: 'Select the patient', pts: 10, ok: true, note: pat.name },
+          { t: 'Select their insurance', pts: 10, ok: true, note: ins.payer },
+          { t: 'Run the 270/271 check', pts: 15, ok: true },
+          { t: 'Interpret the 271 response', pts: 10, ok: ans === 0 },
+        ],
+        improve: ans !== 0 ? ['271 interpretation: with ACTIVE coverage and an unmet deductible, collect the copay and apply the deductible to today\u2019s charges.'] : [] });
+    } catch (e) { vErr(e.message); btn.disabled = false; btn.textContent = 'Submit Training Case'; }
+  };
+}
+
+/* ================= CASE 002 — CODING ================= */
+const ICD_OPTS = [
+  ['E11.9', 'E11.9 — Type 2 diabetes mellitus without complications'],
+  ['E11.65', 'E11.65 — Type 2 diabetes with hyperglycemia'],
+  ['I10', 'I10 — Essential hypertension'],
+  ['Z00.00', 'Z00.00 — Routine general medical exam'],
+];
+const CPT_OPTS = [
+  ['99213', '99213 — Office visit, established, low complexity (20 min)'],
+  ['99214', '99214 — Office visit, established, moderate complexity (30 min)'],
+  ['99202', '99202 — Office visit, NEW patient, straightforward'],
+  ['99490', '99490 — Chronic care management'],
+];
+async function renderCase002() {
+  const m = G.meta, cm = CASE_META['CASE-002'];
+  stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+  ${gHeader(m)}${gInstr(cm.instr)}${gClin(cm.clin)}
+  ${gSec(1, 'ICD-10-CM Diagnosis Coding', `
+    <div class="frow"><div class="fld"><label>Primary diagnosis *</label>
+      <select class="input" id="c2_icd"><option value="">Select…</option>${ICD_OPTS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
+    <div class="fld"><label>Secondary diagnosis</label>
+      <select class="input" id="c2_icd2"><option value="">Select…</option>${ICD_OPTS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div></div>`,
+    'Code the reason for the visit from the assessment.')}
+  ${gSec(2, 'CPT Procedure Coding', `
+    <div class="frow"><div class="fld"><label>CPT code *</label>
+      <select class="input" id="c2_cpt"><option value="">Select…</option>${CPT_OPTS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
+    <div class="fld"><label>Modifier</label><input class="input" id="c2_mod" placeholder="e.g. 25"></div>
+    <div class="fld"><label>Units</label><input class="input" id="c2_units" type="number" min="1" value="1"></div></div>
+    <p class="rc-sub">30-minute established-patient visit, level-3 evaluation.</p>`,
+    'Match the procedure to the documented time and complexity.')}
+  ${gSec(3, 'Medical Necessity Check', `
+    <p class="rc-sub"><b>Q:</b> Does E11.9 support medical necessity for the A1C lab (83036)?</p>
+    <div class="quiz-opts" id="c2_opts">
+      ${['Yes — a diabetes diagnosis justifies A1C monitoring', 'No — labs never need a diagnosis code',
+         'Only when paired with the hypertension code', 'Only for new patients'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gSec(4, 'Document Your Rationale', `
+    <textarea class="input" id="c2_note" rows="3" placeholder="E.g. E11.9 supports 99213 and 83036 because…"></textarea>
+    <p class="rc-sub">1–2 sentences linking diagnosis to procedure — this is what an auditor looks for.</p>`, '')}
+  ${gFoot('c2_valid', 'c2_submit')}`;
+  let nec = null;
+  document.querySelectorAll('#c2_opts .opt').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#c2_opts .opt').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel'); nec = +b.dataset.i;
+  });
+  const val = () => {
+    const icd = document.getElementById('c2_icd').value, cpt = document.getElementById('c2_cpt').value;
+    const note = document.getElementById('c2_note').value.trim();
+    const errs = [];
+    if (!icd) errs.push('Select the primary ICD-10-CM code.');
+    else if (icd !== 'E11.9') errs.push('Primary diagnosis should be E11.9 — the visit is a diabetes follow-up.');
+    if (!cpt) errs.push('Select the CPT code.');
+    else if (cpt !== '99213') errs.push('CPT should be 99213 — 30 min established, low complexity per documentation.');
+    if (nec === null) errs.push('Answer the medical-necessity check.');
+    else if (nec !== 0) errs.push('Medical necessity: E11.9 does justify A1C monitoring.');
+    if (note.length < 20) errs.push('Write at least 20 characters of rationale.');
+    return { errs, icd, cpt, note };
+  };
+  document.getElementById('c2_valid').onclick = () => {
+    const { errs } = val();
+    if (errs.length) return vErr(errs[0]);
+    vOk('Coding validated successfully. ICD-10-CM, CPT and rationale are correct.');
+    document.getElementById('c2_submit').disabled = false;
+  };
+  document.getElementById('c2_submit').onclick = async () => {
+    const btn = document.getElementById('c2_submit'); btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const { note } = val();
+      const earned = await gSubmitRun(G.caseId, [{}, { chosen: 1 }, { chosen: 1 }, { chosen: 0 }, { text: note }]);
+      gResult({ code: m.code, title: m.title, earned, total: 50,
+        rows: [
+          { t: 'Encounter briefing', pts: 5, ok: true },
+          { t: 'Primary diagnosis (E11.9)', pts: 10, ok: true },
+          { t: 'CPT code (99213)', pts: 10, ok: true },
+          { t: 'Medical necessity check', pts: 15, ok: true },
+          { t: 'Document rationale', pts: 10, ok: true },
+        ], improve: [] });
+    } catch (e) { vErr(e.message); btn.disabled = false; btn.textContent = 'Submit Training Case'; }
+  };
+}
+
+/* ================= CASE 003 — CHARGE ENTRY ================= */
+async function renderCase003() {
+  const m = G.meta, cm = CASE_META['CASE-003'];
+  const pd = await api('/api/rcm/patients');
+  const pats = pd.patients || [];
+  const today = new Date().toISOString().slice(0, 10);
+  stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+  ${gHeader(m)}${gInstr(cm.instr)}${gClin(cm.clin)}
+  ${gSec(1, 'Select the Patient', optSel('c3_pat', pats, 'code', p => `${p.name} — ${p.code}`, 'Choose a patient…'), '')}
+  <div id="c3_ptile"></div>
+  ${gSec(2, 'Enter the Encounter Charge', `
+    <div class="frow">
+      <div class="fld"><label>Date of service *</label><input class="input" id="c3_dos" type="date" value="${today}" max="${today}"></div>
+      <div class="fld"><label>CPT code *</label><select class="input" id="c3_cpt"><option value="">Select…</option>${CPT_OPTS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
+    </div>
+    <div class="frow">
+      <div class="fld"><label>ICD-10 diagnosis *</label><select class="input" id="c3_icd"><option value="">Select…</option>${ICD_OPTS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
+      <div class="fld"><label>Charge amount ($) *</label><input class="input" id="c3_amt" type="number" min="1" step="0.01" placeholder="180.00"></div>
+    </div>
+    <div class="rc-prev" id="c3_prev"><span class="rc-sub">Charge preview appears here.</span></div>`,
+    'Enter exactly as documented: CPT 99213 · ICD-10 E11.9 · $180.00.')}
+  ${gSec(3, 'Clean-Claim Check', `
+    <p class="rc-sub"><b>Q:</b> Your claim is in DRAFT. What makes it \u201cclean\u201d before submission?</p>
+    <div class="quiz-opts" id="c3_opts">
+      ${['Matching patient demographics, valid codes, and an active payer policy', 'Submitting it as fast as possible',
+         'Leaving the diagnosis blank so the payer decides', 'Faxing it instead of electronic filing'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gFoot('c3_valid', 'c3_submit')}`;
+  let pat = null, clean = null;
+  const updPrev = () => {
+    const cpt = document.getElementById('c3_cpt').value, icd = document.getElementById('c3_icd').value;
+    const amt = parseFloat(document.getElementById('c3_amt').value) || 0;
+    document.getElementById('c3_prev').innerHTML = (cpt || icd || amt)
+      ? `<div class="kv-card"><div class="kv"><span>Patient</span><b>${pat ? esc(pat.name) : '—'}</b></div>
+         <div class="kv"><span>CPT / ICD</span><b>${esc(cpt || '—')} / ${esc(icd || '—')}</b></div>
+         <div class="kv"><span>Total charge</span><b>${money(amt)}</b></div></div>`
+      : `<span class="rc-sub">Charge preview appears here.</span>`;
+  };
+  document.getElementById('c3_pat').onchange = e => {
+    pat = pats.find(p => p.code === e.target.value) || null;
+    document.getElementById('c3_ptile').innerHTML = patTile(pat); updPrev();
+  };
+  ['c3_cpt', 'c3_icd', 'c3_amt'].forEach(id => document.getElementById(id).oninput = updPrev);
+  document.querySelectorAll('#c3_opts .opt').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#c3_opts .opt').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel'); clean = +b.dataset.i;
+  });
+  const get = () => ({
+    dos: document.getElementById('c3_dos').value,
+    cpt: document.getElementById('c3_cpt').value,
+    icd: document.getElementById('c3_icd').value,
+    amt: parseFloat(document.getElementById('c3_amt').value) || 0,
+  });
+  document.getElementById('c3_valid').onclick = () => {
+    const { dos, cpt, icd, amt } = get();
+    if (!pat) return vErr('Select the patient.');
+    if (!dos) return vErr('Enter the date of service.');
+    if (cpt !== '99213') return vErr('CPT should be 99213 per the documentation.');
+    if (icd !== 'E11.9') return vErr('ICD-10 should be E11.9 per the documentation.');
+    if (amt !== 180) return vErr('Charge amount should be exactly $180.00.');
+    if (clean === null) return vErr('Answer the clean-claim check.');
+    if (clean !== 0) return vErr('Clean-claim check: matching demographics, valid codes, active policy.');
+    vOk('Charge is clean and correct. Ready to submit.');
+    document.getElementById('c3_submit').disabled = false;
+  };
+  document.getElementById('c3_submit').onclick = async () => {
+    const btn = document.getElementById('c3_submit'); btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const { dos, cpt, icd, amt } = get();
+      const ch = await api('/api/rcm/charges', { method: 'POST',
+        body: { patient_code: pat.code, dos, cpt, icd, amount: amt } });
+      const cl = await api('/api/rcm/claims', { method: 'POST', body: { charge_id: ch.id } });
+      const earned = await gSubmitRun(G.caseId, [{ value: pat.code },
+        { result: ch }, { result: cl }, { chosen: clean }]);
+      gResult({ code: m.code, title: m.title, earned, total: 50,
+        rows: [
+          { t: 'Select the patient', pts: 10, ok: true, note: pat.name },
+          { t: 'Enter the charge ($180.00)', pts: 15, ok: true, note: 'Charge #' + ch.id },
+          { t: 'Create the claim', pts: 15, ok: true, note: cl.claim_no },
+          { t: 'Clean-claim check', pts: 10, ok: true },
+        ], improve: [] });
+    } catch (e) { vErr(e.message); btn.disabled = false; btn.textContent = 'Submit Training Case'; }
+  };
+}
+
+/* ================= CASE 004 — CLAIM SCRUBBING ================= */
+async function renderCase004() {
+  const m = G.meta, cm = CASE_META['CASE-004'];
+  const cd = await api('/api/rcm/claims');
+  const drafts = (cd.claims || []).filter(c => c.status === 'DRAFT');
+  stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+  ${gHeader(m)}${gInstr(cm.instr)}
+  ${gSec(1, 'Select a Draft Claim', drafts.length
+      ? optSel('c4_claim', drafts, 'id', c => `${c.claim_no} — ${c.payer} — ${money(c.billed)}`, 'Choose a DRAFT claim…')
+      : `<div class="empty"><div class="empty-ic">📄</div><h4>No DRAFT claims</h4><p>Create a claim in the Billing workspace first, then return.</p></div>`,
+    'Pick a DRAFT claim from your work queue to scrub.')}
+  <div id="c4_info"></div>
+  ${gSec(2, 'Run the 13-Rule Claim Scrubber', `
+    <button class="btn btn-teal" id="c4_scrub" disabled>🔍 Run Scrubber</button>
+    <div id="c4_rules" style="margin-top:14px"></div>`,
+    'The same checks the payer\u2019s system runs before adjudication.')}
+  ${gSec(3, 'Handle the Scrubber Flags', `
+    <p class="rc-sub"><b>Q:</b> The scrubber flags CO-16: \u201cClaim lacks information.\u201d What is the correct fix?</p>
+    <div class="quiz-opts" id="c4_opts">
+      ${['Correct the missing/invalid data and rebill — never resubmit unchanged', 'Resubmit the identical claim immediately',
+         'Write the balance off to bad debt', 'Appeal with a redetermination letter'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gSec(4, 'Submit to the Payer', `
+    <button class="btn btn-teal" id="c4_submit2" disabled>📤 Transmit 837P</button>
+    <div id="c4_subres" style="margin-top:12px"></div>`,
+    'Transmit the clean claim to the payer.')}
+  ${gFoot('c4_valid', 'c4_submit')}`;
+  let claim = null, scrub = null, fix = null, submitted = null;
+  document.getElementById('c4_claim').onchange = e => {
+    claim = drafts.find(c => String(c.id) === e.target.value) || null;
+    document.getElementById('c4_scrub').disabled = !claim;
+    document.getElementById('c4_info').innerHTML = claim ? `<div class="rc-tile">
+      <div><b>${esc(claim.claim_no)}</b> <span class="bdg b-blue">${esc(claim.status)}</span></div>
+      <div style="font-size:12.5px;color:#64748b">${esc(claim.payer)} · CPT ${esc(claim.cpt)} · DOS ${esc(claim.dos)} · ${money(claim.billed)}</div></div>` : '';
+  };
+  document.getElementById('c4_scrub').onclick = async () => {
+    const b = document.getElementById('c4_scrub'); b.disabled = true; b.textContent = 'Scrubbing…';
+    try {
+      scrub = await api(`/api/rcm/claims/${claim.id}/validate`, { method: 'POST' });
+      const rules = scrub.rules || [];
+      document.getElementById('c4_rules').innerHTML = rules.length ? rules.map(r => `
+        <div class="rule-row ${r.pass ? 'ok' : 'bad'}"><span class="rr-ic">${r.pass ? '✅' : '❌'}</span>
+        <div><b>${esc(r.rule || r.name)}</b><br><span style="font-size:12px;color:#64748b">${esc(r.msg || r.detail || '')}</span></div></div>`).join('')
+        : `<div class="kv-card"><div class="kv"><span>Result</span><b class="bdg ${scrub.validation === 'PASSED' ? 'b-green' : 'b-amber'}">${esc(scrub.validation || 'DONE')}</b></div></div>`;
+      document.getElementById('c4_submit2').disabled = false;
+    } catch (e) { vErr(e.message); }
+    b.disabled = false; b.textContent = '🔍 Run Scrubber';
+  };
+  document.querySelectorAll('#c4_opts .opt').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#c4_opts .opt').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel'); fix = +b.dataset.i;
+  });
+  document.getElementById('c4_submit2').onclick = async () => {
+    const b = document.getElementById('c4_submit2'); b.disabled = true; b.textContent = 'Transmitting…';
+    try {
+      submitted = await api(`/api/rcm/claims/${claim.id}/submit`, { method: 'POST' });
+      document.getElementById('c4_subres').innerHTML = `<div class="feedback ok show"><b>✓ Claim ${esc(submitted.status || 'submitted')}</b> — ${submitted.denial_code ? 'denied ' + esc(submitted.denial_code) : 'accepted by payer'}.</div>`;
+    } catch (e) { document.getElementById('c4_subres').innerHTML = `<div class="feedback no show"><b>✗ ${esc(e.message)}</b></div>`; }
+    b.disabled = false; b.textContent = '📤 Transmit 837P';
+  };
+  document.getElementById('c4_valid').onclick = () => {
+    if (!claim) return vErr('Select a DRAFT claim.');
+    if (!scrub) return vErr('Run the claim scrubber first.');
+    if (fix === null) return vErr('Answer the fix check.');
+    if (fix !== 0) return vErr('CO-16 fix: correct the data and rebill — never resubmit unchanged.');
+    if (!submitted) return vErr('Submit the claim to the payer first (section 4).');
+    vOk('Claim scrubbed, fixed and submitted. Ready to complete the case.');
+    document.getElementById('c4_submit').disabled = false;
+  };
+  document.getElementById('c4_submit').onclick = async () => {
+    const btn = document.getElementById('c4_submit'); btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const earned = await gSubmitRun(G.caseId, [{ value: claim.id }, { result: scrub }, { chosen: fix }, { result: submitted }]);
+      gResult({ code: m.code, title: m.title, earned, total: 50,
+        rows: [
+          { t: 'Select a draft claim', pts: 10, ok: true, note: claim.claim_no },
+          { t: 'Run the 13-rule scrubber', pts: 15, ok: true },
+          { t: 'Handle scrubber flags (CO-16)', pts: 15, ok: true },
+          { t: 'Submit to the payer', pts: 10, ok: true, note: submitted.status },
+        ], improve: [] });
+    } catch (e) { vErr(e.message); btn.disabled = false; btn.textContent = 'Submit Training Case'; }
+  };
+}
+
+/* ================= CASE 005 — PAYMENTS ================= */
+async function renderCase005() {
+  const m = G.meta, cm = CASE_META['CASE-005'];
+  const cd = await api('/api/rcm/claims');
+  const subs = (cd.claims || []).filter(c => ['SUBMITTED', 'PAID'].includes(c.status));
+  stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+  ${gHeader(m)}${gInstr(cm.instr)}${gClin(cm.clin)}
+  ${gSec(1, 'Select a Submitted Claim', subs.length
+      ? optSel('c5_claim', subs, 'id', c => `${c.claim_no} — ${c.payer} — ${money(c.billed)} (${c.status})`, 'Choose a claim…')
+      : `<div class="empty"><div class="empty-ic">📄</div><h4>No submitted claims</h4><p>Submit a claim first, then return to post its payment.</p></div>`,
+    'Pick a claim waiting on payer response.')}
+  <div id="c5_info"></div>
+  ${gSec(2, 'Post the ERA Payment', `
+    <div class="frow">
+      <div class="fld"><label>Insurance paid ($) *</label><input class="input" id="c5_paid" type="number" min="0" step="0.01" placeholder="120.00"></div>
+      <div class="fld"><label>Contractual adjustment ($) *</label><input class="input" id="c5_adj" type="number" min="0" step="0.01" placeholder="30.00"></div>
+      <div class="fld"><label>Patient responsibility ($) *</label><input class="input" id="c5_pat" type="number" min="0" step="0.01" placeholder="30.00"></div>
+    </div>
+    <div class="rc-prev" id="c5_bal"><span class="rc-sub">Balance reconciliation appears here.</span></div>`,
+    'Post exactly what the ERA says — never post from memory.')}
+  ${gSec(3, 'Reconcile the Balance', `
+    <p class="rc-sub"><b>Q:</b> Billed $180, allowed $150, paid $120, adjustment $30. What is the correct patient balance?</p>
+    <div class="quiz-opts" id="c5_opts">
+      ${['$30 — the patient-responsibility portion of the allowed amount', '$60 — billed minus paid',
+         '$0 — the claim is fully resolved', '$150 — the full allowed amount'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gFoot('c5_valid', 'c5_submit')}`;
+  let claim = null, bal = null, posted = null;
+  const updBal = () => {
+    const paid = parseFloat(document.getElementById('c5_paid').value) || 0;
+    const adj = parseFloat(document.getElementById('c5_adj').value) || 0;
+    const pr = parseFloat(document.getElementById('c5_pat').value) || 0;
+    const billed = claim ? +claim.billed : 180;
+    const accounted = paid + adj + pr;
+    const ok = Math.abs(accounted - billed) < 0.01;
+    bal = { paid, adj, pr, ok };
+    document.getElementById('c5_bal').innerHTML = `
+      <div class="kv-card">
+        <div class="kv"><span>Billed</span><b>${money(billed)}</b></div>
+        <div class="kv"><span>Paid + Adjustment + Patient</span><b>${money(accounted)}</b></div>
+        <div class="kv"><span>Reconciliation</span>${ok
+          ? '<span class="bdg b-green"><span class="dot"></span>Balanced ✓</span>'
+          : '<span class="bdg b-amber"><span class="dot"></span>Not balanced</span>'}</div>
+      </div>`;
+  };
+  document.getElementById('c5_claim').onchange = e => {
+    claim = subs.find(c => String(c.id) === e.target.value) || null;
+    document.getElementById('c5_info').innerHTML = claim ? `<div class="rc-tile">
+      <div><b>${esc(claim.claim_no)}</b> <span class="bdg b-blue">${esc(claim.status)}</span></div>
+      <div style="font-size:12.5px;color:#64748b">${esc(claim.payer)} · Billed ${money(claim.billed)} · Allowed ${money(claim.allowed || claim.billed)}</div></div>` : '';
+    updBal();
+  };
+  ['c5_paid', 'c5_adj', 'c5_pat'].forEach(id => document.getElementById(id).oninput = updBal);
+  document.querySelectorAll('#c5_opts .opt').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#c5_opts .opt').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel'); bal = bal || {}; bal.quiz = +b.dataset.i;
+  });
+  document.getElementById('c5_valid').onclick = () => {
+    if (!claim) return vErr('Select a submitted claim.');
+    if (!bal || !bal.ok) return vErr('Balance the payment first: paid + adjustment + patient must equal billed.');
+    if (bal.paid !== 120 || bal.adj !== 30 || bal.pr !== 30) return vErr('Post exactly what the ERA says: paid $120, adjustment $30, patient $30.');
+    if (bal.quiz === undefined) return vErr('Answer the reconciliation question.');
+    if (bal.quiz !== 0) return vErr('Patient balance is $30 — the patient-responsibility portion.');
+    vOk('Payment balanced and reconciled correctly. Ready to post.');
+    document.getElementById('c5_submit').disabled = false;
+  };
+  document.getElementById('c5_submit').onclick = async () => {
+    const btn = document.getElementById('c5_submit'); btn.disabled = true; btn.textContent = 'Posting…';
+    try {
+      posted = await api('/api/rcm/payments', { method: 'POST',
+        body: { claim_id: claim.id, paid: 120, adjustment: 30, patient_resp: 30 } });
+      const earned = await gSubmitRun(G.caseId, [{ value: claim.id }, {}, { result: posted }, { chosen: bal.quiz }]);
+      gResult({ code: m.code, title: m.title, earned, total: 40,
+        rows: [
+          { t: 'Select a submitted claim', pts: 10, ok: true, note: claim.claim_no },
+          { t: 'Read the ERA', pts: 5, ok: true },
+          { t: 'Post the payment', pts: 15, ok: true, note: money(120) + ' paid' },
+          { t: 'Reconcile the balance', pts: 10, ok: true },
+        ], improve: [] });
+    } catch (e) { vErr(e.message); btn.disabled = false; btn.textContent = 'Submit Training Case'; }
+  };
+}
+
+/* ================= CASE 006 — DENIALS ================= */
+const ROOT_OPTS = ['Coding Error', 'Eligibility Issue', 'Authorization Required', 'Duplicate Claim', 'Timely Filing', 'Missing Information', 'Incorrect Patient Information', 'Other'];
+const ACT_OPTS = ['Correct Claim', 'Verify Eligibility', 'Obtain Authorization', 'Submit Corrected Claim', 'Appeal Claim', 'Contact Payer'];
+async function renderCase006() {
+  const m = G.meta, cm = CASE_META['CASE-006'];
+  const dd = await api('/api/rcm/denials');
+  const dens = dd.denials || [];
+  stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+  ${gHeader(m)}${gInstr(cm.instr)}${gClin(cm.clin)}
+  ${gSec(1, 'Select the Denial', dens.length
+      ? optSel('c6_den', dens, 'id', d => `${d.claim_no} — ${d.denial_code} — ${d.payer}`, 'Choose a denial…')
+      : `<div class="empty"><div class="empty-ic">🚫</div><h4>No denials</h4><p>Denied claims will appear here after submission.</p></div>`,
+    'Open your denial work queue and pick a denied claim to work.')}
+  <div id="c6_info"></div>
+  ${gSec(2, 'Identify the Root Cause', `
+    <p class="rc-sub"><b>Q:</b> The remittance shows CO-97: \u201cthe benefit for this service is included in the payment for another procedure.\u201d What happened?</p>
+    <div class="quiz-opts" id="c6_opts">
+      ${['Unbundling — two codes were billed that the payer considers one service', 'The patient\u2019s coverage lapsed',
+         'The claim was filed past the timely-filing limit', 'The diagnosis does not support the procedure'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gSec(3, 'Choose the Corrective Action', `
+    <p class="rc-sub"><b>Q:</b> For this CO-97 unbundling denial, what is the correct next step?</p>
+    <div class="quiz-opts" id="c6_opts2">
+      ${['Correct the claim (use the proper bundled code or modifier) and rebill', 'Appeal immediately without changing anything',
+         'Write it off — denials can\u2019t be fixed', 'Rebill the identical claim next week'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gSec(4, 'Document the Resolution', `
+    <textarea class="input" id="c6_note" rows="3" placeholder="E.g. CO-97 unbundling — corrected with modifier 25 and rebilled…"></textarea>
+    <p class="rc-sub">Write the resolution note an auditor would want: root cause, action taken, expected outcome.</p>`, '')}
+  ${gFoot('c6_valid', 'c6_submit')}`;
+  let den = null, root = null, act = null;
+  document.getElementById('c6_den').onchange = e => {
+    den = dens.find(d => String(d.id) === e.target.value) || null;
+    document.getElementById('c6_info').innerHTML = den ? `<div class="rc-tile" style="border-left:4px solid #ef4444">
+      <div><b>${esc(den.claim_no)}</b> <span class="bdg b-red">${esc(den.denial_code)}</span></div>
+      <div style="font-size:12.5px;color:#64748b">${esc(den.payer)} · Billed ${money(den.billed)} · ${esc(den.reason || '')}</div></div>` : '';
+  };
+  const qbind = (id, set) => document.querySelectorAll('#' + id + ' .opt').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#' + id + ' .opt').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel'); set(+b.dataset.i);
+  });
+  qbind('c6_opts', v => root = v); qbind('c6_opts2', v => act = v);
+  document.getElementById('c6_valid').onclick = () => {
+    const note = document.getElementById('c6_note').value.trim();
+    if (!den) return vErr('Select the denial to work.');
+    if (root === null) return vErr('Identify the root cause.');
+    if (root !== 0) return vErr('CO-97 means unbundling — two codes billed as one service.');
+    if (act === null) return vErr('Choose the corrective action.');
+    if (act !== 0) return vErr('Correct the claim and rebill — never appeal unchanged.');
+    if (note.length < 20) return vErr('Write at least 20 characters of resolution documentation.');
+    vOk('Root cause identified, corrective action chosen, resolution documented.');
+    document.getElementById('c6_submit').disabled = false;
+  };
+  document.getElementById('c6_submit').onclick = async () => {
+    const btn = document.getElementById('c6_submit'); btn.disabled = true; btn.textContent = 'Resolving…';
+    try {
+      const note = document.getElementById('c6_note').value.trim();
+      const res = await api(`/api/rcm/denials/${den.id}/resolve`, { method: 'POST', body: { action: 'correct', note } });
+      const earned = await gSubmitRun(G.caseId, [{ value: den.id }, {}, { chosen: root }, { chosen: act }, { text: note }, { result: res }]);
+      gResult({ code: m.code, title: m.title, earned, total: 60,
+        rows: [
+          { t: 'Select the denial', pts: 10, ok: true, note: den.claim_no },
+          { t: 'Review the claim', pts: 5, ok: true },
+          { t: 'Root cause (unbundling)', pts: 15, ok: true },
+          { t: 'Corrective action (correct & rebill)', pts: 10, ok: true },
+          { t: 'Document resolution', pts: 10, ok: true },
+          { t: 'Resolve the denial', pts: 10, ok: true },
+        ], improve: [] });
+    } catch (e) { vErr(e.message); btn.disabled = false; btn.textContent = 'Submit Training Case'; }
+  };
+}
+
+/* ================= CASE 007 — A/R ================= */
+async function renderCase007() {
+  const m = G.meta, cm = CASE_META['CASE-007'];
+  const [cd, ard] = await Promise.all([api('/api/rcm/claims'), api('/api/rcm/ar')]);
+  const open = (cd.claims || []).filter(c => !['PAID'].includes(c.status));
+  const buckets = (ard.buckets || {});
+  stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+  ${gHeader(m)}${gInstr(cm.instr)}${gClin(cm.clin)}
+  ${gSec(1, 'Review the A/R Aging', `
+    <div class="kpi-strip" style="grid-template-columns:repeat(4,1fr)">
+      ${['0-30', '31-60', '61-90', '90+'].map(b => `
+        <div class="kpi"><span>${b} days</span><b>${money(buckets[b] || 0)}</b><div class="sub">${b === '90+' ? '⚠ priority' : 'aging bucket'}</div></div>`).join('')}
+    </div>`, 'Money in 90+ is the practice\u2019s cash bleeding out.')}
+  ${gSec(2, 'Prioritize the Work', `
+    <p class="rc-sub"><b>Q:</b> You have claims in every bucket. Which do you work first?</p>
+    <div class="quiz-opts" id="c7_opts">
+      ${['90+ days — oldest dollars closest to timely-filing and write-off risk', '0–30 days — they are the newest',
+         'Whichever payer you like most', 'Alphabetical by patient name'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gSec(3, 'Log a Payer Follow-Up', `
+    <div class="fld" style="margin-bottom:12px"><label>Select claim *</label>
+      ${open.length ? optSel('c7_claim', open, 'id', c => `${c.claim_no} — ${c.payer} — ${money(c.billed)}`, 'Choose a claim…')
+        : '<div class="empty">No open claims.</div>'}</div>
+    <div class="fld"><label>Follow-up note *</label>
+      <textarea class="input" id="c7_note" rows="3" placeholder="Called payer, spoke with rep… next step…"></textarea></div>
+    <div class="frow"><div class="fld"><label>Next follow-up date</label><input class="input" id="c7_next" type="date"></div>
+    <div class="fld"><label>Status</label><select class="input" id="c7_st"><option>Called payer</option><option>Left voicemail</option><option>Spoke with rep</option><option>Pending</option></select></div></div>`,
+    'Who you called, what they said, next step date.')}
+  ${gSec(4, 'Know Your KPIs', `
+    <p class="rc-sub"><b>Q:</b> A/R is $90,000 and average daily charges are $3,000. What is Days in A/R (DSO)?</p>
+    <div class="quiz-opts" id="c7_opts2">
+      ${['30 days — healthy', '90 days — critical', '3 days — excellent', '300 days'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gFoot('c7_valid', 'c7_submit')}`;
+  let pri = null, dso = null, claim = null;
+  const qbind = (id, set) => document.querySelectorAll('#' + id + ' .opt').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#' + id + ' .opt').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel'); set(+b.dataset.i);
+  });
+  qbind('c7_opts', v => pri = v); qbind('c7_opts2', v => dso = v);
+  document.getElementById('c7_claim').onchange = e => { claim = open.find(c => String(c.id) === e.target.value) || null; };
+  document.getElementById('c7_valid').onclick = () => {
+    const note = document.getElementById('c7_note').value.trim();
+    if (pri === null) return vErr('Answer the prioritization question.');
+    if (pri !== 0) return vErr('Work 90+ days first — oldest dollars, highest write-off risk.');
+    if (!claim) return vErr('Select a claim to follow up.');
+    if (note.length < 10) return vErr('Write a follow-up note (min 10 characters).');
+    if (dso === null) return vErr('Answer the DSO question.');
+    if (dso !== 0) return vErr('DSO = 90,000 / 3,000 = 30 days — healthy.');
+    vOk('Aging reviewed, priority correct, follow-up ready. Submit when ready.');
+    document.getElementById('c7_submit').disabled = false;
+  };
+  document.getElementById('c7_submit').onclick = async () => {
+    const btn = document.getElementById('c7_submit'); btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const note = document.getElementById('c7_note').value.trim();
+      const nr = await api('/api/rcm/ar/note', { method: 'POST', body: {
+        claim_id: claim.id, note, kind: 'followup',
+        status: document.getElementById('c7_st').value,
+        next_date: document.getElementById('c7_next').value } });
+      const earned = await gSubmitRun(G.caseId, [{}, { chosen: pri }, { value: claim.id }, { result: nr }, { chosen: dso }]);
+      gResult({ code: m.code, title: m.title, earned, total: 50,
+        rows: [
+          { t: 'Review A/R aging', pts: 10, ok: true },
+          { t: 'Prioritize (90+ first)', pts: 10, ok: true },
+          { t: 'Select claim', pts: 0, ok: true, note: claim.claim_no },
+          { t: 'Log follow-up note', pts: 15, ok: true },
+          { t: 'DSO calculation', pts: 15, ok: true },
+        ], improve: [] });
+    } catch (e) { vErr(e.message); btn.disabled = false; btn.textContent = 'Submit Training Case'; }
+  };
+}
+
+/* ================= CASE 008 — FULL CYCLE CAPSTONE ================= */
+async function renderCase008() {
+  const m = G.meta, cm = CASE_META['CASE-008'];
+  const pd = await api('/api/rcm/patients');
+  const pats = pd.patients || [];
+  const today = new Date().toISOString().slice(0, 10);
+  stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+  ${gHeader(m)}${gInstr(cm.instr)}${gClin(cm.clin)}
+  ${gSec(1, 'Patient & Eligibility', `
+    <div class="fld" style="margin-bottom:12px"><label>Patient *</label>
+      ${optSel('c8_pat', pats, 'code', p => `${p.name} — ${p.code}`, 'Choose a patient…')}</div>
+    <div id="c8_ptile"></div>
+    <button class="btn btn-teal btn-sm" id="c8_elig" disabled style="margin-top:10px">▶ Verify Eligibility (270/271)</button>
+    <div id="c8_271" style="margin-top:12px"></div>`,
+    'Start with the patient. Confirm coverage before any charge exists.')}
+  ${gSec(2, 'Enter the Charge', `
+    <div class="frow">
+      <div class="fld"><label>CPT *</label><select class="input" id="c8_cpt"><option value="">Select…</option>${CPT_OPTS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
+      <div class="fld"><label>ICD-10 *</label><select class="input" id="c8_icd"><option value="">Select…</option>${ICD_OPTS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
+      <div class="fld"><label>Amount ($) *</label><input class="input" id="c8_amt" type="number" min="1" step="0.01" placeholder="180.00"></div>
+    </div>`, '')}
+  ${gSec(3, 'Claim, Validate & Submit', `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-line btn-sm" id="c8_mkclaim" disabled>Create Claim</button>
+      <button class="btn btn-line btn-sm" id="c8_validate" disabled>🔍 Validate</button>
+      <button class="btn btn-teal btn-sm" id="c8_send" disabled>📤 Submit 837P</button>
+    </div><div id="c8_cstat" style="margin-top:12px"></div>`,
+    'Build the CMS-1500, run the scrubber, transmit to the payer.')}
+  ${gSec(4, 'Post the ERA Payment', `
+    <div class="frow">
+      <div class="fld"><label>Paid ($)</label><input class="input" id="c8_paid" type="number" min="0" step="0.01" placeholder="120.00"></div>
+      <div class="fld"><label>Adjustment ($)</label><input class="input" id="c8_adj" type="number" min="0" step="0.01" placeholder="30.00"></div>
+      <div class="fld"><label>Patient resp. ($)</label><input class="input" id="c8_pr" type="number" min="0" step="0.01" placeholder="30.00"></div>
+    </div>`, 'Post exactly what the ERA says.')}
+  ${gSec(5, 'Review the Payer Response', `
+    <p class="rc-sub"><b>Q:</b> ERA: allowed $150, paid $120, adjustment $30, patient responsibility $30. What do you post?</p>
+    <div class="quiz-opts" id="c8_opts">
+      ${['Exactly the ERA amounts — $120 paid, $30 adjustment, $30 patient', 'The billed amount of $180 as paid',
+         'Only the $120 and ignore the rest', '$150 — the full allowed amount as paid'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gSec(6, 'Full-Cycle Note', `
+    <textarea class="input" id="c8_note" rows="3" placeholder="Summarize this full cycle: what was verified, billed, collected…"></textarea>`, '')}
+  ${gFoot('c8_valid', 'c8_submit')}`;
+  let pat = null, payerName = null, eligOk = false, charge = null, claim = null, validated = null, sent = null, paid = null, pq = null;
+  document.getElementById('c8_pat').onchange = e => {
+    pat = pats.find(p => p.code === e.target.value) || null;
+    document.getElementById('c8_ptile').innerHTML = patTile(pat);
+    document.getElementById('c8_elig').disabled = !pat;
+  };
+  document.getElementById('c8_elig').onclick = async () => {
+    const b = document.getElementById('c8_elig'); b.disabled = true; b.textContent = 'Verifying…';
+    try {
+      const id = await api('/api/rcm/insurance');
+      const pins = (id.insurance || []).filter(r => r.patient_code === pat.code);
+      if (!pins.length) throw new Error('No insurance on file for this patient.');
+      const chk = await api('/api/rcm/eligibility/verify', { method: 'POST',
+        body: { patient_code: pat.code, payer: pins[0].payer, service: 'Office Visit' } });
+      eligOk = chk; payerName = pins[0].payer;
+      document.getElementById('c8_271').innerHTML = `<div class="feedback ok show"><b>✓ ${esc(chk.coverage || 'ACTIVE')}</b> — ${esc(pins[0].payer)}, copay ${money(chk.copay ?? 25)}</div>`;
+      document.getElementById('c8_mkclaim').disabled = false;
+    } catch (e) { document.getElementById('c8_271').innerHTML = `<div class="feedback no show"><b>✗ ${esc(e.message)}</b></div>`; }
+    b.disabled = false; b.textContent = '▶ Verify Eligibility (270/271)';
+  };
+  const mkBtn = document.getElementById('c8_mkclaim');
+  mkBtn.onclick = async () => {
+    const cpt = document.getElementById('c8_cpt').value, icd = document.getElementById('c8_icd').value;
+    const amt = parseFloat(document.getElementById('c8_amt').value) || 0;
+    if (!cpt || !icd || !amt) { vErr('Enter CPT, ICD-10 and amount first.'); return; }
+    mkBtn.disabled = true; mkBtn.textContent = 'Working…';
+    try {
+      charge = await api('/api/rcm/charges', { method: 'POST', body: { patient_code: pat.code, dos: today, cpt, icd, amount: amt } });
+      claim = await api('/api/rcm/claims', { method: 'POST', body: { charge_id: charge.id } });
+      document.getElementById('c8_cstat').innerHTML = `<div class="feedback ok show"><b>✓ Claim ${esc(claim.claim_no)}</b> created in DRAFT.</div>`;
+      document.getElementById('c8_validate').disabled = false;
+    } catch (e) { vErr(e.message); }
+    mkBtn.disabled = false; mkBtn.textContent = 'Create Claim';
+  };
+  document.getElementById('c8_validate').onclick = async () => {
+    const b = document.getElementById('c8_validate'); b.disabled = true; b.textContent = 'Validating…';
+    try {
+      validated = await api(`/api/rcm/claims/${claim.id}/validate`, { method: 'POST' });
+      document.getElementById('c8_cstat').innerHTML += `<div class="feedback ${validated.validation === 'PASSED' ? 'ok' : 'no'} show" style="margin-top:8px"><b>${validated.validation === 'PASSED' ? '✓' : '!'} Scrubber: ${esc(validated.validation)}</b></div>`;
+      document.getElementById('c8_send').disabled = false;
+    } catch (e) { vErr(e.message); }
+    b.disabled = false; b.textContent = '🔍 Validate';
+  };
+  document.getElementById('c8_send').onclick = async () => {
+    const b = document.getElementById('c8_send'); b.disabled = true; b.textContent = 'Transmitting…';
+    try {
+      sent = await api(`/api/rcm/claims/${claim.id}/submit`, { method: 'POST' });
+      document.getElementById('c8_cstat').innerHTML += `<div class="feedback ok show" style="margin-top:8px"><b>✓ Submitted</b> — status ${esc(sent.status)}.</div>`;
+    } catch (e) { vErr(e.message); }
+    b.disabled = false; b.textContent = '📤 Submit 837P';
+  };
+  document.querySelectorAll('#c8_opts .opt').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#c8_opts .opt').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel'); pq = +b.dataset.i;
+  });
+  document.getElementById('c8_valid').onclick = () => {
+    const note = document.getElementById('c8_note').value.trim();
+    const pd2 = parseFloat(document.getElementById('c8_paid').value) || 0;
+    const ad = parseFloat(document.getElementById('c8_adj').value) || 0;
+    const pr = parseFloat(document.getElementById('c8_pr').value) || 0;
+    if (!pat) return vErr('Select the patient.');
+    if (!eligOk) return vErr('Verify eligibility first.');
+    if (!charge || !claim) return vErr('Create the charge and claim first.');
+    if (!validated) return vErr('Run the scrubber validation first.');
+    if (!sent) return vErr('Submit the claim to the payer first.');
+    if (!(pd2 === 120 && ad === 30 && pr === 30)) return vErr('ERA payment must be: paid $120, adjustment $30, patient $30.');
+    if (pq === null) return vErr('Answer the payer response question.');
+    if (pq !== 0) return vErr('Post exactly the ERA amounts — never the billed amount.');
+    if (note.length < 20) return vErr('Write a full-cycle summary note (min 20 characters).');
+    paid = { paid: pd2, adjustment: ad, patient_resp: pr };
+    vOk('Full cycle complete and verified. Ready to submit the capstone.');
+    document.getElementById('c8_submit').disabled = false;
+  };
+  document.getElementById('c8_submit').onclick = async () => {
+    const btn = document.getElementById('c8_submit'); btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const note = document.getElementById('c8_note').value.trim();
+      const pay = await api('/api/rcm/payments', { method: 'POST',
+        body: { claim_id: claim.id, paid: paid.paid, adjustment: paid.adjustment, patient_resp: paid.patient_resp } });
+      // 9 steps: demo(pick), pick-ins8(pick), elig(action), charge8(action), claim8(action), submit8(action), payer(quiz), post8(action), ar8(note)
+      const earned = await gSubmitRun(G.caseId, [
+        { value: pat.code }, { value: payerName }, { result: eligOk },
+        { result: charge }, { result: claim }, { result: sent }, { chosen: pq }, { result: pay }, { text: note },
+      ]);
+      gResult({ code: m.code, title: m.title, earned, total: 100,
+        rows: [
+          { t: 'Review demographics', pts: 10, ok: true, note: pat.name },
+          { t: 'Select payer', pts: 0, ok: true, note: payerName },
+          { t: 'Verify eligibility', pts: 10, ok: true },
+          { t: 'Enter the charge', pts: 10, ok: true, note: money(charge.amount) },
+          { t: 'Create + validate claim', pts: 15, ok: true, note: claim.claim_no },
+          { t: 'Submit the claim', pts: 10, ok: true, note: sent.status },
+          { t: 'Review payer response', pts: 10, ok: true },
+          { t: 'Post the payment', pts: 15, ok: true },
+          { t: 'Resolve the A/R', pts: 20, ok: true },
+        ], improve: [] });
+    } catch (e) { vErr(e.message); btn.disabled = false; btn.textContent = 'Submit Training Case'; }
+  };
+}
+
+/* ================= CASE 009 — PATIENT REGISTRATION ================= */
+async function renderCase009() {
+  const m = G.meta, cm = CASE_META['CASE-009'];
+  stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+  ${gHeader(m)}${gInstr(cm.instr)}${gClin(cm.clin)}
+  ${gSec(1, 'Register the New Patient', `
+    <div class="frow">
+      <div class="fld"><label>Full Name *</label><input class="input" id="c9_name" placeholder="e.g. Sarah Mitchell"></div>
+      <div class="fld"><label>Date of Birth *</label><input class="input" id="c9_dob" type="date"></div>
+    </div>
+    <div class="frow">
+      <div class="fld"><label>Gender *</label><select class="input" id="c9_gender"><option value="">Select…</option><option>Female</option><option>Male</option><option>Other</option></select></div>
+      <div class="fld"><label>Phone *</label><input class="input" id="c9_phone" placeholder="(555) 234-5678"></div>
+    </div>
+    <div class="frow">
+      <div class="fld"><label>Email</label><input class="input" id="c9_email" type="email" placeholder="sarah.mitchell@email.com"></div>
+      <div class="fld"><label>Address</label><input class="input" id="c9_addr" placeholder="123 Oak Street, Springfield, IL 62701"></div>
+    </div>
+    <button class="btn btn-teal" id="c9_reg">＋ Register Patient</button>
+    <div id="c9_ptile"></div>`,
+    'Enter demographics exactly as shown on the photo ID above. The system checks for duplicates automatically.')}
+  ${gSec(2, 'Completeness Check', `
+    <p class="rc-sub">Which fields are <b>required</b> for a complete registration?</p>
+    <div class="quiz-opts" id="c9_opts1">
+      ${['Full name, date of birth, and phone', 'Just the first name', 'Email address only', 'Insurance card number only'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gSec(3, 'Duplicate-Record Check', `
+    <p class="rc-sub">Before creating a new patient record, you should…</p>
+    <div class="quiz-opts" id="c9_opts2">
+      ${['Search existing records to avoid creating a duplicate', 'Always create a fresh record — duplicates are harmless', 'Skip the search to save time', 'Ask the patient to use a nickname'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gFoot('c9_valid', 'c9_submit')}`;
+  let reg = null, ans1 = null, ans2 = null;
+  const pick = (wrapId, setter) => {
+    document.querySelectorAll('#' + wrapId + ' .opt').forEach(b => b.onclick = () => {
+      document.querySelectorAll('#' + wrapId + ' .opt').forEach(x => x.classList.remove('sel'));
+      b.classList.add('sel'); setter(+b.dataset.i);
+    });
+  };
+  pick('c9_opts1', v => ans1 = v); pick('c9_opts2', v => ans2 = v);
+  document.getElementById('c9_reg').onclick = async () => {
+    const btn = document.getElementById('c9_reg');
+    const body = { name: document.getElementById('c9_name').value.trim(),
+      dob: document.getElementById('c9_dob').value, gender: document.getElementById('c9_gender').value,
+      phone: document.getElementById('c9_phone').value.trim(), email: document.getElementById('c9_email').value.trim(),
+      address: document.getElementById('c9_addr').value.trim() };
+    if (!body.name || !body.dob || !body.gender || !body.phone) return vErr('Name, DOB, gender and phone are required.');
+    btn.disabled = true; btn.textContent = 'Registering…';
+    try {
+      reg = await api('/api/rcm/patients', { method: 'POST', body });
+      document.getElementById('c9_ptile').innerHTML = `<div class="rc-tile"><div><b>✓ ${esc(body.name)}</b>
+        <span class="bdg b-blue">${esc(reg.code)}</span> <span class="bdg b-green"><span class="dot"></span>Active</span></div>
+        <div style="font-size:12.5px;color:#64748b">DOB ${esc(body.dob)} · ${esc(body.gender)} · ${esc(body.phone)}</div></div>`;
+      vOk('Patient registered: ' + reg.code);
+    } catch (e) {
+      if (String(e.message).includes('duplicate')) {
+        if (confirm('Possible duplicate found. Register anyway (training)?')) {
+          try { reg = await api('/api/rcm/patients', { method: 'POST', body: { ...body, force: true } });
+            document.getElementById('c9_ptile').innerHTML = `<div class="rc-tile"><div><b>✓ ${esc(body.name)}</b>
+              <span class="bdg b-blue">${esc(reg.code)}</span></div></div>`;
+          } catch (e2) { vErr(e2.message); }
+        } else vErr('Duplicate detected — search before creating. Change the name to continue training.');
+      } else vErr(e.message);
+    }
+    btn.disabled = false; btn.textContent = '＋ Register Patient';
+  };
+  document.getElementById('c9_valid').onclick = () => {
+    if (!reg) return vErr('Register the patient first (Section 1).');
+    if (ans1 === null) return vErr('Answer the completeness check.');
+    if (ans1 !== 0) return vErr('Completeness check is wrong — name, DOB and phone are the required trio.');
+    if (ans2 === null) return vErr('Answer the duplicate-record check.');
+    if (ans2 !== 0) return vErr('Duplicate check is wrong — always search before creating.');
+    vOk('Registration complete and verified. Ready to submit.');
+    document.getElementById('c9_submit').disabled = false;
+  };
+  document.getElementById('c9_submit').onclick = async () => {
+    const btn = document.getElementById('c9_submit'); btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const earned = await gSubmitRun(G.caseId, [{}, { result: reg }, { chosen: ans1 }, { chosen: ans2 }]);
+      gResult({ code: m.code, title: m.title, earned, total: 50,
+        rows: [
+          { t: 'Registration desk briefing', pts: 5, ok: true },
+          { t: 'Register the new patient', pts: 20, ok: true, note: reg.code },
+          { t: 'What makes it complete?', pts: 15, ok: true },
+          { t: 'Avoid duplicate records', pts: 10, ok: true },
+        ], improve: [] });
+    } catch (e) { vErr(e.message); btn.disabled = false; btn.textContent = 'Submit Training Case'; }
+  };
+}
+
+/* ================= CASE 010 — INSURANCE VERIFICATION ================= */
+async function renderCase010() {
+  const m = G.meta, cm = CASE_META['CASE-010'];
+  const [pd, id] = await Promise.all([api('/api/rcm/patients'), api('/api/rcm/insurance')]);
+  const pats = pd.patients || [], allIns = id.insurance || [];
+  stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+  ${gHeader(m)}${gInstr(cm.instr)}${gClin(cm.clin)}
+  ${gSec(1, 'Select the Patient', optSel('c10_pat', pats, 'code', p => `${p.name} — ${p.code}`, 'Choose a patient…'),
+    'Choose whose insurance you will verify.')}
+  <div id="c10_ptile"></div>
+  ${gSec(2, 'Review Their Insurance', `<div id="c10_inswrap"><p class="rc-sub">Select a patient first.</p></div>`,
+    'Select the policy and read it like a real insurance card — effective date, member ID, plan type.')}
+  <div id="c10_card"></div>
+  ${gSec(3, 'Determine Coverage Status', `
+    <p class="rc-sub">The policy shows status <b>ACTIVE</b>, effective 01/01/2026, $25 copay. What do you tell the front desk?</p>
+    <div class="quiz-opts" id="c10_opts1">
+      ${['Plan is active — collect the $25 copay at check-in', 'Plan is inactive — turn the patient away', 'Skip verification — the card looked fine', 'Bill without checking the effective date'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gSec(4, 'Handle Inactive Coverage', `
+    <p class="rc-sub">If the 271 eligibility response shows <b>INACTIVE</b>, what is the correct action?</p>
+    <div class="quiz-opts" id="c10_opts2">
+      ${['Inform the patient and offer self-pay options or reschedule', 'Bill it anyway and hope for the best', 'Change the status to active in the system', 'Ignore it — insurance cards never lie'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gFoot('c10_valid', 'c10_submit')}`;
+  let pat = null, ins = null, ans1 = null, ans2 = null;
+  const pick = (wrapId, setter) => {
+    document.querySelectorAll('#' + wrapId + ' .opt').forEach(b => b.onclick = () => {
+      document.querySelectorAll('#' + wrapId + ' .opt').forEach(x => x.classList.remove('sel'));
+      b.classList.add('sel'); setter(+b.dataset.i);
+    });
+  };
+  pick('c10_opts1', v => ans1 = v); pick('c10_opts2', v => ans2 = v);
+  document.getElementById('c10_pat').onchange = e => {
+    pat = pats.find(p => p.code === e.target.value) || null;
+    document.getElementById('c10_ptile').innerHTML = patTile(pat);
+    const pins = allIns.filter(r => r.patient_code === (pat && pat.code));
+    document.getElementById('c10_inswrap').innerHTML = pins.length
+      ? optSel('c10_ins', pins, 'payer', r => `${r.payer} — ${r.member_id} (${r.status})`, 'Choose a policy…')
+      : `<div class="empty">No insurance on file for this patient.</div>`;
+    document.getElementById('c10_card').innerHTML = '';
+    const si = document.getElementById('c10_ins');
+    if (si) si.onchange = ev => {
+      ins = pins.find(r => r.payer === ev.target.value) || null;
+      document.getElementById('c10_card').innerHTML = ins ? `
+        <div class="rc-card" style="border-left:4px solid #0e9f8a"><h3>🪪 Insurance Card</h3>
+        <div class="kv-card">
+          <div class="kv"><span>Payer</span><b>${esc(ins.payer)}</b></div>
+          <div class="kv"><span>Member ID</span><b>${esc(ins.member_id)}</b></div>
+          <div class="kv"><span>Plan</span><b>${esc(ins.plan || '—')} (${esc(ins.type || '—')})</b></div>
+          <div class="kv"><span>Status</span><b><span class="bdg ${ins.status === 'ACTIVE' ? 'b-green' : 'b-red'}"><span class="dot"></span>${esc(ins.status)}</span></b></div>
+          <div class="kv"><span>Effective</span><b>${esc(ins.effective || '—')}</b></div>
+          <div class="kv"><span>Copay</span><b>${money(ins.copay ?? 25)}</b></div>
+        </div></div>` : '';
+    };
+    ins = null;
+  };
+  document.getElementById('c10_valid').onclick = () => {
+    if (!pat) return vErr('Select a patient first.');
+    if (!ins) return vErr('Select their insurance policy.');
+    if (ans1 === null) return vErr('Determine the coverage status (Section 3).');
+    if (ans1 !== 0) return vErr('Status determination is wrong — an ACTIVE plan means collect the copay and proceed.');
+    if (ans2 === null) return vErr('Answer the inactive-coverage question.');
+    if (ans2 !== 0) return vErr('Inactive handling is wrong — never bill inactive coverage; inform the patient instead.');
+    vOk('Insurance verified and interpreted correctly. Ready to submit.');
+    document.getElementById('c10_submit').disabled = false;
+  };
+  document.getElementById('c10_submit').onclick = async () => {
+    const btn = document.getElementById('c10_submit'); btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const earned = await gSubmitRun(G.caseId, [{}, { value: pat.code }, { value: ins.payer }, { chosen: ans1 }, { chosen: ans2 }]);
+      gResult({ code: m.code, title: m.title, earned, total: 50,
+        rows: [
+          { t: 'Insurance desk briefing', pts: 5, ok: true },
+          { t: 'Select the patient', pts: 10, ok: true, note: pat.name },
+          { t: 'Review their insurance', pts: 10, ok: true, note: ins.payer },
+          { t: 'Determine coverage status', pts: 15, ok: true },
+          { t: 'Handle inactive coverage', pts: 10, ok: true },
+        ], improve: [] });
+    } catch (e) { vErr(e.message); btn.disabled = false; btn.textContent = 'Submit Training Case'; }
+  };
+}
+
+/* ================= CASE 011 — CLAIM CREATION ================= */
+async function renderCase011() {
+  const m = G.meta, cm = CASE_META['CASE-011'];
+  const cd = await api('/api/rcm/charges');
+  const ready = (cd.charges || []).filter(c => c.status === 'READY' && !c.claim_id);
+  stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+  ${gHeader(m)}${gInstr(cm.instr)}${gClin(cm.clin)}
+  ${gSec(1, 'Select the Completed Charge', ready.length
+      ? optSel('c11_chg', ready, 'id', c => `#${c.id} · ${c.cpt} / ${c.icd} · ${c.patient_code} · ${money(c.amount)}`, 'Choose a READY charge…')
+      : `<div class="empty">No READY charges available. Create one in Charge Entry first.</div>`,
+    'One charge becomes one claim — never double-bill.')}
+  <div id="c11_ctile"></div>
+  ${gSec(2, 'Create the CMS-1500 Claim', `
+    <button class="btn btn-teal" id="c11_create" disabled>＋ Create Claim from Charge</button>
+    <div id="c11_claim"></div>`,
+    'The claim pulls diagnosis and procedure codes from the charge you selected.')}
+  ${gSec(3, 'Clean-Claim Check', `
+    <p class="rc-sub">Your claim is in <b>DRAFT</b>. What must be true before submission?</p>
+    <div class="quiz-opts" id="c11_opts">
+      ${['Matching demographics, valid codes, and an active payer policy', 'Submit it as fast as possible', 'Leave the diagnosis blank so the payer decides', 'Fax it instead of filing electronically'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gFoot('c11_valid', 'c11_submit')}`;
+  let chg = null, claim = null, ans = null;
+  document.querySelectorAll('#c11_opts .opt').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#c11_opts .opt').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel'); ans = +b.dataset.i;
+  });
+  const csel = document.getElementById('c11_chg');
+  if (csel) csel.onchange = e => {
+    chg = ready.find(c => String(c.id) === e.target.value) || null;
+    claim = null;
+    document.getElementById('c11_claim').innerHTML = '';
+    document.getElementById('c11_ctile').innerHTML = chg ? `
+      <div class="rc-tile"><div><b>Charge #${chg.id}</b> <span class="bdg b-blue">${esc(chg.patient_code)}</span>
+      <span class="bdg b-green"><span class="dot"></span>READY</span></div>
+      <div style="font-size:12.5px;color:#64748b">CPT ${esc(chg.cpt)} · ICD ${esc(chg.icd)}${chg.modifier ? ' · Mod ' + esc(chg.modifier) : ''} · DOS ${esc(chg.dos)} · <b>${money(chg.amount)}</b></div></div>` : '';
+    document.getElementById('c11_create').disabled = !chg;
+  };
+  document.getElementById('c11_create').onclick = async () => {
+    const btn = document.getElementById('c11_create'); btn.disabled = true; btn.textContent = 'Creating…';
+    try {
+      claim = await api('/api/rcm/claims', { method: 'POST', body: { charge_id: chg.id } });
+      document.getElementById('c11_claim').innerHTML = `
+        <div class="rc-tile" style="border-left:4px solid #0e9f8a"><div><b>✓ Claim ${esc(claim.claim_no)}</b>
+        <span class="bdg b-amber"><span class="dot"></span>DRAFT</span></div>
+        <div style="font-size:12.5px;color:#64748b">CPT ${esc(chg.cpt)} · ICD ${esc(chg.icd)} · Billed <b>${money(chg.amount)}</b> · ready for scrubber validation</div></div>`;
+      vOk('Claim created: ' + claim.claim_no);
+    } catch (e) { vErr(e.message); }
+    btn.disabled = false; btn.textContent = '＋ Create Claim from Charge';
+  };
+  document.getElementById('c11_valid').onclick = () => {
+    if (!chg) return vErr('Select a READY charge first.');
+    if (!claim) return vErr('Create the claim first (Section 2).');
+    if (ans === null) return vErr('Answer the clean-claim check.');
+    if (ans !== 0) return vErr('Clean-claim check is wrong — demographics, codes and active coverage must all line up.');
+    vOk('Claim created and verified. Ready to submit.');
+    document.getElementById('c11_submit').disabled = false;
+  };
+  document.getElementById('c11_submit').onclick = async () => {
+    const btn = document.getElementById('c11_submit'); btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const earned = await gSubmitRun(G.caseId, [{}, { value: chg.id }, { result: claim }, { chosen: ans }]);
+      gResult({ code: m.code, title: m.title, earned, total: 50,
+        rows: [
+          { t: 'Billing office briefing', pts: 5, ok: true },
+          { t: 'Select the completed charge', pts: 10, ok: true, note: 'Charge #' + chg.id },
+          { t: 'Create the claim', pts: 20, ok: true, note: claim.claim_no },
+          { t: 'What makes it clean?', pts: 15, ok: true },
+        ], improve: [] });
+    } catch (e) { vErr(e.message); btn.disabled = false; btn.textContent = 'Submit Training Case'; }
+  };
+}
+
+/* ================= CASE 012 — CLAIM SUBMISSION ================= */
+async function renderCase012() {
+  const m = G.meta, cm = CASE_META['CASE-012'];
+  const cd = await api('/api/rcm/claims');
+  const drafts = (cd.claims || []).filter(c => c.status === 'DRAFT');
+  stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+  ${gHeader(m)}${gInstr(cm.instr)}${gClin(cm.clin)}
+  ${gSec(1, 'Select a Draft Claim', drafts.length
+      ? optSel('c12_clm', drafts, 'id', c => `${c.claim_no} · ${c.payer} · ${money(c.billed)}`, 'Choose a DRAFT claim…')
+      : `<div class="empty">No DRAFT claims available. Create one via Claim Creation first.</div>`,
+    'Pick the claim you will validate and transmit.')}
+  <div id="c12_ctile"></div>
+  ${gSec(2, 'Run the 13-Rule Scrubber', `
+    <button class="btn btn-teal" id="c12_scrub" disabled>▶ Run Scrubber</button>
+    <div id="c12_rules" style="margin-top:14px"></div>`,
+    'The same 13 validation rules the payer\u2019s system will run. Fix any flags before submitting.')}
+  ${gSec(3, 'Submit the 837P to the Payer', `
+    <button class="btn btn-teal" id="c12_send" disabled>📤 Submit to Payer</button>
+    <div id="c12_result" style="margin-top:14px"></div>`,
+    'Transmit the clean claim. The payer adjudicates and returns PAID or DENIED.')}
+  ${gSec(4, 'Read the Adjudication', `
+    <p class="rc-sub">The payer returns <b>PAID</b>. What does this mean?</p>
+    <div class="quiz-opts" id="c12_opts">
+      ${['The claim adjudicated — reconcile allowed, paid, adjustment and patient responsibility', 'The full billed amount was paid, nothing left to do', 'The patient owes nothing', 'No further action is ever needed'].map((o, i) =>
+        `<button class="opt" data-i="${i}"><b>${'ABCD'[i]}.</b> ${esc(o)}</button>`).join('')}
+    </div>`, '')}
+  ${gFoot('c12_valid', 'c12_submit')}`;
+  let clm = null, validated = null, sent = null, ans = null;
+  document.querySelectorAll('#c12_opts .opt').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#c12_opts .opt').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel'); ans = +b.dataset.i;
+  });
+  const csel = document.getElementById('c12_clm');
+  if (csel) csel.onchange = e => {
+    clm = drafts.find(c => String(c.id) === e.target.value) || null;
+    validated = null; sent = null;
+    document.getElementById('c12_rules').innerHTML = '';
+    document.getElementById('c12_result').innerHTML = '';
+    document.getElementById('c12_send').disabled = true;
+    document.getElementById('c12_ctile').innerHTML = clm ? `
+      <div class="rc-tile"><div><b>${esc(clm.claim_no)}</b> <span class="bdg b-blue">${esc(clm.patient_code)}</span>
+      <span class="bdg b-amber"><span class="dot"></span>DRAFT</span></div>
+      <div style="font-size:12.5px;color:#64748b">${esc(clm.payer)} · CPT ${esc(clm.cpt)} · ICD ${esc(clm.icd)} · Billed <b>${money(clm.billed)}</b></div></div>` : '';
+    document.getElementById('c12_scrub').disabled = !clm;
+  };
+  document.getElementById('c12_scrub').onclick = async () => {
+    const btn = document.getElementById('c12_scrub'); btn.disabled = true; btn.textContent = 'Scrubbing…';
+    try {
+      validated = await api(`/api/rcm/claims/${clm.id}/validate`, { method: 'POST' });
+      const errs = validated.errors || [], warns = validated.warnings || [];
+      document.getElementById('c12_rules').innerHTML = `
+        <div class="feedback ${validated.validation === 'PASSED' ? 'ok' : 'no'} show">
+          <b>${validated.validation === 'PASSED' ? '✓ SCRUBBER PASSED' : '! SCRUBBER FAILED'}</b> — score ${validated.score}/100 · ${errs.length} errors · ${warns.length} warnings</div>
+        <div style="margin-top:10px">${errs.map(e => `<div class="rule-row bad"><span class="rr-ic">✗</span><div><b>${esc(e.rule || 'Error')}</b><br><span style="color:#64748b">${esc(e.msg || e)}</span></div></div>`).join('')}
+        ${warns.map(w => `<div class="rule-row ok"><span class="rr-ic">⚠</span><div><b>${esc(w.rule || 'Warning')}</b><br><span style="color:#64748b">${esc(w.msg || w)}</span></div></div>`).join('')}
+        ${!errs.length && !warns.length ? '<div class="rule-row ok"><span class="rr-ic">✓</span><div>All 13 rules passed — claim is clean.</div></div>' : ''}</div>`;
+      if (validated.validation === 'PASSED') { document.getElementById('c12_send').disabled = false; vOk('Scrubber passed — ready to submit.'); }
+      else vErr('Scrubber found errors — fix them in the workspace, then re-run.');
+    } catch (e) { vErr(e.message); }
+    btn.disabled = false; btn.textContent = '▶ Run Scrubber';
+  };
+  document.getElementById('c12_send').onclick = async () => {
+    const btn = document.getElementById('c12_send'); btn.disabled = true; btn.textContent = 'Transmitting 837P…';
+    try {
+      sent = await api(`/api/rcm/claims/${clm.id}/submit`, { method: 'POST' });
+      const paid = sent.status === 'PAID';
+      document.getElementById('c12_result').innerHTML = `
+        <div class="rc-271"><div class="rc-271h">835 — Adjudication <span class="bdg ${paid ? 'b-green' : 'b-red'}"><span class="dot"></span>${esc(sent.status)}</span></div>
+        <div class="kv-card"><div class="kv"><span>Claim</span><b>${esc(clm.claim_no)}</b></div>
+        <div class="kv"><span>Status</span><b>${esc(sent.status)}</b></div></div></div>
+        <p class="rc-sub" style="margin-top:10px">${paid ? 'Claim adjudicated. Remember: PAID means adjudicated, not paid-in-full — always reconcile the ERA.' : 'Claim denied. Read the CARC code, fix the issue, and rebill.'}</p>`;
+    } catch (e) { vErr(e.message); }
+    btn.disabled = false; btn.textContent = '📤 Submit to Payer';
+  };
+  document.getElementById('c12_valid').onclick = () => {
+    if (!clm) return vErr('Select a DRAFT claim first.');
+    if (!validated) return vErr('Run the scrubber first (Section 2).');
+    if (validated.validation !== 'PASSED') return vErr('Scrubber must PASS before submission.');
+    if (!sent) return vErr('Submit the claim to the payer first (Section 3).');
+    if (ans === null) return vErr('Read the adjudication question (Section 4).');
+    if (ans !== 0) return vErr('Adjudication reading is wrong — PAID means adjudicated; always reconcile the ERA.');
+    vOk('Claim validated, submitted and adjudicated. Ready to submit the case.');
+    document.getElementById('c12_submit').disabled = false;
+  };
+  document.getElementById('c12_submit').onclick = async () => {
+    const btn = document.getElementById('c12_submit'); btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const earned = await gSubmitRun(G.caseId, [{}, { value: clm.id }, { result: validated }, { result: sent }, { chosen: ans }]);
+      gResult({ code: m.code, title: m.title, earned, total: 50,
+        rows: [
+          { t: 'Clearinghouse briefing', pts: 5, ok: true },
+          { t: 'Select a draft claim', pts: 10, ok: true, note: clm.claim_no },
+          { t: 'Run the claim scrubber', pts: 15, ok: true, note: validated.validation },
+          { t: 'Submit to the payer', pts: 10, ok: true, note: sent.status },
+          { t: 'Read the adjudication', pts: 10, ok: true },
+        ], improve: [] });
+    } catch (e) { vErr(e.message); btn.disabled = false; btn.textContent = 'Submit Training Case'; }
+  };
+}
+
+/* ---------- boot ---------- */
+const CASE_RENDERERS = { 'CASE-001': renderCase001, 'CASE-002': renderCase002, 'CASE-003': renderCase003, 'CASE-004': renderCase004, 'CASE-005': renderCase005, 'CASE-006': renderCase006, 'CASE-007': renderCase007, 'CASE-008': renderCase008, 'CASE-009': renderCase009, 'CASE-010': renderCase010, 'CASE-011': renderCase011, 'CASE-012': renderCase012 };
 async function bootGuided(u, caseId) {
   try {
-    let g = await api('/api/guided/' + caseId);
-    // auto-start: if no run exists, start one silently so Continue works immediately
-    if (!g.run) {
-      try { await api('/api/guided/' + caseId + '/start', { method: 'POST' }); }
-      catch (e) {
-        // prereq lock — show friendly message
-        stage.innerHTML = `<div class="gcard"><h2>🔒 Locked</h2><p style="color:#5b6b85">${esc(e.message || 'Complete the prerequisite cases first.')}</p>
-          <div style="margin-top:18px"><a class="btn btn-teal" href="/training">← Case Center</a></div></div>`;
-        return;
-      }
-      g = await api('/api/guided/' + caseId);
-    }
-    G = { caseId, code: g.case.code, title: g.case.title, steps: g.steps, idx: 0, ctx: {}, points: 0, retries: {} };
-    if (g.run && g.run.status !== 'completed') { G.idx = g.run.step_idx; G.points = g.run.points; }
+    const g = await api('/api/guided/' + caseId);
+    const metaRes = await api('/api/cases/' + caseId).catch(() => ({}));
+    G = { caseId, code: g.case.code, title: g.case.title,
+          meta: { code: g.case.code, title: g.case.title, difficulty: g.case.difficulty, desc: metaRes.description || '' } };
     if (g.run && g.run.status === 'completed') {
-      // offer restart
-      stage.innerHTML = `<div class="gcard gdone"><h2>Already completed</h2>
-        <p style="color:#5b6b85">You finished this walkthrough with <b>${g.run.points} pts</b>.</p>
+      stage.innerHTML = `<p style="margin-bottom:14px"><a href="/training" style="color:#0e9f8a;font-weight:600">← Back to Training Center</a></p>
+        <div class="gcard gdone" style="margin:0 auto"><h2>Already completed</h2>
+        <p style="color:#5b6b85">You finished this case with <b>${g.run.points} pts</b>.</p>
         <div style="margin-top:18px;display:flex;gap:12px;justify-content:center">
           <a class="btn btn-line" href="/training">Case Center</a>
-          <button class="btn btn-teal" id="grestart">Restart walkthrough ↻</button></div></div>`;
+          <button class="btn btn-teal" id="grestart">Restart case ↻</button></div></div>`;
       document.getElementById('grestart').onclick = async () => {
         await api('/api/guided/' + caseId + '/start', { method: 'POST' });
-        G.idx = 0; G.points = 0; G.ctx = {}; grender();
+        location.reload();
       };
       return;
     }
-    // resume notice
-    if (G.idx > 0) gtoast(`Resumed at step ${G.idx + 1}`);
-    grender();
+    const r = CASE_RENDERERS[g.case.code];
+    if (!r) { stage.innerHTML = `<div class="empty">Guided case not available.<br><a href="/training">← back</a></div>`; return; }
+    stage.innerHTML = `<div class="empty">Loading case…</div>`;
+    await r();
   } catch (e) {
     stage.innerHTML = `<div class="empty">${esc(e.message)}<br><a href="/training" style="color:#0e9f8a">← back</a></div>`;
   }
