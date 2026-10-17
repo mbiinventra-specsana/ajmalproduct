@@ -5,6 +5,7 @@
 <title>My Progress — MbiInventra RCM Academy</title>
 <link rel="stylesheet" href="/css/app.css">
 <style>
+/* ===== Progress ULTRA ===== */
 .journey{display:grid;gap:0;margin-top:6px}
 .jstage{display:flex;gap:16px;padding:16px 4px;border-bottom:1px solid #eef2f7;align-items:flex-start}
 .jstage:last-child{border-bottom:none}
@@ -22,47 +23,130 @@
 .jtag.ok{background:#e6f7f3;color:#0e9f8a}
 .jconn{width:3px;height:14px;background:#e2e8f0;margin-left:25px}
 .jstage.done + .jconn{background:#0e9f8a}
+.lvl-card{background:linear-gradient(135deg,#0f2743,#143a5e 55%,#0d4a41);border-radius:18px;padding:24px 26px;color:#fff;
+  position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.25)}
+.lvl-card::before{content:"";position:absolute;top:-60px;right:8%;width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.lvl-ico{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#0e9f8a,#34d3bd);
+  display:flex;align-items:center;justify-content:center;font-size:32px;flex:none;
+  box-shadow:0 6px 20px rgba(14,159,138,.45)}
+.xpbar{height:12px;background:rgba(255,255,255,.12);border-radius:8px;overflow:hidden;margin:14px 0 8px}
+.xpbar i{display:block;height:100%;background:linear-gradient(90deg,#34d3bd,#5eead4);border-radius:8px;
+  transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.lvl-steps{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:#8fa8c4}
+.lvl-steps b{color:#5eead4}
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.ach{background:#fff;border:1px solid #e8eef4;border-radius:14px;padding:16px;text-align:center;transition:all .2s}
+.ach:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(14,159,138,.12)}
+.ach .aic{font-size:34px;margin-bottom:8px;filter:grayscale(1);opacity:.35}
+.ach.won .aic{filter:none;opacity:1}
+.ach b{font-size:12.5px;color:#0f2743;display:block}
+.ach span{font-size:11px;color:#8a97ad}
+.ach.won{border-color:#99f6e4;background:linear-gradient(180deg,#f0fdfa,#fff)}
+@keyframes ccIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pt-anim{animation:ccIn .4s cubic-bezier(.2,.8,.2,1) backwards}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px}
+.p-done{background:#dcfce7;color:#15803d}.p-prog{background:#fef3c7;color:#b45309}
 </style>
 </head>
 <body>
 <div class="shell">
   <aside class="side" id="sidebar"></aside>
   <main class="main">
-    <div class="topbar"><div><h1>📊 My Progress</h1><p>Every attempt, every score, every case mastered.</p></div>
-      <div style="display:flex;gap:10px;align-items:center" id="badges"></div></div>
-    <div id="nudgeBox"></div>
-    <div class="grid2">
-      <div class="panel"><h3>⚔️ You vs Class</h3><div id="vsClass"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
-      <div class="panel"><h3>📅 This week</h3><div id="digest"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
+    <div class="page" style="max-width:1180px">
+      <div class="pt-hero pt-anim">
+        <div class="eyebrow2" style="color:#34d3bd">Training</div>
+        <h1>📊 My Progress</h1>
+        <p class="psub">Every attempt, every score, every case mastered.</p>
+        <div class="act-row" id="heroBadges">
+          <span class="hstat">Level <b id="hLevel">—</b></span>
+          <span class="hstat">Points <b id="hPoints" style="color:#5eead4">—</b></span>
+          <span class="hstat">Accuracy <b id="hAcc">—</b></span>
+        </div>
+      </div>
+      <div id="nudgeBox" class="pt-anim" style="animation-delay:.04s"></div>
+      <div class="lvl-card pt-anim" style="margin-bottom:18px;animation-delay:.06s">
+        <div style="display:flex;gap:18px;align-items:center;position:relative">
+          <div class="lvl-ico" id="lvlIco">🌱</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;color:#8fa8c4;text-transform:uppercase;letter-spacing:1.5px">Current level</div>
+            <div style="font-size:24px;font-weight:800" id="lvlName">—</div>
+            <div class="xpbar"><i id="xpFill" style="width:0%"></i></div>
+            <div style="font-size:13px;color:#b9d4e8"><b id="xpNow" style="color:#5eead4">0</b> pts <span id="xpNext" style="color:#8fa8c4"></span></div>
+          </div>
+        </div>
+        <div class="lvl-steps" id="lvlSteps"></div>
+      </div>
+      <div class="panel pt-anim" style="margin-bottom:18px;animation-delay:.08s">
+        <div class="prow"><h3 style="margin:0">🏅 Achievements</h3><span class="bdg b-teal" id="achCount"></span></div>
+        <div class="ach-grid" id="achGrid"></div>
+      </div>
+      <div class="kpi-strip pt-anim" id="stats" style="grid-template-columns:repeat(4,1fr);animation-delay:.1s">
+        <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+      </div>
+      <div class="grid2 pt-anim" style="animation-delay:.12s">
+        <div class="panel"><h3>⚔️ You vs Class</h3><div id="vsClass"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
+        <div class="panel"><h3>📅 This week</h3><div id="digest"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
+      </div>
+      <div class="panel pt-anim" style="margin-top:20px;animation-delay:.14s"><h3>🗺️ Training Journey</h3>
+        <p style="color:#8a97ad;font-size:13.5px;margin:0 0 6px">Your path from front desk to full-cycle biller — complete each stage by quiz or guided walkthrough.</p>
+        <div class="journey" id="journey"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
+      <div class="grid2 pt-anim" style="margin-top:20px;animation-delay:.16s">
+        <div class="panel"><div class="prow"><h3 style="margin:0">Per-case mastery</h3></div><div id="perCase"></div></div>
+        <div class="panel"><div class="prow"><h3 style="margin:0">Attempt history</h3></div><div id="hist"></div></div>
+      </div>
+      <div class="panel pt-anim" style="margin-top:20px;animation-delay:.18s"><div class="prow"><h3 style="margin:0">🧬 Advanced lab bests</h3></div><div id="labBest"></div></div>
+      <div class="panel pt-anim" style="margin-top:20px;animation-delay:.2s"><div class="prow"><h3 style="margin:0">🏆 Leaderboard — top students</h3></div><div id="lboard"></div></div>
     </div>
-    <div class="cards" id="stats"></div>
-    <div class="panel" style="margin-top:20px"><h3>🗺️ Training Journey</h3>
-      <p style="color:#8a97ad;font-size:13.5px;margin:0 0 6px">Your path from front desk to full-cycle biller — complete each stage by quiz or guided walkthrough.</p>
-      <div class="journey" id="journey"><div class="skel skel-line"></div><div class="skel skel-line w80"></div></div></div>
-    <div class="grid2" style="margin-top:20px">
-      <div class="panel"><h3>Per-case mastery</h3><div id="perCase"></div></div>
-      <div class="panel"><h3>Attempt history</h3><div id="hist"></div></div>
-    </div>
-    <div class="panel" style="margin-top:20px"><h3>🧬 Advanced lab bests</h3><div id="labBest"></div></div>
-    <div class="panel" style="margin-top:20px"><h3>🏆 Leaderboard — top students</h3><div id="lboard"></div></div>
   </main>
 </div>
 <script src="/js/app.js"></script>
 <script>
+const LEVELS = [[0, 'Beginner', '🌱'], [100, 'Junior Biller', '📋'], [250, 'Billing Specialist', '💼'], [400, 'Senior Biller', '🎖️'], [500, 'Billing Executive', '👑']];
+function levelInfo(points) {
+  let cur = LEVELS[0], nxt = null;
+  for (let i = 0; i < LEVELS.length; i++) {
+    if (points >= LEVELS[i][0]) cur = LEVELS[i];
+    if (points < LEVELS[i][0]) { nxt = LEVELS[i]; break; }
+  }
+  const pct = nxt ? Math.min(100, Math.round(100 * (points - cur[0]) / (nxt[0] - cur[0]))) : 100;
+  return { cur, nxt, pct };
+}
 (async () => {
   const u = await requireLogin(); if (!u) return;
   shell('progress', u);
   if (!guardFeature(u, 'progress', 'My Progress')) return;
   const [p, si, jn] = await Promise.all([api('/api/progress'), api('/api/student-insights').catch(() => null), api('/api/guided/journey').catch(() => null)]);
+  const s = p.stats;
+  // hero chips
+  document.getElementById('hLevel').textContent = s.level;
+  document.getElementById('hPoints').textContent = s.points;
+  document.getElementById('hAcc').textContent = s.accuracy + '%';
+  // level card
+  const li = levelInfo(s.points);
+  document.getElementById('lvlIco').textContent = li.cur[2];
+  document.getElementById('lvlName').textContent = li.cur[1];
+  setTimeout(() => document.getElementById('xpFill').style.width = li.pct + '%', 300);
+  document.getElementById('xpNow').textContent = s.points;
+  document.getElementById('xpNext').textContent = li.nxt ? `· ${li.nxt[0] - s.points} pts to ${li.nxt[1]} ${li.nxt[2]}` : '· max level reached 🎉';
+  document.getElementById('lvlSteps').innerHTML = LEVELS.map(([min, name, ico]) =>
+    `<span class="${s.points >= min ? '' : ''}"><b>${s.points >= min ? '✓' : ico}</b> ${name} (${min})</span>`).join('');
+  // rank + streak badges
+  if (si) {
+    const hb = document.getElementById('heroBadges');
+    if (si.rank > 0) hb.innerHTML += `<span class="hstat">🏆 Rank <b>#${si.rank}</b> of ${si.totalStudents}</span>`;
+    if (si.streak > 0) hb.innerHTML += `<span class="hstat">🔥 <b>${si.streak}</b>-day streak</span>`;
+  }
+  // journey
   if (jn && jn.stages) {
-    const JICON = { j1:'👤', j2:'🧾', j3:'📨', j4:'💳', j5:'🛡', j6:'👑' };
+    const JICON = { j1: '👤', j2: '🧾', j3: '📨', j4: '💳', j5: '🛡', j6: '👑' };
     document.getElementById('journey').innerHTML = jn.stages.map((st, i) =>
       `<div class="jstage ${st.complete ? 'done' : st.done > 0 ? 'partial' : ''}">
         <div class="jnode">${st.complete ? '✓' : JICON[st.id] || '📋'}</div>
         <div class="jbody"><b>${esc(st.title)}</b> <span style="font-size:12.5px;color:#8a97ad">${st.done}/${st.total}</span>
           <p>${esc(st.desc)}</p>
           <div class="jbar"><i style="width:${Math.round(100 * st.done / Math.max(1, st.total))}%"></i></div>
-          <div class="jtages">${st.cases.map(c => {
+          <div class="jtags">${st.cases.map(c => {
             const g = jn.cases[c] || {};
             const ok = g.quizDone || g.guidedDone;
             return `<span class="jtag ${ok ? 'ok' : ''}">${ok ? '✓ ' : ''}${esc(c)}${g.guidedDone && !g.quizDone ? ' 🧭' : ''}</span>`;
@@ -70,18 +154,40 @@
         </div>
       </div>${i < jn.stages.length - 1 ? '<div class="jconn"></div>' : ''}`).join('');
   } else {
-    document.getElementById('journey').innerHTML = `<div class="empty">Journey unavailable.</div>`;
+    document.getElementById('journey').innerHTML = `<div class="empty"><div class="empty-ic">🗺️</div><h4>Journey unavailable</h4></div>`;
   }
-  const s = p.stats;
+  // achievements
+  const achDefs = [
+    ['🌱', 'First Steps', 'Complete your first case', (s.casesCompleted || 0) >= 1],
+    ['🎯', 'Sharpshooter', 'Best score of 90%+', (s.bestScore || 0) >= 90],
+    ['📚', 'Scholar', '5 cases completed', (s.casesCompleted || 0) >= 5],
+    ['💯', 'Perfectionist', 'Best score of 100%', (s.bestScore || 0) >= 100],
+    ['🔥', 'On Fire', '3-day streak', si && si.streak >= 3],
+    ['👑', 'Executive', 'Reach Billing Executive', s.points >= 500],
+    ['🧬', 'Lab Rat', 'Try an advanced lab', false],
+    ['⚔️', 'Top 3', 'Rank in class top 3', si && si.rank > 0 && si.rank <= 3],
+  ];
+  let labPlayed = false;
+  try {
+    const lb = await api('/api/labs/bests');
+    labPlayed = Object.values(lb.bests || {}).some(v => v != null);
+  } catch {}
+  achDefs[6][2] = labPlayed;
+  const won = achDefs.filter(a => a[2]).length;
+  document.getElementById('achCount').textContent = won + ' / ' + achDefs.length + ' unlocked';
+  document.getElementById('achGrid').innerHTML = achDefs.map(([ico, name, desc, w], i) =>
+    `<div class="ach ${w ? 'won' : ''} pt-anim" style="animation-delay:${.02 * i}s">
+      <div class="aic">${ico}</div><b>${name}</b><span>${desc}</span></div>`).join('');
+  // KPI cards
+  document.getElementById('stats').innerHTML = [
+    ['🏅', 'Level', s.level, 'Current rank'],
+    ['⭐', 'Points', s.points, 'Earned total'],
+    ['🎯', 'Accuracy', s.accuracy + '%', 'Across attempts'],
+    ['📚', 'Cases', s.casesCompleted + ' / ' + s.totalCases, 'Completed'],
+  ].map(([ic, l, v, sub], i) => `<div class="kpi pt-anim" style="animation-delay:${.04 * i}s"><span class="kic">${ic}</span><span>${l}</span><b>${v}</b><div class="sub">${sub}</div></div>`).join('');
   if (si) {
-    // rank + streak badges
-    document.getElementById('badges').innerHTML =
-      (si.rank > 0 ? `<span class="rank-badge">🏆 #${si.rank} of ${si.totalStudents}</span>` : '') +
-      (si.streak > 0 ? `<span class="streak-badge">🔥 ${si.streak}-day streak</span>` : '');
-    // nudges
     if (si.nudges.length) document.getElementById('nudgeBox').innerHTML =
       si.nudges.map(n => `<div class="nudge"><span class="ni">${n.icon}</span><span>${esc(n.text)}</span></div>`).join('');
-    // you vs class
     document.getElementById('vsClass').innerHTML =
       `<div class="vs-legend"><span><b class="dot" style="background:#0e9f8a"></b>You</span><span><b class="dot" style="background:#cbd5e1"></b>Class avg</span></div>` +
       si.vsClass.map(v => {
@@ -91,7 +197,6 @@
           <div class="vs-bar avg"><i style="width:${Math.round(100 * v.avg / mx)}%"></i></div></div>
           <div style="font-size:12.5px;min-width:90px;text-align:right"><b>${v.you}${v.suffix}</b> <span style="color:#8a97ad">/ ${v.avg}${v.suffix}</span></div></div>`;
       }).join('');
-    // weekly digest
     const w = si.weekly;
     document.getElementById('digest').innerHTML = `<div class="digest-grid">
       <div class="card stat"><span>Attempts</span><b>${w.attempts}</b></div>
@@ -106,31 +211,26 @@
     document.getElementById('labBest').innerHTML = keys.map(k =>
       `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f7">
         <div>${LABN[k]}</div><b>${lb.bests[k] != null ? lb.bests[k] + '%' : '—'}</b></div>`).join('');
-  } catch { document.getElementById('labBest').innerHTML = `<div class="empty">No lab runs yet.</div>`; }
+  } catch { document.getElementById('labBest').innerHTML = `<div class="empty"><div class="empty-ic">🧬</div><h4>No lab runs yet</h4><p>Try the Advanced Labs to set your bests.</p></div>`; }
   try {
     const { top } = await api('/api/leaderboard');
-    document.getElementById('lboard').innerHTML = top.length ? `<table><tr><th>#</th><th>Student</th><th>Points</th><th>Cases</th></tr>
+    document.getElementById('lboard').innerHTML = top.length ? `<div class="twrap" style="overflow-x:auto"><table style="min-width:480px"><tr><th>#</th><th>Student</th><th>Points</th><th>Cases</th></tr>
       ${top.map((t, i) => `<tr${t.id === u.id ? ' style="background:#eaf4ff"' : ''}><td>${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td>
-        <td><b>${esc(t.name)}</b>${t.id === u.id ? ' (you)' : ''}</td><td><b>${t.points}</b></td><td>${t.cases_done}</td></tr>`).join('')}</table>`
-      : '<div class="empty">No scores yet.</div>';
-  } catch { document.getElementById('lboard').innerHTML = `<div class="empty">Leaderboard unavailable.</div>`; }
-  document.getElementById('stats').innerHTML = `
-    <div class="card stat"><span>Level</span><b>${esc(s.level)}</b></div>
-    <div class="card stat"><span>Points</span><b>${s.points}</b></div>
-    <div class="card stat"><span>Accuracy</span><b>${s.accuracy}%</b></div>
-    <div class="card stat"><span>Cases completed</span><b>${s.casesCompleted} / ${s.totalCases}</b></div>`;
+        <td><b>${esc(t.name)}</b>${t.id === u.id ? ' <span class="bdg b-teal">you</span>' : ''}</td><td><b>${t.points}</b></td><td>${t.cases_done}</td></tr>`).join('')}</table></div>`
+      : '<div class="empty"><div class="empty-ic">🏆</div><h4>No scores yet</h4><p>Be the first on the board!</p></div>';
+  } catch { document.getElementById('lboard').innerHTML = `<div class="empty"><div class="empty-ic">🏆</div><h4>Leaderboard unavailable</h4></div>`; }
   document.getElementById('perCase').innerHTML = p.perCase.length ? p.perCase.map(c => `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f7">
       <div><b>${esc(c.code)}</b> · ${esc(c.title)}<br><span style="font-size:12.5px;color:#5b6b85">${c.attempts} attempt(s)</span></div>
       <div style="text-align:right">${c.done ? '<span class="pill p-done">✓ done</span>' : '<span class="pill p-prog">started</span>'}<br>
       <b style="font-size:14px">best ${c.best ?? 0}</b></div>
-    </div>`).join('') : `<div class="empty">No attempts yet.</div>`;
+    </div>`).join('') : `<div class="empty"><div class="empty-ic">📚</div><h4>No attempts yet</h4><p>Start a case in the <a href="/training" style="color:#0e9f8a">Case Center</a> to begin.</p></div>`;
   document.getElementById('hist').innerHTML = p.attempts.length ? `
-    <table><tr><th>Case</th><th>Score</th><th>Status</th><th>Date</th></tr>
+    <div class="twrap" style="overflow-x:auto"><table style="min-width:440px"><tr><th>Case</th><th>Score</th><th>Status</th><th>Date</th></tr>
     ${p.attempts.map(a => `<tr><td>${esc(a.code)}</td><td><b>${a.score}/${a.max_score}</b></td>
       <td>${a.status === 'completed' ? '<span class="pill p-done">completed</span>' : '<span class="pill p-prog">' + esc(a.status) + '</span>'}</td>
-      <td>${esc((a.completed_at || a.started_at || '').slice(0, 10))}</td></tr>`).join('')}</table>`
-    : `<div class="empty">No attempts yet.</div>`;
+      <td>${esc((a.completed_at || a.started_at || '').slice(0, 10))}</td></tr>`).join('')}</table></div>`
+    : `<div class="empty"><div class="empty-ic">📝</div><h4>No attempts yet</h4></div>`;
 })();
 </script>
 </body>

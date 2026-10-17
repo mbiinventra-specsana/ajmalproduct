@@ -1,21 +1,49 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Assignments — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css"></head>
+<title>Assignments — MbiInventra RCM Academy</title><link rel="stylesheet" href="/css/app.css">
+<style>
+/* ===== Assignments ULTRA ===== */
+.asg-card{background:#fff;border:1px solid #e8eef4;border-radius:16px;padding:18px 20px;display:flex;
+  justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;transition:all .2s;
+  box-shadow:0 1px 3px rgba(10,22,40,.04)}
+.asg-card:hover{border-color:#0e9f8a;box-shadow:0 6px 20px rgba(14,159,138,.1);transform:translateY(-2px)}
+.asg-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.asg-code{display:inline-block;font-size:11px;font-weight:800;color:#0e9f8a;background:#ccfbf1;
+  padding:3px 10px;border-radius:8px;letter-spacing:.04em}
+.asg-prog{height:7px;background:#eef2f7;border-radius:6px;overflow:hidden;margin-top:10px;max-width:280px}
+.asg-prog i{display:block;height:100%;background:linear-gradient(90deg,#0e9f8a,#34d3bd);border-radius:6px}
+.asg-actions{display:flex;gap:8px;flex-wrap:wrap}
+@keyframes ccIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pt-anim{animation:ccIn .4s cubic-bezier(.2,.8,.2,1) backwards}
+</style></head>
 <body><div class="shell"><aside class="side" id="sidebar"></aside><main class="main"><div class="page" style="max-width:1180px">
-  <div class="phead"><div>
-    <div class="eyebrow2">Training</div><h1>Assignments</h1>
+  <div class="pt-hero pt-anim">
+    <div class="eyebrow2" style="color:#34d3bd">Training</div>
+    <h1>📝 Assignments</h1>
     <p class="psub">Your training cases as assignments — complete them in order, master each before moving on.</p>
-  </div></div>
-  <div class="kpi-strip" id="kpis" style="grid-template-columns:repeat(4,1fr)"></div>
-  <div class="tabs" id="tabs"></div>
-  <div class="panel"><div class="prow"><h3 style="margin:0">My Assignments</h3></div>
+    <div class="act-row">
+      <span class="hstat">Total <b id="hTotal">—</b></span>
+      <span class="hstat">Completed <b id="hDone" style="color:#5eead4">—</b></span>
+      <span class="hstat">In progress <b id="hProg" style="color:#fbbf24">—</b></span>
+    </div>
+  </div>
+  <div class="kpi-strip pt-anim" id="kpis" style="grid-template-columns:repeat(4,1fr);animation-delay:.04s">
+    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+  </div>
+  <div class="pfilters pt-anim" id="tabs" style="animation-delay:.08s"></div>
+  <div class="panel pt-anim" style="animation-delay:.1s">
+    <div class="prow"><h3 style="margin:0">My Assignments</h3></div>
     <div id="list" style="display:grid;gap:12px"></div>
+    <div class="empty" id="emptyList" style="display:none"><div class="empty-ic">📝</div><h4>No assignments here</h4>
+      <p>Try a different filter — or head to the Case Center to start training.</p>
+      <div style="margin-top:14px"><a class="btn btn-teal" href="/training">🎯 Go to Case Center</a></div></div>
   </div>
 </div></main></div>
 <script src="/js/app.js"></script>
 <script>
 let rows = [], tab = 'all';
 const SCLS = { ASSIGNED: 'b-blue', IN_PROGRESS: 'b-amber', COMPLETED: 'b-green' };
+const SICON = { ASSIGNED: '📌', IN_PROGRESS: '⏳', COMPLETED: '✅' };
 const DCLS = { Beginner: 'b-green', Intermediate: 'b-amber', Advanced: 'b-red' };
 async function load() {
   const u = await requireLogin(); if (!u) return;
@@ -30,32 +58,39 @@ async function load() {
     return { ...c, st, pct, g };
   });
   const n = s => rows.filter(r => r.st === s).length;
+  document.getElementById('hTotal').textContent = rows.length;
+  document.getElementById('hDone').textContent = n('COMPLETED');
+  document.getElementById('hProg').textContent = n('IN_PROGRESS');
   document.getElementById('kpis').innerHTML = [
-    ['Total', rows.length, 'Assigned cases'],
-    ['Completed', n('COMPLETED'), 'Mastered (70%+)'],
-    ['In progress', n('IN_PROGRESS'), 'Being worked'],
-    ['Assigned', n('ASSIGNED'), 'Not started'],
-  ].map(([l, v, s]) => `<div class="kpi"><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
+    ['📋', 'Total', rows.length, 'Assigned cases'],
+    ['✅', 'Completed', n('COMPLETED'), 'Mastered (70%+)'],
+    ['⏳', 'In progress', n('IN_PROGRESS'), 'Being worked'],
+    ['📌', 'Assigned', n('ASSIGNED'), 'Not started'],
+  ].map(([ic, l, v, s], i) => `<div class="kpi pt-anim" style="animation-delay:${.04 * i}s"><span class="kic">${ic}</span><span>${l}</span><b>${v}</b><div class="sub">${s}</div></div>`).join('');
   renderTabs(); render();
 }
 function renderTabs() {
-  const tabs = [['all', 'All'], ['ASSIGNED', 'Assigned'], ['IN_PROGRESS', 'In Progress'], ['COMPLETED', 'Completed']];
+  const tabs = [['all', '📋 All'], ['ASSIGNED', '📌 Assigned'], ['IN_PROGRESS', '⏳ In Progress'], ['COMPLETED', '✅ Completed']];
   const cnt = k => k === 'all' ? rows.length : rows.filter(r => r.st === k).length;
   document.getElementById('tabs').innerHTML = tabs.map(([k, l]) =>
-    `<button class="tab ${tab === k ? 'on' : ''}" data-k="${k}">${l}<span class="cnt">${cnt(k)}</span></button>`).join('');
-  document.querySelectorAll('.tab').forEach(t => t.onclick = () => { tab = t.dataset.k; renderTabs(); render(); });
+    `<button class="pf ${tab === k ? 'on' : ''}" data-k="${k}">${l} <span class="cnt">${cnt(k)}</span></button>`).join('');
+  document.querySelectorAll('#tabs .pf').forEach(t => t.onclick = () => { tab = t.dataset.k; renderTabs(); render(); });
 }
 function render() {
   const rs = rows.filter(r => tab === 'all' || r.st === tab);
-  document.getElementById('list').innerHTML = rs.map(c => `
-    <div class="panel-light" style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:0">
-      <div><b>${esc(c.code)}</b> — ${esc(c.title)}
-        <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">
+  document.getElementById('emptyList').style.display = rs.length ? 'none' : 'block';
+  document.getElementById('list').innerHTML = rs.map((c, ix) => `
+    <div class="asg-card pt-anim" style="animation-delay:${Math.min(ix * .04, .3)}s">
+      <div style="min-width:0"><span class="asg-code">${esc(c.code)}</span>
+        <div style="font-size:15px;font-weight:700;color:#0f2743;margin-top:6px">${esc(c.title)}</div>
+        <div class="asg-meta">
           <span class="bdg ${DCLS[c.difficulty] || 'b-gray'}">${esc(c.difficulty)}</span>
-          <span class="bdg ${SCLS[c.st]}">${esc(c.st.replace('_', ' '))}</span>
-          ${c.attempts ? `<span class="bdg b-gray">${c.attempts} attempt(s)${c.pct != null ? ` · best ${c.pct}%` : ''}</span>` : ''}
-        </div></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">${c.st === 'COMPLETED'
+          <span class="bdg ${SCLS[c.st]}">${SICON[c.st]} ${esc(c.st.replace('_', ' '))}</span>
+          ${c.attempts ? `<span class="bdg b-gray">${c.attempts} attempt${c.attempts > 1 ? 's' : ''}${c.pct != null ? ` · best ${c.pct}%` : ''}</span>` : ''}
+        </div>
+        ${c.pct != null ? `<div class="asg-prog"><i style="width:${Math.min(100, c.pct)}%"></i></div>` : ''}
+      </div>
+      <div class="asg-actions">${c.st === 'COMPLETED'
         ? `<a class="btn btn-line btn-sm" href="/progress">Review</a>`
         : `<a class="btn btn-teal btn-sm" href="/play?case=${c.id}">${c.attempts ? 'Continue quiz →' : 'Start quiz →'}</a>
            ${!(c.g && c.g.locked) ? `<a class="btn btn-line btn-sm" href="/play?case=${c.id}&mode=guided">🧭 Guided</a>` : `<span class="bdg b-gray">🔒 ${esc((c.g && c.g.lockReason) || 'Locked')}</span>`}`}</div>
