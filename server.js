@@ -1360,6 +1360,29 @@ app.get('/api/leaderboard', requireAuth, ah(async (req, res) => {
   res.json({ top });
 }));
 // ---- ULTRA analytics: at-risk, funnel, question difficulty, time heatmap, AI insights ----
+// TEMP DEBUG: runs each insights query separately to find the failing one (admin only)
+app.get('/api/admin/debug-insights', requireAdmin, ah(async (req, res) => {
+  const days = 30;
+  const since = db.IS_MYSQL ? `DATE_SUB(NOW(), INTERVAL ${days} DAY)` : `datetime('now', '-${days} days')`;
+  const dayFn = db.IS_MYSQL ? 'DAYOFWEEK(started_at)' : `CAST(strftime('%w', started_at) AS INTEGER)`;
+  const hrFn = db.IS_MYSQL ? 'HOUR(started_at)' : `CAST(strftime('%H', started_at) AS INTEGER)`;
+  const queries = {
+    students: `SELECT id, name, email FROM users WHERE role='student' ORDER BY name`,
+    lastAct: `SELECT user_id, MAX(ts) AS last_ts FROM (SELECT user_id, started_at AS ts FROM attempts UNION ALL SELECT user_id, created_at AS ts FROM lab_runs) t GROUP BY user_id`,
+    recentScores: `SELECT user_id, score * 100.0 / NULLIF(max_score, 0) AS pct, completed_at FROM attempts WHERE status='completed' AND completed_at >= ${since} ORDER BY completed_at`,
+    stuckCases: `SELECT user_id, case_id, COUNT(*) AS n FROM attempts WHERE status != 'completed' AND started_at >= ${since} GROUP BY user_id, case_id HAVING n >= 2`,
+    caseCodes: `SELECT id, code FROM cases`,
+    funnel: `SELECT c.code, c.title, COUNT(DISTINCT CASE WHEN a.started_at >= ${since} THEN a.user_id END) AS started, COUNT(DISTINCT CASE WHEN a.status='completed' AND a.completed_at >= ${since} THEN a.user_id END) AS completed FROM cases c LEFT JOIN attempts a ON a.case_id = c.id WHERE c.active = 1 GROUP BY c.id ORDER BY c.sort`,
+    hardQ: `SELECT c.code AS case_code, q.qnum, SUBSTR(q.prompt, 1, 80) AS prompt, COUNT(*) AS tries, SUM(CASE WHEN an.correct = 0 THEN 1 ELSE 0 END) AS fails, 100.0 * SUM(CASE WHEN an.correct = 0 THEN 1 ELSE 0 END) / COUNT(*) AS failPct FROM answers an JOIN questions q ON q.id = an.question_id JOIN cases c ON c.id = q.case_id WHERE an.answered_at >= ${since} GROUP BY an.question_id HAVING tries >= 2 ORDER BY failPct DESC LIMIT 10`,
+    heatmap: `SELECT ${dayFn} AS d, ${hrFn} AS h, COUNT(*) AS n FROM attempts WHERE started_at >= ${since} GROUP BY d, h`,
+  };
+  const out = { engine: db.IS_MYSQL ? 'mysql' : 'sqlite' };
+  for (const [name, sql] of Object.entries(queries)) {
+    try { const rows = await db.all(sql); out[name] = { ok: true, rows: rows.length }; }
+    catch (e) { out[name] = { ok: false, error: e.message, sql }; }
+  }
+  res.json(out);
+}));
 app.get('/api/admin/insights', requireAdmin, ah(cached('insights', 60000, async (req) => {
   const days = Math.min(365, Math.max(7, parseInt(req.query.days, 10) || 30));
   const since = db.IS_MYSQL
