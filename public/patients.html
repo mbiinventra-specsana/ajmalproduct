@@ -80,7 +80,8 @@
 <script src="/js/app.js"></script>
 <script>
 let pts = [], q = '', qf = 'all', covBy = {}, covList = [];
-const age = dob => { const d = new Date(dob + 'T00:00:00'); if (isNaN(d)) return '—'; let a = new Date().getFullYear() - d.getFullYear(); const m = new Date().getMonth() - d.getMonth(); if (m < 0 || (m === 0 && new Date().getDate() < d.getDate())) a--; return a; };
+const cleanDob = d => String(d || '').slice(0, 10);
+const age = dob => { const d = new Date(cleanDob(dob) + 'T00:00:00'); if (isNaN(d)) return '—'; let a = new Date().getFullYear() - d.getFullYear(); const m = new Date().getMonth() - d.getMonth(); if (m < 0 || (m === 0 && new Date().getDate() < d.getDate())) a--; return a; };
 const initials = n => n.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 const AVC = ['linear-gradient(135deg,#0e9f8a,#34d3bd)','linear-gradient(135deg,#6366f1,#a5b4fc)','linear-gradient(135deg,#d946ef,#f0abfc)','linear-gradient(135deg,#f59e0b,#fcd34d)','linear-gradient(135deg,#0ea5e9,#7dd3fc)'];
 const avBg = code => AVC[String(code).charCodeAt(3) % 5];
@@ -135,7 +136,7 @@ function render() {
       <span class="pav" style="background:${avBg(p.code)}">${esc(initials(p.name))}</span>
       <div><b>${esc(p.code)}</b>${dup ? ' <span class="bdg b-amber" title="Possible duplicate record">⚠</span>' : ''}<br>
       <span style="font-size:13.5px;font-weight:600">${esc(p.name)}</span></div></div></td>
-    <td><b>${esc(p.dob)}</b><br><span style="color:#64748b;font-size:12px">Age ${age(p.dob)} · ${esc(p.gender)}</span></td>
+    <td><b>${esc(cleanDob(p.dob))}</b><br><span style="color:#64748b;font-size:12px">Age ${age(p.dob)} · ${esc(p.gender)}</span></td>
     <td style="font-size:12.5px">📞 ${esc(p.phone || '—')}<br><span style="color:#64748b">✉️ ${esc(p.email || '—')}</span></td>
     <td><span class="bdg ${p.status === 'Active' ? 'b-green' : 'b-red'}"><span class="dot"></span>${esc(p.status || 'Active')}</span></td>
     <td>${cov.length ? `<span class="bdg b-green"><span class="dot"></span>${cov.length} plan${cov.length > 1 ? 's' : ''}</span><br><span style="font-size:12px;color:#64748b">${esc(cov[0].payer)}</span>` : '<span class="bdg b-red"><span class="dot"></span>No coverage</span>'}</td>
@@ -165,7 +166,7 @@ function paintTabs(p, cov, hist) {
       <button class="ptab ${_ptab === 'tl' ? 'on' : ''}" onclick="_pshow('tl')">Timeline (${hist.length})</button></div>`;
   if (_ptab === 'ov') body += `
     <div class="frow"><div class="fld"><label>Demographics</label><div class="kv-card">
-      <div class="kv"><span>🎂 Date of birth</span><b>${esc(p.dob)} (Age ${age(p.dob)})</b></div>
+      <div class="kv"><span>🎂 Date of birth</span><b>${esc(cleanDob(p.dob))} (Age ${age(p.dob)})</b></div>
       <div class="kv"><span>⚧ Gender</span><b>${esc(p.gender)}</b></div>
       <div class="kv"><span>Status</span><span class="bdg ${p.status === 'Active' ? 'b-green' : 'b-red'}"><span class="dot"></span>${esc(p.status || 'Active')}</span></div></div></div>
     <div class="fld"><label>Contact</label><div class="kv-card">

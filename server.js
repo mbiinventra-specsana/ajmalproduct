@@ -1058,12 +1058,13 @@ app.put('/api/rcm/insurance/:id', requireAuth, ah(async (req, res) => {
 app.get('/api/rcm/payers', requireAuth, ah(async (req, res) => {
   const payers = await db.all('SELECT * FROM payers ORDER BY name');
   const stats = await db.all(`SELECT payer, COUNT(DISTINCT patient_code) AS patients,
-      SUM(CASE WHEN status = 'ACTIVE' THEN 1 ELSE 0 END) AS active
+      COUNT(*) AS records, SUM(CASE WHEN status = 'ACTIVE' THEN 1 ELSE 0 END) AS active
     FROM insurance WHERE user_id IS NULL OR user_id = ? GROUP BY payer`, [req.session.userId]);
   const sm = Object.fromEntries(stats.map(x => [x.payer, x]));
   res.json({ payers: payers.map(x => ({
     id: x.id, name: x.name, payer_id: x.payer_id, phone: x.phone, website: x.website,
-    patients: Number(sm[x.name]?.patients || 0), active: Number(sm[x.name]?.active || 0),
+    patients: Number(sm[x.name]?.patients || 0), records: Number(sm[x.name]?.records || 0),
+    active: Number(sm[x.name]?.active || 0),
   })) });
 }));
 app.post('/api/rcm/payers', requireAuth, requireFn('insurance-add'), ah(async (req, res) => {
