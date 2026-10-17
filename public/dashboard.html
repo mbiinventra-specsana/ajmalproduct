@@ -82,14 +82,14 @@
   <main class="main cc">
     <div id="announceBar"></div>
     <div id="hero"><div class="skel" style="height:180px;border-radius:18px"></div></div>
-    <div class="kpi-strip" id="kpis" style="margin:18px 0"><div class="skel-cards" style="grid-template-columns:repeat(4,1fr)"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div></div></div>
+    <div class="kpi-strip kpi-4" id="kpis" style="margin:18px 0"><div class="skel-cards" style="grid-template-columns:repeat(4,1fr)"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div></div></div>
 
     <div class="cc-bento">
       <div class="cc-col">
         <div class="panel-light cc-anim" style="animation-delay:.1s">
           <div class="cc-sec-t"><h3>🧾 Work Queue — training cases</h3><a href="/training">Case Center →</a></div>
-          <div style="overflow-x:auto"><table class="dtable"><thead><tr>
-            <th>Case</th><th>Level</th><th>Status</th><th>Progress</th><th></th>
+          <div class="twrap" style="overflow-x:auto"><table class="dtable" style="min-width:640px"><thead><tr>
+            <th>Case</th><th>Level</th><th>Status</th><th>Progress</th><th style="text-align:right;min-width:110px">Action</th>
           </tr></thead><tbody id="queue"><tr><td colspan="5"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div></td></tr></tbody></table></div>
         </div>
         <div class="panel-light cc-anim" style="animation-delay:.2s">
@@ -193,8 +193,8 @@ function ring(pct, size) {
 
   // KPI CARDS
   document.getElementById('kpis').innerHTML = `
-    <div class="kpi cc-anim" style="animation-delay:.05s"><div class="krow" style="display:flex;align-items:center;gap:12px">
-      ${ring(s.accuracy, 64)}<div><span>Accuracy</span><div class="sub">clean-claim equivalent</div></div></div></div>
+    <div class="kpi cc-anim" style="animation-delay:.05s"><div style="display:flex;align-items:center;gap:10px;min-width:0">
+      ${ring(s.accuracy, 52)}<div style="min-width:0"><span style="font-size:12px">Accuracy</span><div class="sub" style="white-space:normal;line-height:1.4">clean-claim rate</div></div></div></div>
     <div class="kpi cc-anim" style="animation-delay:.08s"><span>📚 Cases mastered</span><b>${mastered}/${cs.length}</b><div class="sub">${cs.length - mastered} remaining</div></div>
     <div class="kpi cc-anim" style="animation-delay:.11s"><span>⚡ Total attempts</span><b>${s.attempts}</b><div class="sub">practice runs</div></div>
     <div class="kpi hot cc-anim" style="animation-delay:.14s"><span>🏆 Best score</span><b>${s.bestScore != null ? s.bestScore + '%' : '—'}</b><div class="sub">personal record</div></div>`;
@@ -228,7 +228,7 @@ function ring(pct, size) {
       <td><span class="pill p-${c.difficulty.toLowerCase()}">${esc(c.difficulty)}</span></td>
       <td>${statusPill(c)}</td>
       <td><div class="caseprog"><div class="bar"><i style="width:${pct}%"></i></div><span style="font-size:12px;font-weight:700">${c.best != null ? pct + '%' : '—'}</span></div></td>
-      <td style="text-align:right"><a class="btn ${c.completed ? 'btn-line' : 'btn-teal'} btn-sm" href="/play?caseId=${c.id}">${c.completed ? 'Retry' : c.attempts ? 'Continue' : 'Start'}</a></td>
+      <td style="text-align:right;white-space:nowrap;padding-right:4px"><a class="btn ${c.completed ? 'btn-line' : 'btn-teal'} btn-sm" href="/play?caseId=${c.id}">${c.completed ? 'Retry' : c.attempts ? 'Continue' : 'Start'}</a></td>
     </tr>`; }).join('');
 
   // ALERTS

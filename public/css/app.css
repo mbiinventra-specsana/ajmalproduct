@@ -653,3 +653,6 @@ input.search:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rg
 /* hide sidebar scrollbar but keep scroll */
 .snav{scrollbar-width:none;-ms-overflow-style:none}
 .snav::-webkit-scrollbar{display:none}
+.kpi-4{grid-template-columns:repeat(4,1fr)!important}
+@media(max-width:1150px){.kpi-4{grid-template-columns:repeat(2,1fr)!important}}
+@media(max-width:560px){.kpi-4{grid-template-columns:1fr!important}}
