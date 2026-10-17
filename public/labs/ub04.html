@@ -9,6 +9,8 @@
   margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(15,39,67,.22)}
 .lab-hero::before{content:"";position:absolute;top:-60px;right:8%;width:260px;height:260px;border-radius:50%;
   background:radial-gradient(circle,rgba(52,211,189,.25),transparent 70%)}
+.lab-hero::after{content:"";position:absolute;bottom:-90px;left:32%;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.12),transparent 70%)}
 .lab-hero h1{margin:0 0 8px;font-size:24px;position:relative;z-index:1}
 .lab-hero .psub{color:#b9d4e8;margin:0;font-size:14px;position:relative;z-index:1;max-width:680px;line-height:1.6}
 .lab-hero .act-row{position:relative;z-index:1;margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -19,16 +21,22 @@
 @keyframes labIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .lab-anim{animation:labIn .45s cubic-bezier(.2,.8,.2,1) backwards}
 .ub-grid{display:grid;grid-template-columns:280px 1fr;gap:16px}
-.scard{border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:12px;cursor:pointer;background:#fff;transition:all .2s}
-.scard:hover{border-color:#0e9f8a;transform:translateX(4px);box-shadow:0 4px 14px rgba(14,159,138,.12)}
-.scard.on{border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.18)}
+.scard{border:1.5px solid #e2e8f0;border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;background:#fff;
+  transition:all .25s cubic-bezier(.2,.8,.2,1);position:relative;overflow:hidden;
+  box-shadow:0 1px 3px rgba(10,22,40,.04)}
+.scard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent;transition:all .25s}
+.scard:hover{border-color:#0e9f8a;transform:translateX(4px);box-shadow:0 6px 20px rgba(14,159,138,.14)}
+.scard:hover::before{background:#0e9f8a}
+.scard.on{border-color:#0e9f8a;box-shadow:0 0 0 3px rgba(14,159,138,.18),0 4px 16px rgba(14,159,138,.1)}
+.scard.on::before{background:#0e9f8a}
 .scard b{font-size:13.5px;color:#0a1628}
 .scard .meta{font-size:11.5px;color:#64748b;margin-top:5px}
 .scard .cno{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9px;
   background:linear-gradient(135deg,#0f2743,#1a3a5c);color:#5eead4;font-weight:800;font-size:12px;margin-right:8px}
 .scard .diff{font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px;letter-spacing:.5px}
 .diff.Beginner{background:#dcfce7;color:#166534}.diff.Intermediate{background:#fef3c7;color:#92400e}.diff.Advanced{background:#fee2e2;color:#991b1b}
-.vs-box{background:#f0fdfa;border:1.5px solid #99f6e4;border-radius:14px;padding:16px 18px;margin-bottom:18px;font-size:13.5px;line-height:1.7;color:#0f2f2a}
+.vs-box{background:linear-gradient(135deg,#f0fdfa,#ecfdf5);border:1.5px solid #99f6e4;border-radius:16px;padding:18px 20px;
+  margin-bottom:18px;font-size:13.5px;line-height:1.7;color:#0f2f2a;box-shadow:0 2px 8px rgba(14,159,138,.06)}
 .vs-box b{color:#0e7490}
 .vs-box table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
 .vs-box th{background:#0f2743;color:#5eead4;padding:8px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
@@ -42,7 +50,7 @@
 .fld .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
 .fld .opt{border:1.5px solid #e2e8f0;border-radius:10px;padding:10px;text-align:center;cursor:pointer;font-family:ui-monospace,monospace;
   font-weight:700;font-size:14px;color:#334155;transition:all .15s;background:#fff}
-.fld .opt:hover{border-color:#0e9f8a}
+.fld .opt:hover{border-color:#0e9f8a;transform:translateY(-1px);box-shadow:0 3px 10px rgba(14,159,138,.12)}
 .fld .opt.sel{border-color:#0e9f8a;background:#f0fdfa;color:#0f766e;box-shadow:0 0 0 2px rgba(14,159,138,.15)}
 .fld .opt.right{border-color:#16a34a;background:#f0fdf4;color:#166534}
 .fld .opt.wrong{border-color:#dc2626;background:#fef2f2;color:#991b1b}
@@ -62,6 +70,9 @@
 .score-banner .perf{font-size:18px;font-weight:800;margin:6px 0;color:#5eead4}
 .score-banner .why{font-size:13.5px;color:#b9d4e8;line-height:1.7;max-width:640px;margin:10px auto 0;text-align:left}
 @media(max-width:900px){.ub-grid{grid-template-columns:1fr}}
+/* premium focus states */
+.fld .opt:focus-visible{outline:2px solid #0e9f8a;outline-offset:2px}
+.scard:focus-visible{outline:2px solid #0e9f8a;outline-offset:2px}
 </style>
 </head>
 <body>

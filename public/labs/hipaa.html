@@ -67,6 +67,34 @@
 .progress-wrap .bar i{display:block;height:100%;background:linear-gradient(90deg,#0e9f8a,#34d3bd);border-radius:6px;transition:width .3s}
 .progress-wrap b{font-size:13px;color:#0f2743;white-space:nowrap}
 @media(max-width:700px){.lab-hero{padding:20px}.progress-wrap{top:8px}}
+/* ===== PREMIUM POLISH ===== */
+.lab-hero::after{content:"";position:absolute;bottom:-90px;left:32%;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(52,211,189,.12),transparent 70%)}
+.lab-hero .wm{position:absolute;right:30px;top:50%;transform:translateY(-50%) rotate(-8deg);font-size:104px;
+  opacity:.09;pointer-events:none;user-select:none}
+.ftabs:focus-visible{outline:2px solid #0e9f8a;outline-offset:2px}
+.ftabs:active{transform:translateY(0) scale(.97)}
+.qcard{position:relative;overflow:hidden}
+.qcard:hover{box-shadow:0 8px 24px rgba(10,22,40,.08);transform:translateY(-2px)}
+.qcard.answered::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,#0e9f8a,#34d3bd)}
+.opt .ol{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;
+  background:#f1f5f9;font-size:12px;transition:all .15s}
+.opt.picked .ol{background:linear-gradient(135deg,#0e9f8a,#34d3bd);color:#fff;box-shadow:0 2px 8px rgba(14,159,138,.35)}
+.opt.right .ol{background:#16a34a;color:#fff}
+.opt.wrong .ol{background:#dc2626;color:#fff}
+@keyframes fbIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.qfb.show{animation:fbIn .25s ease}
+.cert{position:relative;overflow:hidden}
+.cert::before{content:"";position:absolute;inset:8px;border:1px dashed rgba(94,234,212,.35);
+  border-radius:12px;pointer-events:none}
+@keyframes sealGlow{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.cert.show .seal{animation:sealGlow 2.4s ease-in-out infinite;display:inline-block}
+.progress-wrap .bar i{position:relative;overflow:hidden}
+.progress-wrap .bar i::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shimmer 2s infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@media(max-width:700px){.qcard{padding:16px}.opt{padding:10px 12px}.lab-hero .wm{font-size:64px;right:14px}}
 </style>
 </head>
 <body>
@@ -75,7 +103,7 @@
   <main class="main">
     <div class="lab-hero lab-anim">
       <div class="eyebrow2">Advanced Labs · Compliance</div>
-      <h1>🛡️ HIPAA Compliance Training</h1>
+      <h1>🛡️ HIPAA Compliance Training</h1><div class="wm" aria-hidden="true">🛡️</div>
       <p class="psub">Work through <b style="color:#5eead4">18 real-world scenarios</b> covering the Privacy Rule, Security Rule, and Breach Notification. Answer each one — you get instant expert feedback. Score <b style="color:#5eead4">80%+</b> to earn your completion certificate.</p>
       <div class="act-row">
         <span class="hstat">Scenarios <b id="st-total">–</b></span>
@@ -162,7 +190,7 @@ function updateProgress(){
   const n = Object.keys(answers).length, total = SCEN.length;
   const correct = SCEN.filter((h,i) => answers[i] === h.answer).length;
   $('st-answered').textContent = n; $('st-correct').textContent = correct;
-  $('pg-label').textContent = n+' / '+total+' answered';
+  $('pg-label').textContent = n+' / '+total+' answered · '+(total ? Math.round(100*n/total) : 0)+'%';
   $('pg-bar').style.width = (total ? 100*n/total : 0)+'%';
   $('btn-finish').disabled = n < total;
 }
