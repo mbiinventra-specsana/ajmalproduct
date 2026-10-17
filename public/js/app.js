@@ -204,12 +204,11 @@ function adminShell(active, user) {
     <nav class="snav">${nav.map(([g, items]) => `
       <div class="grp">${g}</div>
       ${items.map(([k, sec, label, href, ic]) =>
-        `<a href="${href}" data-sec="${sec}" onclick="ownerGo('${sec}',this);return false;" class="${active === k ? 'on' : ''}" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:500;color:#a9bdd6;text-decoration:none;margin-bottom:2px"><span class="ic" style="width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center">${I[ic] || ''}</span><span class="lbl" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${label}</span></a>`).join('')}
+        `<a href="${href}" data-sec="${sec}" onclick="ownerGo('${sec}',this);return false;" class="${active === k ? 'on' : ''}" style="display:flex !important;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:500;color:#a9bdd6;text-decoration:none;margin-bottom:2px"><span class="ic" style="width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center">${I[ic] || ''}</span><span class="lbl" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${label}</span></a>`).join('')}
     `).join('')}</nav>
     <div class="sfoot">
       <div class="uinfo"><span class="uavatar">${esc((user.name || 'U')[0].toUpperCase())}</span><div>👤 ${esc(user.name)}<br><span class="urole">${esc(user.role)}</span></div></div>
       <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
       <div style="margin-top:10px"><span class="badge-fict">TRAINING MODE · fictional data</span></div>
     </div>`;
-  console.log('[adminShell] DOM links:', document.querySelectorAll('#sidebar .snav a').length);
 }
