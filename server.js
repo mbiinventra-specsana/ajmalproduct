@@ -1438,12 +1438,13 @@ app.get('/api/admin/insights', requireAdmin, ah(cached('insights', 60000, async 
   // ---- hardest questions ----
   const hardQ = await db.all(
     `SELECT c.code AS case_code, q.qnum, SUBSTR(q.prompt, 1, 80) AS prompt,
-       COUNT(*) AS tries, SUM(CASE WHEN an.correct = 0 THEN 1 ELSE 0 END) AS fails
+       COUNT(*) AS tries, SUM(CASE WHEN an.correct = 0 THEN 1 ELSE 0 END) AS fails,
+       100.0 * SUM(CASE WHEN an.correct = 0 THEN 1 ELSE 0 END) / COUNT(*) AS failPct
      FROM answers an JOIN questions q ON q.id = an.question_id
      JOIN cases c ON c.id = q.case_id
      WHERE an.answered_at >= ${since}
      GROUP BY an.question_id HAVING tries >= 2
-     ORDER BY 1.0 * fails / tries DESC, tries DESC LIMIT 10`);
+     ORDER BY failPct DESC LIMIT 10`);
 
   // ---- study-time heatmap (day of week x hour) ----
   const acts = await db.all(`SELECT ${dayFn} AS d, ${hrFn} AS h, COUNT(*) AS n FROM attempts WHERE started_at >= ${since} GROUP BY d, h`);
@@ -1456,7 +1457,7 @@ app.get('/api/admin/insights', requireAdmin, ah(cached('insights', 60000, async 
   // ---- AI insight lines ----
   const insights = [];
   if (atRisk.length) insights.push({ icon: '⚠️', text: `${atRisk.length} student${atRisk.length > 1 ? 's' : ''} need${atRisk.length > 1 ? '' : 's'} attention right now — ${atRisk.slice(0, 2).map(r => r.name.split(' ')[0]).join(', ')}${atRisk.length > 2 ? ` +${atRisk.length - 2} more` : ''}` });
-  const worstFunnel = funnel.filter(f => f.started > 0).sort((a, b) => (a.completed / a.started) - (b.completed / b.started))[0];
+  const worstFunnel = funnel.map(f => ({ ...f, started: Number(f.started), completed: Number(f.completed) })).filter(f => f.started > 0).sort((a, b) => (a.completed / a.started) - (b.completed / b.started))[0];
   if (worstFunnel && worstFunnel.started >= 2) {
     const drop = Math.round(100 * (1 - worstFunnel.completed / worstFunnel.started));
     if (drop > 0) insights.push({ icon: '📉', text: `Biggest drop-off: ${worstFunnel.code} — ${drop}% started but didn't finish` });
