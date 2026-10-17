@@ -263,6 +263,17 @@ const parseDbTs = (v) => {
   const t = new Date(String(v).replace(' ', 'T') + 'Z').getTime();
   return isNaN(t) ? 0 : t;
 };
+// Tiny in-memory cache for heavy admin read APIs (per-key TTL). Cleared on relevant writes.
+const _apiCache = new Map();
+const cached = (key, ttlMs, fn) => async (req, res) => {
+  const ck = key + ':' + (req.query.days || '') + ':' + (req.admin ? req.admin.id : '');
+  const hit = _apiCache.get(ck);
+  if (hit && Date.now() - hit.t < ttlMs) return res.json(hit.d);
+  const data = await fn(req);
+  _apiCache.set(ck, { t: Date.now(), d: data });
+  res.json(data);
+};
+const bustAdminCache = () => { for (const k of _apiCache.keys()) _apiCache.delete(k); };
 const send = (f) => (req, res) => {
   const fp = path.join(__dirname, 'public', f);
   if (!f.endsWith('.html')) return res.sendFile(fp);
@@ -935,15 +946,14 @@ app.post('/api/admin/users/:id/menu-features', requireAdmin, ah(async (req, res)
   else await db.run('INSERT INTO student_features (user_id, feature, enabled) VALUES (?,?,?)', [u.id, dbKey, en]);
   res.json({ ok: true, key, enabled: !!en });
 }));
-app.get('/api/admin/overview', requireAdmin, ah(async (req, res) => {  res.json({
+app.get('/api/admin/overview', requireAdmin, ah(cached('overview', 30000, async (req) => ({
     users: (await db.get('SELECT COUNT(*) AS n FROM users')).n,
     students: (await db.get("SELECT COUNT(*) AS n FROM users WHERE role='student'")).n,
     cases: (await db.get('SELECT COUNT(*) AS n FROM cases WHERE active=1')).n,
     questions: (await db.get('SELECT COUNT(*) AS n FROM questions')).n,
     attempts: (await db.get('SELECT COUNT(*) AS n FROM attempts')).n,
     recentUsers: await db.all('SELECT id,name,email,role,created_at,last_login FROM users ORDER BY id DESC LIMIT 8'),
-  });
-}));
+  }))));
 // System health: which DB is active, where the data lives, is the config safe?
 // Returns presence flags only — never secret values.
 app.get('/api/admin/diagnostics', requireAdmin, ah(async (req, res) => {
@@ -1350,7 +1360,7 @@ app.get('/api/leaderboard', requireAuth, ah(async (req, res) => {
   res.json({ top });
 }));
 // ---- ULTRA analytics: at-risk, funnel, question difficulty, time heatmap, AI insights ----
-app.get('/api/admin/insights', requireAdmin, ah(async (req, res) => {
+app.get('/api/admin/insights', requireAdmin, ah(cached('insights', 60000, async (req) => {
   const days = Math.min(365, Math.max(7, parseInt(req.query.days, 10) || 30));
   const since = db.IS_MYSQL
     ? `DATE_SUB(NOW(), INTERVAL ${days} DAY)`
@@ -1441,8 +1451,8 @@ app.get('/api/admin/insights', requireAdmin, ah(async (req, res) => {
   if (totalStarted > 0) insights.push({ icon: '📊', text: `Completion rate: ${Math.round(100 * totalDone / totalStarted)}% across ${funnel.length} cases in the last ${days} days` });
   if (!insights.length) insights.push({ icon: '✨', text: 'Not enough activity yet — insights appear once students start training' });
 
-  res.json({ days, atRisk, funnel, hardQuestions: hardQ, timeHeatmap: matrix, insights });
-}));
+  return { days, atRisk, funnel, hardQuestions: hardQ, timeHeatmap: matrix, insights };
+})));
 
 // ---- student sync: you-vs-class, rank, streak, nudges, weekly digest ----
 app.get('/api/student-insights', requireAuth, ah(async (req, res) => {
@@ -1524,7 +1534,7 @@ app.get('/api/student-insights', requireAuth, ah(async (req, res) => {
 
 // ---- analytics: skill-gap heatmap + exam readiness ----
 // ---- ULTRA analytics: trends, radar, improvers, distribution, predictions, compare ----
-app.get('/api/admin/trends', requireAdmin, ah(async (req, res) => {
+app.get('/api/admin/trends', requireAdmin, ah(cached('trends', 60000, async (req) => {
   const students = await db.all("SELECT id, name FROM users WHERE role='student' ORDER BY name");
   const cases = await db.all('SELECT id, code, title, category FROM cases WHERE active=1 ORDER BY sort');
   const totalCases = cases.length || 1;
@@ -1646,8 +1656,8 @@ app.get('/api/admin/trends', requireAdmin, ah(async (req, res) => {
     };
   });
 
-  res.json({ weeklyTrend, categoryMastery, improvers: improvers.slice(0, 5), distribution: dist, predictions, studentStats });
-}));
+  return ({ weeklyTrend, categoryMastery, improvers: improvers.slice(0, 5), distribution: dist, predictions, studentStats });
+})));
 
 app.get('/api/admin/heatmap', requireAdmin, ah(async (req, res) => {
   const students = await db.all("SELECT id, name FROM users WHERE role = 'student' ORDER BY name");
