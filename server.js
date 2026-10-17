@@ -132,10 +132,15 @@ app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
 app.post('/api/login', ah(async (req, res) => {
   const { email, password } = req.body || {};
   const emailInput = typeof email === 'string' ? email.trim().toLowerCase() : '';
-  let u = emailInput && await db.get('SELECT * FROM users WHERE email = ?', [emailInput]);
-  if (!u && emailInput && !emailInput.includes('@')) {
-    // backward compat: older installs used admin@local
-    u = await db.get('SELECT * FROM users WHERE email = ?', [emailInput + '@local']);
+  // accept both "admin" and "admin@local" (older installs used the @local suffix;
+  // browsers may autofill either one)
+  const candidates = [...new Set([emailInput,
+    emailInput.includes('@') ? emailInput.replace(/@local$/, '') : emailInput + '@local'])];
+  let u = null;
+  for (const c of candidates) {
+    if (!c) continue;
+    u = await db.get('SELECT * FROM users WHERE email = ?', [c]);
+    if (u) break;
   }
   const ok = u && db.verifyPassword(password || '', u.pass_hash);
   if (!ok) { noteFail(req); return res.status(401).json({ error: 'Invalid email or password.' }); }
