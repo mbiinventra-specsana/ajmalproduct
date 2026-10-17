@@ -1047,34 +1047,6 @@ app.post('/api/labs/ncci/quiz/grade', requireAuth, requireFn('lab-run'), ah(asyn
 }));
 
 
-// ================= CREDENTIALING TRACKER LAB =================
-const stripCred = (e) => ({
-  id: e.id, title: e.title, difficulty: e.difficulty,
-  provider: e.provider, specialty: e.specialty, situation: e.situation,
-  steps: e.steps.map(t => ({ step: t.step, timeframe: t.timeframe, status: t.status, docs: t.docs })),
-  decisions: e.decisions.map(d => ({ q: d.q, options: d.options, points: d.points, hint: d.hint || '' })),
-});
-app.get('/api/labs/cred', requireAuth, ah(async (req, res) => {
-  res.json({ fictional: true, stepsInfo: labData.CRED_STEPS_INFO,
-    scenarios: labData.CRED.map(stripCred) });
-}));
-app.post('/api/labs/cred/grade', requireAuth, requireFn('lab-run'), ah(async (req, res) => {
-  const e = labData.CRED.find(x => x.id === req.body.scenarioId);
-  if (!e) return res.status(404).json({ error: 'Scenario not found.' });
-  const answers = req.body.answers || [];
-  let earned = 0, max = 0;
-  const perDec = e.decisions.map((d, i) => {
-    max += d.points;
-    const ok = answers[i] === d.answer;
-    if (ok) earned += d.points;
-    return { i, ok, points: ok ? d.points : 0, explanation: d.explanation };
-  });
-  const score = max ? Math.round(100 * earned / max) : 0;
-  await logLab(req.session.userId, 'cred', score, 100,
-    { scenario: e.id, earned, max });
-  res.json({ score, max: 100, perDec });
-}));
-
 // ================= PATIENT STATEMENTS + COLLECTIONS LAB =================
 const stripStmt = (e) => ({
   id: e.id, title: e.title, difficulty: e.difficulty, patient: e.patient,

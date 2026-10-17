@@ -97,6 +97,8 @@ const ITEM_GROUP = {
   training: 'training', assignments: 'training', lab: 'training', progress: 'training',
   scrubber: 'labs', denials: 'labs', sprints: 'labs', quiz: 'labs',
   era: 'labs', priorauth: 'labs', clearinghouse: 'labs',
+  statements: 'labs', ub04: 'labs', ncci: 'labs', cred: 'labs',
+  hipaa: 'labs', coverage: 'labs',
 };
 // true if a menu item is off for this student (item key checked first, then group)
 function itemOff(user, itemKey) {
@@ -184,6 +186,8 @@ function shell(active, user) {
       ['ub04', 'UB-04 Institutional', '/labs/ub04', 'building'],
       ['ncci', 'NCCI Checker', '/labs/ncci', 'link'],
       ['statements', 'Patient Statements', '/labs/statements', 'receipt'],
+      ['hipaa', 'HIPAA Training', '/labs/hipaa', 'shield'],
+      ['coverage', 'LCD/NCD Checker', '/labs/coverage', 'search'],
     ]],
   ];
   if (user.role === 'admin' || user.role === 'instructor') {

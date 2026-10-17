@@ -1603,5 +1603,320 @@
     "hint": "The scrubber lab was built for exactly this."
    }
   ]
+ },
+ {
+  "code": "CASE-021",
+  "title": "Telehealth Basics: Video Visit Billing",
+  "description": "A 99213 video visit — code it right with modifier 95 and POS 02, and understand why the payment differs from in-person.",
+  "difficulty": "Beginner",
+  "category": "TELEHEALTH",
+  "points": 60,
+  "sort": 21,
+  "questions": [
+   {
+    "q": "Dr. Lee does a 99213-level video visit with an established patient. What is the correct coding?",
+    "options": [
+     "99213-95, POS 02",
+     "99213, POS 11",
+     "99213-25, POS 02",
+     "99441, POS 02"
+    ],
+    "answer": 0,
+    "points": 15,
+    "explanation": "Modifier 95 identifies the service as synchronous telehealth; POS 02 tells the payer the patient was at home via telehealth. Together they trigger the telehealth payment rules.",
+    "hint": "Which modifier means 'via telehealth'? Which POS means 'patient at home on video'?"
+   },
+   {
+    "q": "Why does POS 02 typically pay LESS than POS 11 for the same 99213?",
+    "options": [
+     "Telehealth is always considered lower quality",
+     "POS 02 pays the facility rate — it assumes lower practice overhead (no exam room, no in-person staff costs)",
+     "It is a penalty for using video",
+     "POS 02 claims are always denied"
+    ],
+    "answer": 1,
+    "points": 15,
+    "explanation": "POS 02 reimburses at the facility rate, reflecting lower overhead for the distant-site provider. The payment difference is about practice expense, not quality.",
+    "hint": "Think about what costs less when the patient is not in the office."
+   },
+   {
+    "q": "The visit was video. A biller codes 99213 with POS 11 (office) and no modifier. What is the compliance risk?",
+    "options": [
+     "None — POS does not matter",
+     "Overpayment: POS 11 pays the higher non-facility rate, so the practice is paid more than the telehealth rate allows — an overpayment the payer can recoup",
+     "Underpayment only — no compliance issue",
+     "The claim will just pend for review"
+    ],
+    "answer": 1,
+    "points": 15,
+    "explanation": "Coding a telehealth visit as in-person (POS 11, no 95) yields the higher non-facility payment the practice did not earn. Payers treat this as incorrect billing subject to recoupment and audit.",
+    "hint": "Which direction does the money error go?"
+   },
+   {
+    "q": "Which statement about telehealth coverage is TRUE?",
+    "options": [
+     "No payers restrict telehealth — it is universally covered identically to in-person",
+     "Coverage varies by payer: some commercial payers limit eligible codes, require specific modifiers (95 vs GT), or exclude certain services — always verify the payer's telehealth policy",
+     "Only Medicare restricts telehealth",
+     "Only Medicaid restricts telehealth"
+    ],
+    "answer": 1,
+    "points": 15,
+    "explanation": "Telehealth coverage is payer-specific. Medicare has its telehealth list; commercial payers each publish their own policies with different modifiers, POS rules, and covered codes. Never assume — check the payer policy.",
+    "hint": "Is telehealth policy the same everywhere?"
+   }
+  ]
+ },
+ {
+  "code": "CASE-022",
+  "title": "Telehealth vs In-Person: Payment Matters",
+  "description": "Same CPT, different POS — see exactly how 99213 pays at POS 11 vs POS 02, and when the setting changes the code choice.",
+  "difficulty": "Intermediate",
+  "category": "TELEHEALTH",
+  "points": 70,
+  "sort": 22,
+  "questions": [
+   {
+    "q": "Fee schedule: 99213 non-facility (POS 11) = $92.47; facility (POS 02/21) = $66.32. A video visit is coded 99213-95, POS 02. What pays?",
+    "options": [
+     "$92.47 — telehealth always pays the office rate",
+     "$66.32 — POS 02 triggers the facility rate",
+     "$0 — telehealth 99213 is not covered",
+     "$79.40 — the average of the two rates"
+    ],
+    "answer": 1,
+    "points": 15,
+    "explanation": "POS 02 = facility rate ($66.32). The ~$26 difference is the practice-expense reduction for telehealth. Billers must set expectations: telehealth volume needs to account for lower per-visit revenue.",
+    "hint": "Which rate does POS 02 trigger?"
+   },
+   {
+    "q": "A patient has a video visit in the morning (99213-95, POS 02) and comes into the office that afternoon for a wound check (99212, POS 11). How should this be billed?",
+    "options": [
+     "Bill both — they are separate encounters with different POS",
+     "Bill only the in-person visit — telehealth and office on the same day always bundle",
+     "Bill only the video visit — it happened first",
+     "Combine into one 99214"
+    ],
+    "answer": 0,
+    "points": 20,
+    "explanation": "Separate encounters, separate POS, medically distinct reasons — both are billable. Same-day telehealth + in-person is allowed when each is a separately identifiable service; document both encounters clearly.",
+    "hint": "Are these the same encounter or two distinct ones?"
+   },
+   {
+    "q": "The biller considers adding modifier 25 to the afternoon 99212 because the morning was telehealth. Is modifier 25 needed?",
+    "options": [
+     "Yes — always use 25 for same-day services",
+     "No — modifier 25 is for significant separately identifiable E/M on the same day as a procedure; these are two E/Ms at different POS, not E/M + procedure",
+     "Yes — telehealth always requires 25",
+     "No — same-day services can never both be billed"
+    ],
+    "answer": 1,
+    "points": 20,
+    "explanation": "Modifier 25 applies when an E/M is significant and separately identifiable from a procedure on the same day. Two E/Ms at different places of service do not need 25 — the different POS already distinguishes them.",
+    "hint": "What is modifier 25 actually for?"
+   },
+   {
+    "q": "For revenue planning: a practice shifts 30% of 99213 volume to telehealth. What should finance expect?",
+    "options": [
+     "Same revenue — telehealth pays identically",
+     "Lower per-visit revenue (~28% less per 99213 at facility vs non-facility rates) — offset by higher volume/lower overhead",
+     "Higher revenue — telehealth has bonus payments",
+     "No way to estimate"
+    ],
+    "answer": 1,
+    "points": 15,
+    "explanation": "($92.47 - $66.32) / $92.47 = ~28% less per visit. Telehealth economics work through volume, reduced no-shows, and lower overhead — not per-visit rate. Finance must model the mix shift.",
+    "hint": "Do the math on the two rates."
+   }
+  ]
+ },
+ {
+  "code": "CASE-023",
+  "title": "Audio-Only Telehealth: Modifier 93",
+  "description": "When video is not possible — audio-only visits with modifier 93, payer restrictions, and documentation requirements.",
+  "difficulty": "Intermediate",
+  "category": "TELEHEALTH",
+  "points": 70,
+  "sort": 23,
+  "questions": [
+   {
+    "q": "A patient has no smartphone/computer — only a landline. Dr. Patel does a 99213-level visit by phone. What is the correct coding?",
+    "options": [
+     "99213-95, POS 02 — audio counts as telehealth the same as video",
+     "99213-93, POS 02 — modifier 93 specifically identifies audio-only telehealth",
+     "99441 — telephone E/M codes are always used instead",
+     "99213, POS 11 — just bill it as a regular visit"
+    ],
+    "answer": 1,
+    "points": 20,
+    "explanation": "Modifier 93 = audio-only telehealth (created to distinguish from audio-video modifier 95). Many payers cover audio-only only for specific codes and populations — 95 and 93 are not interchangeable.",
+    "hint": "There is a dedicated modifier for audio-only."
+   },
+   {
+    "q": "Which statement about payer coverage of audio-only (93) is TRUE?",
+    "options": [
+     "All payers cover audio-only identically to video",
+     "Coverage is payer-specific and often narrower: some payers limit audio-only to certain codes, require patient attestation that video was unavailable, or do not cover it at all",
+     "Medicare never covers audio-only",
+     "Audio-only always pays more than video"
+    ],
+    "answer": 1,
+    "points": 20,
+    "explanation": "Audio-only coverage is the most variable corner of telehealth policy. Some payers require documented patient inability to use video; others restrict the code set. Verify per payer, per code.",
+    "hint": "Is audio-only treated the same as video everywhere?"
+   },
+   {
+    "q": "Documentation for the audio-only visit must include:",
+    "options": [
+     "Nothing special — document like any visit",
+     "That the visit was audio-only, why video was not available/used, patient consent for telehealth, and start/stop times",
+     "Only the diagnosis",
+     "A recording of the call"
+    ],
+    "answer": 1,
+    "points": 15,
+    "explanation": "Audio-only documentation must establish: modality (audio-only), reason video was not used, patient consent, and time (many audio-only codes are time-based). Auditors target audio-only claims — documentation is the defense.",
+    "hint": "What would an auditor ask about an audio-only claim?"
+   },
+   {
+    "q": "The biller used 99441 (telephone E/M, 5-10 min) for a 25-minute audio-only visit that met 99213 MDM. What is wrong?",
+    "options": [
+     "Nothing — telephone codes are preferred",
+     "Undercoding: if the visit meets office/outpatient E/M requirements via audio-only, 99213-93 (not 99441) captures the work; 99441 is for brief telephone E/M that does not meet O/O E/M criteria",
+     "Overcoding — should be 99442",
+     "99441 and 99213-93 pay the same, so it does not matter"
+    ],
+    "answer": 1,
+    "points": 15,
+    "explanation": "99441-99443 are for telephone E/M that does NOT meet office/outpatient visit requirements. A full 99213-level audio-only visit is coded as 99213-93. Using 99441 undervalues the service significantly.",
+    "hint": "Do telephone codes and O/O E/M codes describe the same service?"
+   }
+  ]
+ },
+ {
+  "code": "CASE-024",
+  "title": "Telehealth + In-Person Same Day: Complex",
+  "description": "Morning video visit, afternoon procedure — modifier logic, POS combinations, and avoiding unbundling traps.",
+  "difficulty": "Advanced",
+  "category": "TELEHEALTH",
+  "points": 80,
+  "sort": 24,
+  "questions": [
+   {
+    "q": "Morning: video visit 99213-95 (POS 02) for knee pain. Afternoon: patient comes in, Dr. Kim does 20610 (knee injection, POS 11). The morning E/M was significant and separately identifiable from the injection decision. Correct billing?",
+    "options": [
+     "99213-95 (POS 02) + 20610-25 (POS 11)",
+     "99213-95-25 (POS 02) + 20610 (POS 11)",
+     "99213 (POS 02) + 20610 (POS 11) — no modifiers needed",
+     "Only 20610 — the E/M bundles into the procedure"
+    ],
+    "answer": 1,
+    "points": 20,
+    "explanation": "Modifier 25 goes on the E/M (99213-95-25), never on the procedure. The 95 stays (telehealth), 25 is added to show the E/M was significant/separately identifiable from the same-day procedure. Different POS further supports separateness.",
+    "hint": "Which code gets modifier 25 — the E/M or the procedure?"
+   },
+   {
+    "q": "What if the morning video visit was ONLY to evaluate whether the injection was needed, and the injection was then done that afternoon?",
+    "options": [
+     "Still bill 99213-95-25 + 20610 — the visits were at different times",
+     "The E/M is part of the decision for the procedure — it is NOT separately billable; bill only 20610",
+     "Bill 99213-95 + 20610-59",
+     "Bill 99214 instead"
+    ],
+    "answer": 1,
+    "points": 20,
+    "explanation": "If the E/M's sole purpose was deciding to do the procedure, it is included in the procedure's global work — modifier 25 requires the E/M to be significant AND separately identifiable beyond the decision to perform the procedure.",
+    "hint": "Was there E/M work beyond 'should I do this injection'?"
+   },
+   {
+    "q": "A scrubber flags 99213-95-25 (POS 02) + 20610 (POS 11). The biller's first check should be:",
+    "options": [
+     "Delete the telehealth line — same-day always bundles",
+     "Verify documentation supports a significant, separately identifiable E/M distinct from the procedure decision, with separate notes for each encounter",
+     "Change POS 02 to POS 11 to avoid the flag",
+     "Add modifier 59 to the injection"
+    ],
+    "answer": 1,
+    "points": 20,
+    "explanation": "Same-day E/M + procedure with 25 is legitimate but heavily audited. The defense is documentation: two distinct encounter notes showing the E/M addressed issues beyond the procedure decision. Never change POS to dodge a flag — that is misrepresentation.",
+    "hint": "What proves the 25 was earned?"
+   },
+   {
+    "q": "Which modifier combination is NEVER correct?",
+    "options": [
+     "99213-95-25",
+     "20610-59",
+     "99213-59",
+     "20610-LT"
+    ],
+    "answer": 2,
+    "points": 20,
+    "explanation": "Modifier 59 is for procedures only — it NEVER goes on an E/M code. 99213-59 is always wrong. (25 goes on E/M; 59/X-modifiers go on procedures; 95 identifies telehealth and can combine with 25.)",
+    "hint": "Which code type can never take modifier 59?"
+   }
+  ]
+ },
+ {
+  "code": "CASE-025",
+  "title": "Originating Site Facility Fee: Q3014",
+  "description": "The patient is at a clinic, the doctor is remote — the originating site bills Q3014 for hosting the telehealth visit.",
+  "difficulty": "Advanced",
+  "category": "TELEHEALTH",
+  "points": 80,
+  "sort": 25,
+  "questions": [
+   {
+    "q": "A rural clinic hosts a telehealth visit: patient at the clinic, specialist video-calls in from 200 miles away. The clinic (originating site) bills what?",
+    "options": [
+     "99213-95 — the clinic bills the visit",
+     "Q3014 — telehealth originating site facility fee",
+     "POS 02 with the E/M code",
+     "Nothing — only the distant provider bills"
+    ],
+    "answer": 1,
+    "points": 20,
+    "explanation": "Q3014 is the originating-site facility fee — it compensates the site hosting the patient (room, equipment, staff). The distant-site provider bills the E/M with 95/POS 02; the originating site bills Q3014.",
+    "hint": "There is a specific HCPCS code for the hosting site."
+   },
+   {
+    "q": "Can the patient's home be an originating site for Q3014?",
+    "options": [
+     "Yes — always",
+     "Under traditional Medicare rules, the home was generally NOT a valid originating site for Q3014 (originating sites were specific facility types); pandemic-era flexibilities expanded this and rules continue to evolve — verify current CMS guidance",
+     "No — Q3014 is only for hospitals",
+     "Only for audio-only visits"
+    ],
+    "answer": 1,
+    "points": 20,
+    "explanation": "Traditional originating-site rules limited Q3014 to facilities (offices, hospitals, rural clinics, etc.) — not the patient's home. COVID flexibilities changed this temporarily; the rules have been extended/modified since. This is a must-verify-current-guidance area.",
+    "hint": "Were homes originally on the originating-site list?"
+   },
+   {
+    "q": "The originating site bills Q3014 and ALSO bills 99213 for the same visit. What is wrong?",
+    "options": [
+     "Nothing — both are billable",
+     "Double billing: the originating site did not provide the E/M service — the distant provider did. The originating site bills ONLY Q3014; the distant provider bills the E/M",
+     "Q3014 replaces the need for modifier 95",
+     "The originating site should bill with POS 02"
+    ],
+    "answer": 1,
+    "points": 20,
+    "explanation": "Only the distant-site provider bills the E/M. The originating site's role is hosting — compensated via Q3014 only. Billing the E/M from the originating site duplicates the distant provider's claim.",
+    "hint": "Who actually performed the medical service?"
+   },
+   {
+    "q": "Q3014 pays approximately $30. A clinic hosts 40 telehealth visits/month. What is the annual facility-fee revenue, and why does it matter?",
+    "options": [
+     "$1,200/year — negligible",
+     "$14,400/year (40 x $30 x 12) — meaningful revenue that funds the telehealth room, equipment, and staff time; clinics that do not bill Q3014 leave money on the table",
+     "$30 total — Q3014 is once per year",
+     "Q3014 is not payable, so $0"
+    ],
+    "answer": 1,
+    "points": 20,
+    "explanation": "40 x $30 x 12 = $14,400/year. For rural/small clinics, the originating-site fee is what makes hosting telehealth financially viable — yet many eligible sites never bill it.",
+    "hint": "Do the multiplication."
+   }
+  ]
  }
 ]
