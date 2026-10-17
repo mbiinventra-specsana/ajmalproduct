@@ -100,13 +100,13 @@ app.get('/labs/scrubber', send('labs/scrubber.html'));
 app.get('/labs/denials', send('labs/denials.html'));
 app.get('/labs/sprints', send('labs/sprints.html'));
 app.get('/labs/quiz', send('labs/quiz.html'));
-// owner panel: fully separate + hidden — only a logged-in admin can open it,
-// everyone else gets the branded 404 (no mention of it anywhere user-side).
+// owner entry: fully separate path — serves the owner login when logged out,
+// the panel when logged in as admin. Never linked from the user side.
 async function ownerPage(req, res, next) {
   try {
     const u = req.session.userId ? await db.get('SELECT role FROM users WHERE id=?', [req.session.userId]) : null;
     if (u && u.role === 'admin') return send('owner.html')(req, res, next);
-    res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+    return send('owner-login.html')(req, res, next);
   } catch (e) { next(e); }
 }
 app.get('/owner', ownerPage);

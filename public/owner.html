@@ -97,7 +97,7 @@ async function boot() {
 }
 (async () => {
   const u = await currentUser();
-  if (!u) { location.href = '/login'; return; }
+  if (!u) { location.href = '/owner'; return; }
   shell('owner', u);
   document.getElementById('create').onclick = async () => {
     const err = document.getElementById('err');

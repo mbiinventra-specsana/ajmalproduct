@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Owner Access — MbiInventra</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+body{background:#0a1628;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.obox{width:100%;max-width:400px;background:rgba(15,30,51,.85);border:1px solid rgba(148,163,184,.18);border-radius:20px;padding:38px 34px;box-shadow:0 40px 80px rgba(0,0,0,.5)}
+.obox .mark{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#14b8a6,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:18px;box-shadow:0 10px 26px rgba(20,184,166,.4)}
+.obox h1{font-size:21px;margin:0 0 6px;color:#fff}
+.obox p{font-size:13px;color:#7c8ea8;margin:0 0 22px}
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:11px;font-weight:700;color:#7c8ea8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.fld input{width:100%;padding:12px 14px;border:1px solid rgba(148,163,184,.25);border-radius:10px;background:rgba(10,22,40,.6);color:#fff;font-size:14px}
+.fld input:focus{outline:none;border-color:#14b8a6}
+.err{display:none;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#fca5a5;font-size:13px;padding:10px 14px;border-radius:10px;margin-bottom:14px}
+.err.show{display:block}
+</style>
+</head>
+<body>
+<div class="obox">
+  <div class="mark">👑</div>
+  <h1>Owner Access</h1>
+  <p>Restricted area. Authorized personnel only.</p>
+  <div class="err" id="err"></div>
+  <div class="fld"><label>Email</label><input id="email" type="email" autocomplete="username" placeholder="owner email"></div>
+  <div class="fld"><label>Password</label><input id="pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+  <button class="btn btn-teal" id="go" style="width:100%;justify-content:center;padding:13px">Unlock →</button>
+</div>
+<script src="/js/app.js"></script>
+<script>
+async function doLogin() {
+  const err = document.getElementById('err');
+  err.classList.remove('show');
+  const go = document.getElementById('go');
+  go.disabled = true; go.textContent = 'Verifying…';
+  try {
+    const d = await api('/api/login', { method: 'POST', body: {
+      email: document.getElementById('email').value.trim(),
+      password: document.getElementById('pw').value } });
+    if (d.user.role !== 'admin') {
+      await api('/api/logout', { method: 'POST' }).catch(() => {});
+      throw new Error('This portal is for the owner only.');
+    }
+    location.href = '/owner';
+  } catch (e) {
+    err.textContent = e.message || 'Login failed.';
+    err.classList.add('show');
+    go.disabled = false; go.textContent = 'Unlock →';
+  }
+}
+document.getElementById('go').onclick = doLogin;
+document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>
