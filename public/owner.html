@@ -163,12 +163,46 @@
     <div class="topbar"><div><h1>📢 Announcements</h1><p>Broadcast messages to all students.</p></div></div>
     <div class="panel" id="announce">
       <h3>📢 Announcements</h3>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <input class="input" id="aTitle" placeholder="Title" style="flex:1">
-        <input class="input" id="aBody" placeholder="Message (optional)" style="flex:2">
-        <button class="btn btn-teal btn-sm" id="aPost">Post</button>
+      <div class="tmpl-row" id="tmplRow">
+        <span style="font-size:12.5px;color:#8a97ad;font-weight:600">Templates:</span>
+        <button class="btn btn-line btn-sm" data-tmpl="exam">📝 Exam reminder</button>
+        <button class="btn btn-line btn-sm" data-tmpl="newcase">🆕 New case alert</button>
+        <button class="btn btn-line btn-sm" data-tmpl="maint">🔧 Maintenance notice</button>
+        <button class="btn btn-line btn-sm" data-tmpl="congrats">🎉 Achievement congrats</button>
       </div>
-      <div id="aList"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div><div class="skel skel-line w80"></div></div>
+      <div class="ann-form">
+        <div class="frow2">
+          <div class="field"><label>Title</label><input class="input" id="aTitle" placeholder="Title"></div>
+          <div class="field"><label>Target audience</label><select class="input" id="aTarget">
+            <option value="all">Everyone</option>
+            <option value="at-risk">At-risk only</option>
+            <option value="specific">Specific students…</option>
+          </select></div>
+        </div>
+        <div class="field" id="aStudentBox" style="display:none"><label>Pick students (multi-select)</label>
+          <select class="input" id="aStudents" multiple size="4"></select></div>
+        <div class="field"><label>Message</label><textarea class="input" id="aBody" rows="2" placeholder="Message (optional)"></textarea></div>
+        <div class="frow2">
+          <div class="field"><label>Publish</label><select class="input" id="aWhen">
+            <option value="now">Post now</option>
+            <option value="later">Schedule for later…</option>
+          </select></div>
+          <div class="field" id="aSchedBox" style="display:none"><label>Schedule at</label><input class="input" type="datetime-local" id="aSched"></div>
+        </div>
+        <div class="frow2">
+          <div class="field"><label>Expires</label><input class="input" type="datetime-local" id="aExpire"></div>
+          <div class="field"><label>Placement</label><select class="input" id="aPlace">
+            <option value="home">Home page only</option>
+            <option value="everywhere">Show everywhere</option>
+          </select></div>
+        </div>
+        <label class="chk"><input type="checkbox" id="aPin"> 📌 Pin to top</label>
+        <div class="act-row" style="margin-top:10px">
+          <button class="btn btn-line btn-sm" id="aPreview">👁 Preview</button>
+          <button class="btn btn-teal btn-sm" id="aPost">Post announcement</button>
+        </div>
+      </div>
+      <div id="aList" style="margin-top:16px"><div class="skel skel-line"></div><div class="skel skel-line w80"></div><div class="skel skel-line"></div><div class="skel skel-line w60"></div><div class="skel skel-line w80"></div></div>
     </div>
     </section>
     <!-- SESSIONS -->
@@ -580,19 +614,50 @@ function renderTrends(tr) {
   aSel.onchange = renderCmp; bSel.onchange = renderCmp;
 }
 // ---- announcements ----
+const ANN_TMPL = {
+  exam: { title: '📝 Exam reminder', body: 'Reminder: your billing certification practice exam is coming up. Review the denial scenarios and aim for 85%+ on every case!' },
+  newcase: { title: '🆕 New training case available', body: 'A new case has been added to the Case Center. Check it out and boost your points!' },
+  maint: { title: '🔧 Scheduled maintenance', body: 'The academy will be briefly unavailable during maintenance. Your progress is safe — see you after!' },
+  congrats: { title: '🎉 Congratulations!', body: 'Amazing work this week! Keep up the momentum — every case you master brings you closer to Billing Executive.' },
+};
+function annStatus(a) {
+  if (!a.active) return '<span class="pill">hidden</span>';
+  if (!a.published) return '<span class="pill p-prog">scheduled</span>';
+  if (a.expires_at && a.expires_at <= new Date().toISOString().slice(0, 19).replace('T', ' ')) return '<span class="pill">expired</span>';
+  return '<span class="pill p-beginner">live</span>';
+}
+function annTargetLabel(a) {
+  const t = a.target || 'all';
+  if (t === 'all') return 'Everyone';
+  if (t === 'at-risk') return 'At-risk only';
+  try { const ids = JSON.parse(t); return Array.isArray(ids) ? `${ids.length} student${ids.length === 1 ? '' : 's'}` : 'Everyone'; }
+  catch { return 'Everyone'; }
+}
 async function loadAnnouncements() {
   try {
     const { announcements } = await api('/api/admin/announcements');
     document.getElementById('aList').innerHTML = announcements.length ? announcements.map(a => `
-      <div class="feat-row"><span><b>${esc(a.title)}</b> ${a.active ? '<span class="pill p-beginner">live</span>' : '<span class="pill">hidden</span>'}<br>
-      <span style="font-size:12px;color:#8a97ad">${esc(a.body || '')} · ${esc((a.created_at || '').slice(0, 16).replace('T', ' '))}</span></span>
-      <span style="white-space:nowrap"><button class="btn btn-line btn-sm" onclick="toggleAnn(${a.id})">${a.active ? 'Hide' : 'Show'}</button>
-      <button class="btn btn-line btn-sm" onclick="delAnn(${a.id})">Delete</button></span></div>`).join('')
+      <div class="feat-row"><span>${a.pinned ? '📌 ' : ''}<b>${esc(a.title)}</b> ${annStatus(a)}
+        <span class="pill" style="margin-left:4px">${esc(annTargetLabel(a))}</span>
+        <span class="pill" style="margin-left:4px">👁 ${a.views || 0}/${a.students || 0}</span><br>
+      <span style="font-size:12px;color:#8a97ad">${esc(a.body || '')}<br>${esc((a.created_at || '').slice(0, 16).replace('T', ' '))}${
+        a.scheduled_at ? ' · ⏰ ' + esc(a.scheduled_at.slice(0, 16).replace('T', ' ')) : ''}${
+        a.expires_at ? ' · ⌛ ' + esc(a.expires_at.slice(0, 16).replace('T', ' ')) : ''}${
+        a.placement === 'everywhere' ? ' · 🌐 everywhere' : ''}</span></span>
+      <span style="white-space:nowrap">
+        <button class="btn btn-line btn-sm" onclick="pinAnn(${a.id},${a.pinned ? 0 : 1})">${a.pinned ? 'Unpin' : 'Pin'}</button>
+        <button class="btn btn-line btn-sm" onclick="toggleAnn(${a.id})">${a.active ? 'Hide' : 'Show'}</button>
+        <button class="btn btn-line btn-sm" onclick="delAnn(${a.id})">Delete</button></span></div>`).join('')
       : '<div class="empty">No announcements yet.</div>';
   } catch (e) { document.getElementById('aList').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
 }
 async function toggleAnn(id) { await api('/api/admin/announcements/' + id + '/toggle', { method: 'POST' }); loadAnnouncements(); }
+async function pinAnn(id, v) { await api('/api/admin/announcements/' + id, { method: 'PATCH', body: { pinned: v } }); loadAnnouncements(); }
 async function delAnn(id) { if (!confirm('Delete this announcement?')) return; await api('/api/admin/announcements/' + id, { method: 'DELETE' }); loadAnnouncements(); }
+function annPreviewHTML(title, body) {
+  return `<div class="alert info" style="margin:0">📢 <b>${esc(title || 'Title')}</b>${body ? ' — ' + esc(body) : ''}</div>
+    <p style="font-size:12px;color:#8a97ad;margin:10px 0 0">This is exactly how it appears on the student dashboard.</p>`;
+}
 // ---- sessions / device control ----
 async function loadSessions() {
   try {
@@ -796,13 +861,71 @@ async function boot() {
       _loadedSec['accounts'] = false; await loadUsers();
     } catch (e) { err.textContent = e.message; err.classList.add('err'); }
   };
+  // templates
+  document.getElementById('tmplRow').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-tmpl]'); if (!b) return;
+    const t = ANN_TMPL[b.dataset.tmpl]; if (!t) return;
+    document.getElementById('aTitle').value = t.title;
+    document.getElementById('aBody').value = t.body;
+  });
+  // target audience picker
+  const loadStudentOpts = async () => {
+    try {
+      const { users } = await api('/api/admin/users');
+      document.getElementById('aStudents').innerHTML = users.filter(u => u.role === 'student')
+        .map(u => `<option value="${u.id}">${esc(u.name)} (${esc(u.email)})</option>`).join('');
+    } catch {}
+  };
+  document.getElementById('aTarget').onchange = (e) => {
+    const v = e.target.value;
+    document.getElementById('aStudentBox').style.display = v === 'specific' ? '' : 'none';
+    if (v === 'specific') loadStudentOpts();
+  };
+  // schedule toggle
+  document.getElementById('aWhen').onchange = (e) => {
+    document.getElementById('aSchedBox').style.display = e.target.value === 'later' ? '' : 'none';
+  };
+  // preview (student banner look)
+  document.getElementById('aPreview').onclick = () => {
+    openModal('Announcement preview', annPreviewHTML(
+      document.getElementById('aTitle').value.trim(),
+      document.getElementById('aBody').value.trim()));
+  };
+  // post
   document.getElementById('aPost').onclick = async () => {
     const t = document.getElementById('aTitle').value.trim();
     const b = document.getElementById('aBody').value.trim();
     if (!t) return alert('Title required.');
+    const tgtSel = document.getElementById('aTarget').value;
+    let target = 'all';
+    if (tgtSel === 'at-risk') target = 'at-risk';
+    else if (tgtSel === 'specific') {
+      const ids = [...document.getElementById('aStudents').selectedOptions].map(o => Number(o.value));
+      if (!ids.length) return alert('Pick at least one student.');
+      target = ids; // single student = [one_id] works too
+    }
+    const when = document.getElementById('aWhen').value;
+    let scheduled_at = null;
+    if (when === 'later') {
+      const v = document.getElementById('aSched').value;
+      if (!v) return alert('Pick a schedule date/time.');
+      scheduled_at = v.replace('T', ' ') + ':00';
+    }
+    const expV = document.getElementById('aExpire').value;
     try {
-      await api('/api/admin/announcements', { method: 'POST', body: { title: t, body: b } });
-      document.getElementById('aTitle').value = ''; document.getElementById('aBody').value = '';
+      await api('/api/admin/announcements', { method: 'POST', body: {
+        title: t, body: b, target,
+        scheduled_at,
+        pinned: document.getElementById('aPin').checked ? 1 : 0,
+        expires_at: expV ? expV.replace('T', ' ') + ':00' : null,
+        placement: document.getElementById('aPlace').value,
+      }});
+      ['aTitle', 'aBody'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('aPin').checked = false;
+      document.getElementById('aExpire').value = '';
+      document.getElementById('aSched').value = '';
+      document.getElementById('aWhen').value = 'now';
+      document.getElementById('aSchedBox').style.display = 'none';
       loadAnnouncements();
     } catch (e) { alert(e.message); }
   };

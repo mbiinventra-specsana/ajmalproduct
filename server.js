@@ -80,12 +80,19 @@ async function requireAuth(req, res, next) {
   if (!u) return res.status(401).json({ error: 'Please log in.' });
   req.user = u;
   // per-student feature gate (admin/instructor bypass; missing row = enabled)
+  // item-level (menu:<key>) is checked first, then group-level (backward compat:
+  // group OFF still disables everything in it)
   if (u.role === 'student') {
-    const f = featureForPath(req.path);
-    if (f) {
-      const row = await db.get('SELECT enabled FROM student_features WHERE user_id=? AND feature=?', [u.id, f]);
-      if (row && !row.enabled)
-        return res.status(403).json({ error: 'This module is disabled for your account.', featureDisabled: f });
+    const itemKey = menuItemForPath(req.path);
+    const groupKey = featureForPath(req.path);
+    if (itemKey || groupKey) {
+      const rows = await db.all('SELECT feature, enabled FROM student_features WHERE user_id = ?', [u.id]);
+      const off = new Set(rows.filter(r => !r.enabled).map(r => r.feature));
+      let blocked = null;
+      if (itemKey && off.has('menu:' + itemKey)) blocked = 'menu:' + itemKey;
+      else if (groupKey && off.has(groupKey)) blocked = groupKey;
+      if (blocked)
+        return res.status(403).json({ error: 'This menu item is disabled for your account.', featureDisabled: blocked });
     }
   }
   next();
@@ -106,6 +113,50 @@ function featureForPath(p) {
   if (p.startsWith('/api/rcm/payments') || p.startsWith('/api/rcm/ar') || p.startsWith('/api/rcm/denials') || p.startsWith('/api/rcm/reports')) return 'revenue';
   if (p.startsWith('/api/cases') || p.startsWith('/api/attempts') || p.startsWith('/api/progress')) return 'training';
   if (p.startsWith('/api/labs/')) return 'labs';
+  return null;
+}
+// per-menu-item catalog: [itemKey, label, groupKey] — mirrors shell() nav in public/js/app.js
+const MENU_ITEMS = [
+  ['dashboard', 'Command Center', 'workspace'],
+  ['workqueue', 'Work Queue', 'workspace'],
+  ['patients', 'Patients', 'patients'],
+  ['insurance', 'Insurance', 'patients'],
+  ['eligibility', 'Eligibility', 'patients'],
+  ['charges', 'Charge Entry', 'billing'],
+  ['claims', 'Claims', 'billing'],
+  ['payments', 'Payments', 'revenue'],
+  ['ar', 'A/R Follow-up', 'revenue'],
+  ['denialsq', 'Denials', 'revenue'],
+  ['reports', 'Reports', 'revenue'],
+  ['training', 'Case Center', 'training'],
+  ['assignments', 'Assignments', 'training'],
+  ['lab', 'Practice Lab', 'training'],
+  ['progress', 'My Progress', 'training'],
+  ['scrubber', 'Claim Scrubber', 'labs'],
+  ['denials', 'Denial Crime-Scene', 'labs'],
+  ['sprints', 'Coding Sprints', 'labs'],
+  ['quiz', 'Quiz Arena', 'labs'],
+];
+const MENU_ITEM_KEYS = MENU_ITEMS.map(m => m[0]);
+// maps an API path to a single menu item key (null = ambiguous/shared → group fallback)
+function menuItemForPath(p) {
+  if (p === '/api/dashboard') return 'dashboard';
+  if (p.startsWith('/api/rcm/work-queue') || p.startsWith('/api/rcm/demo')) return 'workqueue';
+  if (p === '/api/patients' || p.startsWith('/api/rcm/patients')) return 'patients';
+  if (p.startsWith('/api/rcm/insurance')) return 'insurance';
+  if (p.startsWith('/api/rcm/eligibility')) return 'eligibility';
+  if (p.startsWith('/api/rcm/charges')) return 'charges';
+  if (p.startsWith('/api/rcm/claims')) return 'claims';
+  if (p.startsWith('/api/rcm/payments')) return 'payments';
+  if (p.startsWith('/api/rcm/ar')) return 'ar';
+  if (p.startsWith('/api/rcm/denials')) return 'denialsq';
+  if (p.startsWith('/api/rcm/reports')) return 'reports';
+  if (p.startsWith('/api/cases') || p.startsWith('/api/attempts')) return 'training';
+  if (p.startsWith('/api/progress')) return 'progress';
+  if (p.startsWith('/api/labs/scrubber')) return 'scrubber';
+  if (p.startsWith('/api/labs/denials')) return 'denials';
+  if (p.startsWith('/api/labs/sprints')) return 'sprints';
+  if (p.startsWith('/api/labs/quiz')) return 'quiz';
   return null;
 }
 async function requireAdmin(req, res, next) {
@@ -174,7 +225,7 @@ async function ownerPage(req, res, next) {
 }
 app.get('/owner', ownerPage);
 app.get('/owner/', ownerPage);
-app.get('/owner/:section(analytics|accounts|announce|sessions|system)', ownerPage);
+app.get('/owner/:section(analytics|accounts|announce|sessions|system|menus)', ownerPage);
 app.get(ADMIN_PATH, send('admin.html'));
 app.get(ADMIN_PATH + '/', send('admin.html'));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
@@ -751,6 +802,33 @@ app.post('/api/rcm/demo', requireAuth, ah(async (req, res) => {
 app.get('/api/admin/features', requireAdmin, ah(async (req, res) => {
   res.json({ features: FEATURES.map(([key, label, icon, desc]) => ({ key, label, icon, desc })) });
 }));
+// per-menu-item catalog for the Menu Control page
+app.get('/api/admin/menu-items', requireAdmin, ah(async (req, res) => {
+  res.json({ items: MENU_ITEMS.map(([key, label, group]) => ({ key, label, group })) });
+}));
+// per-student menu-item states (resolved: group OFF also disables its items)
+app.get('/api/admin/users/:id/menu-features', requireAdmin, ah(async (req, res) => {
+  const u = await db.get('SELECT id FROM users WHERE id = ?', [req.params.id]);
+  if (!u) return res.status(404).json({ error: 'Not found.' });
+  const rows = await db.all('SELECT feature, enabled FROM student_features WHERE user_id = ?', [u.id]);
+  const off = new Set(rows.filter(r => !r.enabled).map(r => r.feature));
+  res.json({ items: MENU_ITEMS.map(([key, label, group]) => ({
+    key, label, group, enabled: !(off.has('menu:' + key) || off.has(group)),
+  })) });
+}));
+// toggle one menu item for a student (upsert; plain INSERT/UPDATE — both engines)
+app.post('/api/admin/users/:id/menu-features', requireAdmin, ah(async (req, res) => {
+  const u = await db.get('SELECT id FROM users WHERE id = ?', [req.params.id]);
+  if (!u) return res.status(404).json({ error: 'Not found.' });
+  const key = String((req.body && req.body.key) || '');
+  if (!MENU_ITEM_KEYS.includes(key)) return res.status(400).json({ error: 'Invalid menu item.' });
+  const en = (req.body && req.body.enabled) ? 1 : 0;
+  const dbKey = 'menu:' + key;
+  const has = await db.get('SELECT 1 FROM student_features WHERE user_id=? AND feature=?', [u.id, dbKey]);
+  if (has) await db.run('UPDATE student_features SET enabled=? WHERE user_id=? AND feature=?', [en, u.id, dbKey]);
+  else await db.run('INSERT INTO student_features (user_id, feature, enabled) VALUES (?,?,?)', [u.id, dbKey, en]);
+  res.json({ ok: true, key, enabled: !!en });
+}));
 app.get('/api/admin/overview', requireAdmin, ah(async (req, res) => {  res.json({
     users: (await db.get('SELECT COUNT(*) AS n FROM users')).n,
     students: (await db.get("SELECT COUNT(*) AS n FROM users WHERE role='student'")).n,
@@ -1008,16 +1086,46 @@ app.post('/api/admin/sessions/:id/kill', requireAdmin, ah(async (req, res) => {
   await db.run('DELETE FROM login_sessions WHERE id = ?', [s.id]);
   res.json({ ok: true });
 }));
-// ---- announcements ----
+// ---- announcements (ultra: schedule, targeting, pin/expire, placement, read receipts) ----
+const ANN_PUBLISHED = () => {
+  const n = db.now();
+  return `active = 1 AND (scheduled_at IS NULL OR scheduled_at <= '${n}') AND (expires_at IS NULL OR expires_at > '${n}')`;
+};
 app.get('/api/admin/announcements', requireAdmin, ah(async (req, res) => {
-  res.json({ announcements: await db.all('SELECT * FROM announcements ORDER BY id DESC LIMIT 50') });
+  const anns = await db.all('SELECT * FROM announcements ORDER BY pinned DESC, id DESC LIMIT 50');
+  const students = (await db.get("SELECT COUNT(*) AS n FROM users WHERE role = 'student'")).n;
+  for (const a of anns) {
+    a.views = (await db.get('SELECT COUNT(*) AS n FROM announcement_views WHERE announcement_id = ?', [a.id])).n;
+    a.students = students;
+    a.published = a.active === 1 &&
+      (!a.scheduled_at || a.scheduled_at <= db.now()) &&
+      (!a.expires_at || a.expires_at > db.now());
+  }
+  res.json({ announcements: anns });
 }));
 app.post('/api/admin/announcements', requireAdmin, ah(async (req, res) => {
-  const { title, body } = req.body || {};
+  const { title, body, scheduled_at, target, pinned, expires_at, placement } = req.body || {};
   if (!title || !String(title).trim()) return res.status(400).json({ error: 'Title required.' });
-  const r = await db.run('INSERT INTO announcements (title, body, active, created_by, created_at) VALUES (?,?,?,?,?)',
-    [String(title).slice(0, 200), String(body || '').slice(0, 2000), 1, req.adminUser.id, db.now()]);
+  // target: 'all' | 'at-risk' | [ids] (single student = [one_id])
+  let tgt = 'all';
+  if (target === 'at-risk') tgt = 'at-risk';
+  else if (Array.isArray(target)) tgt = JSON.stringify(target.map(Number).filter(n => n > 0));
+  const plc = placement === 'everywhere' ? 'everywhere' : 'home';
+  const r = await db.run(
+    'INSERT INTO announcements (title, body, active, created_by, created_at, scheduled_at, target, pinned, expires_at, placement) VALUES (?,?,?,?,?,?,?,?,?,?)',
+    [String(title).slice(0, 200), String(body || '').slice(0, 2000), 1, req.adminUser.id, db.now(),
+     scheduled_at || null, tgt, pinned ? 1 : 0, expires_at || null, plc]);
   res.json({ ok: true, id: r.id });
+}));
+app.patch('/api/admin/announcements/:id', requireAdmin, ah(async (req, res) => {
+  const { active, pinned } = req.body || {};
+  const sets = [], vals = [];
+  if (active !== undefined) { sets.push('active = ?'); vals.push(active ? 1 : 0); }
+  if (pinned !== undefined) { sets.push('pinned = ?'); vals.push(pinned ? 1 : 0); }
+  if (!sets.length) return res.status(400).json({ error: 'Nothing to update.' });
+  vals.push(req.params.id);
+  await db.run(`UPDATE announcements SET ${sets.join(', ')} WHERE id = ?`, vals);
+  res.json({ ok: true });
 }));
 app.post('/api/admin/announcements/:id/toggle', requireAdmin, ah(async (req, res) => {
   await db.run('UPDATE announcements SET active = 1 - active WHERE id = ?', [req.params.id]);
@@ -1027,9 +1135,35 @@ app.delete('/api/admin/announcements/:id', requireAdmin, ah(async (req, res) => 
   await db.run('DELETE FROM announcements WHERE id = ?', [req.params.id]);
   res.json({ ok: true });
 }));
-// student-facing: active announcements + leaderboard
+// student-facing: published + target-matched + placement-filtered
 app.get('/api/announcements', requireAuth, ah(async (req, res) => {
-  res.json({ announcements: await db.all('SELECT id, title, body, created_at FROM announcements WHERE active = 1 ORDER BY id DESC LIMIT 10') });
+  const uid = req.session.userId;
+  const plc = req.query.placement === 'everywhere' ? null : 'home'; // default: home only
+  let q = `SELECT id, title, body, pinned, target, created_at FROM announcements WHERE ${ANN_PUBLISHED()}`;
+  const params = [];
+  if (plc) { q += ' AND placement = ?'; params.push(plc); }
+  q += ' ORDER BY pinned DESC, id DESC LIMIT 10';
+  let anns = await db.all(q, params);
+  // target filtering in JS (target can be 'all', 'at-risk', or JSON array incl. single [id])
+  const since7 = db.IS_MYSQL ? 'DATE_SUB(NOW(), INTERVAL 7 DAY)' : `datetime('now', '-7 days')`;
+  const activeIds = new Set((await db.all(
+    `SELECT DISTINCT user_id AS id FROM (SELECT user_id, started_at AS ts FROM attempts UNION ALL SELECT user_id, created_at FROM lab_runs) t WHERE ts >= ${since7}`
+  )).map(r => r.id));
+  const uidN = Number(uid);
+  anns = anns.filter(a => {
+    const t = a.target || 'all';
+    if (t === 'all') return true;
+    if (t === 'at-risk') return !activeIds.has(uidN);
+    try { const ids = JSON.parse(t); return Array.isArray(ids) && ids.map(Number).includes(uidN); }
+    catch { return true; }
+  });
+  res.json({ announcements: anns });
+}));
+// read receipt (fire-and-forget from student dashboard)
+app.post('/api/announcements/:id/view', requireAuth, ah(async (req, res) => {
+  await db.insertIgnore('announcement_views', ['announcement_id', 'user_id', 'viewed_at'],
+    [Number(req.params.id), req.session.userId, db.now()]);
+  res.json({ ok: true });
 }));
 app.get('/api/leaderboard', requireAuth, ah(async (req, res) => {
   const top = await db.all(

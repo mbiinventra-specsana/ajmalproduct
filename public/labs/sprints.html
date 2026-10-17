@@ -137,7 +137,7 @@ async function finish() {
   if (!u) { location.href = '/login'; return; }
   if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
   shell('sprints', u);
-  if (!guardFeature(u, 'labs', 'Coding Sprints')) return;
+  if (!guardFeature(u, 'sprints', 'Coding Sprints')) return;
   setup(); refreshBest();
 })();
 </script>

@@ -121,7 +121,7 @@ async function submitVerdict() {
   if (!u) { location.href = '/login'; return; }
   if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
   shell('denials', u);
-  if (!guardFeature(u, 'labs', 'Denial Crime-Scene')) return;
+  if (!guardFeature(u, 'denials', 'Denial Crime-Scene')) return;
   const d = await api('/api/labs/denials');
   SCEN = d.scenarios;
   document.getElementById('best').textContent = '6 CASE FILES';

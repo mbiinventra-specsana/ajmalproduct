@@ -24,7 +24,7 @@ const ICDS = [['J06.9', 'Acute URI'], ['I10', 'Hypertension'], ['E11.9', 'Type 2
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('charges', u);
-  if (!guardFeature(u, 'billing', 'Charge Entry')) return;
+  if (!guardFeature(u, 'charges', 'Charge Entry')) return;
   const [d, p] = await Promise.all([api('/api/rcm/charges'), api('/api/rcm/patients')]);
   rows = d.charges; pts = p.patients;
   document.getElementById('kpis').innerHTML = [

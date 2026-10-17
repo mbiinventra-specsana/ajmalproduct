@@ -26,7 +26,7 @@ let claims = [];
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('payments', u);
-  if (!guardFeature(u, 'revenue', 'Payments')) return;
+  if (!guardFeature(u, 'payments', 'Payments')) return;
   const [c, p] = await Promise.all([api('/api/rcm/claims'), api('/api/rcm/payments')]);
   claims = c.claims.filter(x => ['SUBMITTED', 'PAID'].includes(x.status));
   const posted = p.payments;

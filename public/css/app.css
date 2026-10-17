@@ -430,3 +430,12 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-w
 @keyframes odot-pulse{0%,100%{box-shadow:0 0 0 3px rgba(34,197,94,.18)}50%{box-shadow:0 0 0 6px rgba(34,197,94,.06)}}
 .xrow td{background:#f8fafc;border-top:0 !important}
 @media(max-width:700px){.acct-tools{grid-template-columns:1fr 1fr}}
+
+/* ---- ultra announcements ---- */
+.tmpl-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.ann-form { background: #f8fafc; border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 6px; }
+.frow2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.chk { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer; margin-top: 4px; }
+.chk input { width: 16px; height: 16px; accent-color: #0e9f8a; }
+#aStudents { min-height: 96px; }
+@media(max-width: 700px) { .frow2 { grid-template-columns: 1fr; } }

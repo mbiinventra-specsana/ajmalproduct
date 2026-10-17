@@ -122,7 +122,7 @@ async function submit() {
   if (!u) { location.href = '/login'; return; }
   if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
   shell('quiz', u);
-  if (!guardFeature(u, 'labs', 'Quiz Arena')) return;
+  if (!guardFeature(u, 'quiz', 'Quiz Arena')) return;
   menu();
 })();
 </script>

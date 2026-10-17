@@ -91,7 +91,7 @@ function lineCard(n) {
   if (!u) { location.href = '/login'; return; }
   if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
   shell('scrubber', u);
-  if (!guardFeature(u, 'labs', 'Claim Scrubber')) return;
+  if (!guardFeature(u, 'scrubber', 'Claim Scrubber')) return;
   const [meta, pats, bests] = await Promise.all([api('/api/labs/scrub/meta'), api('/api/patients'), api('/api/labs/bests')]);
   PAYERS = meta.payers;
   document.getElementById('best').textContent = bests.bests.scrubber != null ? `BEST ${bests.bests.scrubber}%` : 'NO RUNS YET';

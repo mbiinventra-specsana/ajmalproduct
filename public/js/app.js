@@ -21,14 +21,19 @@ async function logout() {
   try { await api('/api/logout', { method: 'POST' }); } catch {}
   location.href = '/';
 }
-// page-level feature gate: returns false + shows notice if the module is off for this student
+// page-level feature gate: accepts a menu ITEM key (granular) or a group key (legacy)
+// returns false + shows notice if off for this student
 function guardFeature(user, fkey, label) {
-  if (!(user.disabledFeatures || []).includes(fkey)) return true;
-  const back = (user.disabledFeatures || []).includes('workspace') ? '' :
+  const off = new Set(user.disabledFeatures || []);
+  const blocked = ITEM_GROUP[fkey]
+    ? (off.has('menu:' + fkey) || off.has(ITEM_GROUP[fkey]))
+    : off.has(fkey);
+  if (!blocked) return true;
+  const back = off.has('workspace') ? '' :
     `<p><a href="/dashboard" style="color:#0e9f8a">← Back to Command Center</a></p>`;
   document.querySelector('.main').innerHTML = `<div class="empty" style="margin-top:80px;text-align:center">
-    <h2>🔒 ${esc(label || 'This module')} is disabled</h2>
-    <p>Your administrator has turned off this module for your account.</p>${back}</div>`;
+    <h2>🔒 ${esc(label || 'This menu item')} is disabled</h2>
+    <p>Your administrator has turned off this menu item for your account.</p>${back}</div>`;
   return false;
 }
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c =>
@@ -72,7 +77,22 @@ const I = {
   mega: _svg('<path d="m3 11 18-7-7 18-2.5-7.5z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'),
   monitor: _svg('<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>'),
   pulse: _svg('<path d="M22 12h-4l-3 8-6-16-3 8H2"/>'),
+  sliders: _svg('<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/>'),
 };
+// menu item → group mapping (mirrors MENU_ITEMS in server.js)
+const ITEM_GROUP = {
+  dashboard: 'workspace', workqueue: 'workspace',
+  patients: 'patients', insurance: 'patients', eligibility: 'patients',
+  charges: 'billing', claims: 'billing',
+  payments: 'revenue', ar: 'revenue', denialsq: 'revenue', reports: 'revenue',
+  training: 'training', assignments: 'training', lab: 'training', progress: 'training',
+  scrubber: 'labs', denials: 'labs', sprints: 'labs', quiz: 'labs',
+};
+// true if a menu item is off for this student (item key checked first, then group)
+function itemOff(user, itemKey) {
+  const off = new Set(user.disabledFeatures || []);
+  return off.has('menu:' + itemKey) || off.has(ITEM_GROUP[itemKey]);
+}
 function shell(active, user) {
   const off = new Set(user.disabledFeatures || []); // per-student feature gates
   const nav = [
@@ -111,7 +131,10 @@ function shell(active, user) {
   if (user.role === 'admin' || user.role === 'instructor') {
     nav.push(['', 'Manage', [['owner', 'Owner Panel', '/owner', 'crown']]]);
   }
-  const shown = nav.filter(([f]) => !f || !off.has(f));
+  const shown = nav
+    .filter(([f]) => !f || !off.has(f))
+    .map(([f, g, items]) => [f, g, items.filter(([k]) => !itemOff(user, k))])
+    .filter(([, , items]) => items.length); // hide group header when all its items are off
   document.getElementById('sidebar').innerHTML = `
     <div class="brand"><div class="mark">${I.grid}</div><div>MbiInventra<small>bill.mbiinventra.com</small></div></div>
     <nav class="snav">${shown.map(([f, g, items]) => `
@@ -133,6 +156,7 @@ function adminShell(active, user) {
       ['analytics', 'analytics', 'Analytics', '/owner/analytics', 'chart'],
       ['accounts', 'accounts', 'Accounts', '/owner/accounts', 'users'],
       ['announce', 'announce', 'Announcements', '/owner/announce', 'mega'],
+      ['menus', 'menus', 'Menu Control', '/owner/menus', 'sliders'],
       ['sessions', 'sessions', 'Sessions', '/owner/sessions', 'monitor'],
       ['syshealth', 'system', 'System health', '/owner/system', 'pulse'],
     ]],

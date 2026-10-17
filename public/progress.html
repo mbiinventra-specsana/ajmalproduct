@@ -30,7 +30,7 @@
 (async () => {
   const u = await requireLogin(); if (!u) return;
   shell('progress', u);
-  if (!guardFeature(u, 'training', 'My Progress')) return;
+  if (!guardFeature(u, 'progress', 'My Progress')) return;
   const [p, si] = await Promise.all([api('/api/progress'), api('/api/student-insights').catch(() => null)]);
   const s = p.stats;
   if (si) {

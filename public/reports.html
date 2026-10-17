@@ -31,7 +31,7 @@ const LABN = { scrubber: 'Claim Scrubber', denials: 'Denial Crime-Scene', sprint
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('reports', u);
-  if (!guardFeature(u, 'revenue', 'Reports')) return;
+  if (!guardFeature(u, 'reports', 'Reports')) return;
   const d = await api('/api/rcm/reports');
   const r = d.rcm, t = d.training;
   document.getElementById('kpisRcm').innerHTML = [

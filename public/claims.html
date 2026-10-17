@@ -24,7 +24,7 @@ const VCLS = { PASSED: 'b-green', FAILED: 'b-red', NOT_VALIDATED: 'b-amber' };
 async function load() {
   const u = await requireLogin(); if (!u) return;
   shell('claims', u);
-  if (!guardFeature(u, 'billing', 'Claims')) return;
+  if (!guardFeature(u, 'claims', 'Claims')) return;
   const [d, ch] = await Promise.all([api('/api/rcm/claims'), api('/api/rcm/charges')]);
   rows = d.claims; charges = ch.charges.filter(c => !c.claim_id);
   document.getElementById('kpis').innerHTML = [

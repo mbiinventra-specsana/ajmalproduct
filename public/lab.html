@@ -47,7 +47,7 @@
 (async () => {
   const u = await requireLogin(); if (!u) return;
   shell('lab', u);
-  if (!guardFeature(u, 'training', 'Practice Lab')) return;
+  if (!guardFeature(u, 'lab', 'Practice Lab')) return;
 
   // Drill 1: payment posting math — 200 billed, 140 allowed, 28 patient → payer 112, adj 60
   document.getElementById('pCheck').onclick = () => {
