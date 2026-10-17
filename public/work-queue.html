@@ -33,13 +33,15 @@
 .ti-claim{background:#dbeafe}.ti-denial{background:#fee2e2}.ti-ar{background:#fef3c7}
 .ti-payment{background:#ccfbf1}.ti-charge{background:#ede9fe}.ti-case{background:#f1f5f9}
 /* filter tabs */
-.ftabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.ftab{display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:24px;border:1px solid #e2e8f0;
+.ftabs{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.ftab{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:24px;border:1.5px solid #e2e8f0;
+  background:#fff;font-family:inherit;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;transition:all .2s;
+  box-shadow:0 1px 3px rgba(10,22,40,.04);
   background:#fff;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;transition:all .18s}
-.ftab:hover{border-color:#0e9f8a;color:#0f2743;transform:translateY(-1px)}
-.ftab.on{background:#0f2743;border-color:#0f2743;color:#fff;box-shadow:0 4px 12px rgba(15,39,67,.25)}
-.ftab .cnt{background:#f1f5f9;color:#64748b;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
-.ftab.on .cnt{background:rgba(255,255,255,.18);color:#fff}
+.ftab:hover{border-color:#0e9f8a;color:#0f2743;transform:translateY(-1px);box-shadow:0 3px 10px rgba(14,159,138,.12)}
+.ftab.on{background:linear-gradient(135deg,#0f2743,#1a3a5c);border-color:#0f2743;color:#fff;box-shadow:0 4px 14px rgba(15,39,67,.28)}
+.ftab .cnt{background:#f1f5f9;color:#475569;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;min-width:24px;text-align:center}
+.ftab.on .cnt{background:rgba(255,255,255,.2);color:#fff}
 /* table polish */
 .wq-table td{vertical-align:middle;padding:13px 12px}
 .wq-table tr{transition:background .15s}
@@ -130,7 +132,7 @@ async function load() {
         ${top.amount ? `<span class="sl-m">Amount <b>${money(top.amount)}</b></span>` : ''}
         ${top.score ? `<span class="sl-m">Score <b style="color:#0e9f8a">${top.score}</b></span>` : ''}
       </div>
-      <a class="btn btn-teal" href="${top.href}">${esc(top.action)} →</a>
+      <a class="btn btn-teal" href="${top.href}">${esc(top.action)}${/→$/.test(top.action) ? "" : " →"}</a>
     </div>` : '';
 
   renderTabs(); render();
