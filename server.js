@@ -7,6 +7,7 @@ require('./lib/env'); // FIRST: load NexPanel env file + normalize, before anyth
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const fs = require('fs');
 const db = require('./lib/db');
 const labData = require('./lib/lab-data');
 
@@ -253,7 +254,17 @@ function logActivity(userId, action, detail, req) {
 }
 
 // ---------- pages ----------
-const send = (f) => (req, res) => res.sendFile(path.join(__dirname, 'public', f));
+// Cache-busting: every deploy gets a fresh version so browsers never serve stale JS/CSS
+const APP_V = Date.now().toString(36);
+const send = (f) => (req, res) => {
+  const fp = path.join(__dirname, 'public', f);
+  if (!f.endsWith('.html')) return res.sendFile(fp);
+  try {
+    let html = fs.readFileSync(fp, 'utf8');
+    html = html.replaceAll('/js/app.js', `/js/app.js?v=${APP_V}`).replaceAll('/css/app.css', `/css/app.css?v=${APP_V}`);
+    res.type('html').send(html);
+  } catch { res.sendFile(fp); }
+};
 app.get('/', send('index.html'));
 app.get('/login', send('login.html'));
 // student portal: /stu is the student side entry (dashboard)
