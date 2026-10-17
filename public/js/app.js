@@ -211,4 +211,5 @@ function adminShell(active, user) {
       <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
       <div style="margin-top:10px"><span class="badge-fict">TRAINING MODE · fictional data</span></div>
     </div>`;
+  console.log('[adminShell] DOM links:', document.querySelectorAll('#sidebar .snav a').length);
 }
