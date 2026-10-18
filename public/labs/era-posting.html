@@ -202,9 +202,29 @@ function showUpdatePopup(msg) {
   };
 }
 
+// Standalone fetch with timeout (doesn't depend on app.js)
+async function fetchJSON(url, timeoutMs = 12000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(url, { credentials: 'same-origin', signal: ctrl.signal,
+      headers: { 'Content-Type': 'application/json' } });
+    clearTimeout(timer);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) { const e = new Error(data.error || 'Request failed'); e.status = r.status; throw e; }
+    return data;
+  } catch (e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') throw new Error('Server not responding (timeout)');
+    throw e;
+  }
+}
+
 async function init() {
   try {
-  const u = await currentUser();
+  // Use standalone fetch to avoid hanging on old app.js
+  let u = null;
+  try { u = (await fetchJSON('/api/me')).user; } catch (e) { u = null; }
   if (!u) { location.href = '/login'; return; }
   if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
   shell('era', u);
@@ -216,7 +236,7 @@ async function init() {
   let d = null, retries = 3;
   while (retries-- > 0) {
     try {
-      d = await api('/api/labs/era');
+      d = await fetchJSON('/api/labs/era');
       break;
     } catch (e) {
       // Session expired — go to login (only if truly unauthorized)
