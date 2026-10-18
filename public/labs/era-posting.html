@@ -178,7 +178,7 @@
 <script>
 let SCEN = [], ACTIONS = [], cur = null, answers = {};
 const $ = id => document.getElementById(id);
-const money = n => '$' + Number(n).toFixed(2);
+const eraMoney = n => '$' + Number(n).toFixed(2);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // Update popup — shows when data fails to load
@@ -297,9 +297,9 @@ function renderWork() {
         <tr><th>CPT</th><th>Billed</th><th>Allowed</th><th>Paid</th><th>Adj. codes</th><th>Pt. resp.</th></tr>
         ${s.lines.map(l => `<tr>
           <td><span class="cptb">${esc(l.cpt)}</span><br><span class="desc">${esc(l.desc)}</span></td>
-          <td class="money">${money(l.billed)}</td><td class="money">${money(l.allowed)}</td><td class="money">${money(l.paid)}</td>
+          <td class="money">${eraMoney(l.billed)}</td><td class="money">${eraMoney(l.allowed)}</td><td class="money">${eraMoney(l.paid)}</td>
           <td>${l.carc ? `<span class="carc">${esc(l.carc)}</span> ${esc(l.carcLabel)}` : '\u2014'}${l.rarc ? `<br><span class="carc">${esc(l.rarc)}</span> ${esc(l.rarcLabel)}` : ''}</td>
-          <td>${l.prCode ? `<span class="pr">${esc(l.prCode)}</span> ${esc(l.prLabel)} <span class="money">${money(l.prAmt)}</span>` : '\u2014'}</td>
+          <td>${l.prCode ? `<span class="pr">${esc(l.prCode)}</span> ${esc(l.prLabel)} <span class="money">${eraMoney(l.prAmt)}</span>` : '\u2014'}</td>
         </tr>`).join('')}
       </table>
     </div>
@@ -307,7 +307,7 @@ function renderWork() {
     ${s.lines.map((l, i) => `
     <div class="post-card" id="pc-${i}">
       <h4>Line ${i + 1} &mdash; post this line</h4>
-      <div class="cpt-tag">${esc(l.cpt)} &middot; ${esc(l.desc)} &middot; Billed ${money(l.billed)}</div>
+      <div class="cpt-tag">${esc(l.cpt)} &middot; ${esc(l.desc)} &middot; Billed ${eraMoney(l.billed)}</div>
       <div class="post-row">
         <div class="post-field"><label>Contractual adjustment ($)</label>
           <input type="number" step="0.01" min="0" id="adj-${i}" placeholder="0.00"></div>
