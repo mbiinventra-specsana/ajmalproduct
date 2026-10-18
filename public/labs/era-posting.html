@@ -179,7 +179,7 @@
 let SCEN = [], ACTIONS = [], cur = null, answers = {};
 const $ = id => document.getElementById(id);
 const eraMoney = n => '$' + Number(n).toFixed(2);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// esc() provided by app.js (global)
 
 // Update popup — shows when data fails to load
 function showUpdatePopup(msg) {
