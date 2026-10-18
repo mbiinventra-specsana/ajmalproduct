@@ -127,7 +127,7 @@
 <script>
 let LIB = [];
 const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// esc() from app.js','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const VLABEL = { covered:['✅ Covered','covered'], conditional:['⚠️ Conditional','conditional'], 'not-covered':['🚫 Not Covered','not-covered'] };
 
 async function init(){

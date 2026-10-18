@@ -129,7 +129,7 @@
 <script>
 let SCEN = [], answers = {}, revealed = {}, filter = 'all', userName = '';
 const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// esc() from app.js','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 const TOPICS = ['all','Privacy Rule','Security Rule','Breach Notification','Patient Rights','Business Associates','Enforcement'];
 function topicOf(t){ return TOPICS.find(x => x !== 'all' && t.startsWith(x)) || 'Privacy Rule'; }
