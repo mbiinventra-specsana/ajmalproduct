@@ -392,7 +392,17 @@ app.get(ADMIN_PATH + '/', send('admin.html'));
 // delivered through the authenticated ownerPage / ADMIN_PATH handlers.
 app.get(['/owner.html', '/admin.html'], (req, res) =>
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html')));
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '1d',
+  setHeaders: (res, filePath) => {
+    // Never cache HTML — always get fresh version
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
 // NOTE: intentionally NO /register route anywhere.
 
 // ---------- auth API (login only) ----------
