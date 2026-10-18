@@ -181,10 +181,29 @@ const $ = id => document.getElementById(id);
 const money = n => '$' + Number(n).toFixed(2);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+// Update popup — shows when data fails to load
+function showUpdatePopup(msg) {
+  const existing = document.getElementById('update-popup');
+  if (existing) existing.remove();
+  const popup = document.createElement('div');
+  popup.id = 'update-popup';
+  popup.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,22,40,.7);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  popup.innerHTML = '<div style="background:#fff;border-radius:20px;padding:36px;max-width:420px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:popIn .3s ease">'
+    + '<div style="font-size:48px;margin-bottom:12px">🔄</div>'
+    + '<h3 style="margin:0 0 8px;color:#0f2743;font-size:20px">Update Available</h3>'
+    + '<p style="color:#64748b;font-size:14px;margin:0 0 20px;line-height:1.6">' + (msg || 'A new version is ready. Click below to update.') + '</p>'
+    + '<button id="upd-btn" style="background:linear-gradient(135deg,#0e9f8a,#0b7d6d);color:#fff;border:none;border-radius:12px;padding:14px 40px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(14,159,138,.35)">Update Now →</button>'
+    + '<p style="color:#94a3b8;font-size:12px;margin:12px 0 0">Your login will stay saved ✓</p></div>'
+    + '<style>@keyframes popIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}</style>';
+  document.body.appendChild(popup);
+  document.getElementById('upd-btn').onclick = () => {
+    // Hard refresh bypassing cache, preserving session cookies
+    window.location.href = window.location.pathname + '?v=' + Date.now();
+  };
+}
+
 async function init() {
   try {
-  // Clear stale cache — always verify session fresh
-  window._cu = null;
   const u = await currentUser();
   if (!u) { location.href = '/login'; return; }
   if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
@@ -197,15 +216,18 @@ async function init() {
       d = await api('/api/labs/era');
       break;
     } catch (e) {
-      // Session expired — go to login
-      if (e.status === 401) { location.href = '/login'; return; }
+      // Session expired — go to login (only if truly unauthorized)
+      if (e.status === 401) {
+        window._cu = null;
+        const recheck = await currentUser();
+        if (!recheck) { location.href = '/login'; return; }
+        // Session is actually valid, retry the API call
+        continue;
+      }
       if (retries === 0) {
-        $('scen-list').innerHTML = '<div class="post-card" style="color:#dc2626;padding:20px">'
-          + '<b>Debug:</b> API failed after 3 tries<br>'
-          + 'Error: ' + esc(e.message) + '<br>'
-          + 'Status: ' + (e.status || 'unknown') + '<br>'
-          + '<button onclick="location.reload()" style="margin-top:10px;padding:8px 16px;background:#0e9f8a;color:#fff;border:none;border-radius:8px;cursor:pointer">Retry</button></div>';
-        $('st-total').textContent = 'ERR';
+        // Show update popup instead of getting stuck
+        showUpdatePopup('The page needs to refresh to load the latest data.');
+        $('st-total').textContent = '—';
         return;
       }
       await new Promise(r => setTimeout(r, 500));
