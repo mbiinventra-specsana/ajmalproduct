@@ -1,11 +1,22 @@
 // Shared frontend helpers — MbiInventra RCM Academy
 async function api(path, opts = {}) {
-  const r = await fetch(path, {
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json' },
-    ...opts,
-    body: opts.body ? JSON.stringify(opts.body) : undefined,
-  });
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 15000);
+  let r;
+  try {
+    r = await fetch(path, {
+      credentials: 'same-origin',
+      signal: ctrl.signal,
+      headers: { 'Content-Type': 'application/json' },
+      ...opts,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+  } catch (e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') throw new Error('Request timed out — server not responding');
+    throw e;
+  }
+  clearTimeout(timer);
   const data = await r.json().catch(() => ({}));
   if (!r.ok) { const e = new Error(data.error || 'Request failed'); e.status = r.status; Object.assign(e, data); throw e; }
   return data;

@@ -209,6 +209,9 @@ async function init() {
   if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
   shell('era', u);
   if (!guardFeature(u, 'era', 'ERA Posting Simulator')) return;
+  // Show loading indicator
+  $('scen-list').innerHTML = '<div class="post-card" style="text-align:center;padding:40px;color:#64748b">'
+    + '<div style="font-size:32px;margin-bottom:10px">⏳</div>Loading scenarios…</div>';
   // Retry logic for hard refresh race conditions
   let d = null, retries = 3;
   while (retries-- > 0) {
