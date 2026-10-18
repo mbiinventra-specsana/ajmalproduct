@@ -221,46 +221,32 @@ async function fetchJSON(url, timeoutMs = 12000) {
 }
 
 async function init() {
+  // VERSION MARKER v3 - if you see this in console, new code is live
+  console.log('[ERA] v3 init starting');
   try {
-  // Use standalone fetch to avoid hanging on old app.js
   let u = null;
-  try { u = (await fetchJSON('/api/me')).user; } catch (e) { u = null; }
-  if (!u) { location.href = '/login'; return; }
+  try { u = (await fetchJSON('/api/me')).user; console.log('[ERA] user:', u ? u.username : 'null'); } catch (e) { console.log('[ERA] /api/me failed:', e.message); u = null; }
+  if (!u) { console.log('[ERA] no user, redirect to login'); location.href = '/login'; return; }
   if (u.role !== 'student') { location.href = u.role === 'admin' ? '/owner' : '/login'; return; }
-  shell('era', u);
-  if (!guardFeature(u, 'era', 'ERA Posting Simulator')) return;
-  // Show loading indicator
+  if (typeof shell === 'function') shell('era', u);
+  if (typeof guardFeature === 'function' && !guardFeature(u, 'era', 'ERA Posting Simulator')) return;
   $('scen-list').innerHTML = '<div class="post-card" style="text-align:center;padding:40px;color:#64748b">'
     + '<div style="font-size:32px;margin-bottom:10px">⏳</div>Loading scenarios…</div>';
-  // Retry logic for hard refresh race conditions
-  let d = null, retries = 3;
-  while (retries-- > 0) {
-    try {
-      d = await fetchJSON('/api/labs/era');
-      break;
-    } catch (e) {
-      // Session expired — go to login (only if truly unauthorized)
-      if (e.status === 401) {
-        window._cu = null;
-        const recheck = await currentUser();
-        if (!recheck) { location.href = '/login'; return; }
-        // Session is actually valid, retry the API call
-        continue;
-      }
-      if (retries === 0) {
-        // Show update popup instead of getting stuck
-        showUpdatePopup('The page needs to refresh to load the latest data.');
-        $('st-total').textContent = '—';
-        return;
-      }
-      await new Promise(r => setTimeout(r, 500));
-    }
+  console.log('[ERA] loading scenarios...');
+  let d = null;
+  try {
+    d = await fetchJSON('/api/labs/era');
+    console.log('[ERA] got scenarios:', d.scenarios ? d.scenarios.length : 0);
+  } catch (e) {
+    console.log('[ERA] /api/labs/era failed:', e.message);
+    showUpdatePopup('Could not load scenarios: ' + e.message + '<br><br>Click below to retry.');
+    return;
   }
   SCEN = d.scenarios || []; ACTIONS = d.actions || [];
   $('st-total').textContent = SCEN.length;
   renderList();
   if (SCEN.length) select(SCEN[0].id);
-  loadBest();
+  try { loadBest(); } catch (e) { console.log('[ERA] loadBest failed:', e.message); }
   } catch (err) {
     document.querySelector('.main').innerHTML = '<div style="text-align:center;padding:80px 20px">'
       + '<h2 style="color:#0f2743">Session expired</h2>'
